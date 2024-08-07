@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { Link } from "react-router-dom";
 
 const Auth = () => {
 	const [email, setEmail] = useState("");
@@ -99,6 +100,16 @@ const Auth = () => {
 					>
 						{isLogin ? "Switch to Sign Up" : "Switch to Login"}
 					</button>
+					{isLogin && (
+						<div className="text-center mt-4">
+							<Link
+								to="/forgot-password"
+								className="text-indigo-500 hover:underline"
+							>
+								Forgot Password?
+							</Link>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
