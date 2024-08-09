@@ -14,6 +14,7 @@ const SubtaskModal = ({
 		description: "",
 		due_date: "",
 		priority: "low",
+		status: "todo", // Default status
 	});
 
 	useEffect(() => {
@@ -23,6 +24,7 @@ const SubtaskModal = ({
 				description: subtask.description,
 				due_date: subtask.due_date,
 				priority: subtask.priority,
+				status: subtask.status || "todo", // Set status if available
 			});
 		} else {
 			setNewSubtask({
@@ -30,6 +32,7 @@ const SubtaskModal = ({
 				description: "",
 				due_date: "",
 				priority: "low",
+				status: "todo",
 			});
 		}
 	}, [subtask]);
@@ -55,6 +58,7 @@ const SubtaskModal = ({
 				description: newSubtask.description,
 				due_date: newSubtask.due_date,
 				priority: newSubtask.priority,
+				status: newSubtask.status,
 				parent_task_id: parentTaskId,
 				user_id: user.id,
 			};
@@ -80,6 +84,7 @@ const SubtaskModal = ({
 					description: "",
 					due_date: "",
 					priority: "low",
+					status: "todo",
 				});
 				onClose();
 				fetchSubtasks(); // Fetch subtasks after creating/updating a subtask
@@ -153,6 +158,23 @@ const SubtaskModal = ({
 							<option value="high">High</option>
 						</select>
 					</div>
+					{subtask && ( // Only show status when editing
+						<div className="mb-4">
+							<label className="block text-gray-700 font-bold mb-2">
+								Status
+							</label>
+							<select
+								name="status"
+								value={newSubtask.status}
+								onChange={handleInputChange}
+								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							>
+								<option value="todo">To Do</option>
+								<option value="in-progress">In Progress</option>
+								<option value="done">Done</option>
+							</select>
+						</div>
+					)}
 					<div className="flex justify-end space-x-2">
 						<button
 							type="button"

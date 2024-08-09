@@ -15,6 +15,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 	const [isSubtaskModalOpen, setIsSubtaskModalOpen] = useState(false);
 	const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
 	const [subtasks, setSubtasks] = useState([]);
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
 	const fetchSubtasks = useCallback(async () => {
 		const { data, error } = await supabase
@@ -108,6 +109,45 @@ const TaskDetail = ({ task, fetchTasks }) => {
 		}
 	};
 
+	const handleDeleteTask = async () => {
+		try {
+			const { error: subtaskError } = await supabase
+				.from("subtasks")
+				.delete()
+				.eq("parent_task_id", task.id);
+
+			const { error: taskError } = await supabase
+				.from("tasks")
+				.delete()
+				.eq("id", task.id);
+
+			if (subtaskError || taskError) {
+				toast.error("Error deleting task or subtasks");
+				console.error(
+					"Error deleting task or subtasks",
+					subtaskError,
+					taskError
+				);
+			} else {
+				toast.success("Task and subtasks deleted successfully");
+				fetchTasks();
+			}
+		} catch (error) {
+			console.error("Error deleting task or subtasks", error);
+			toast.error("Error deleting task or subtasks");
+		} finally {
+			setIsDeleteModalOpen(false);
+		}
+	};
+
+	const confirmDeleteTask = () => {
+		if (subtasks.length > 0) {
+			setIsDeleteModalOpen(true);
+		} else {
+			handleDeleteTask();
+		}
+	};
+
 	return (
 		<div className="p-6">
 			{isEditing ? (
@@ -197,6 +237,12 @@ const TaskDetail = ({ task, fetchTasks }) => {
 						>
 							Edit
 						</button>
+						<button
+							onClick={confirmDeleteTask}
+							className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+						>
+							Delete
+						</button>
 					</div>
 					<div className="mt-4">
 						<div className="flex items-center">
@@ -231,6 +277,31 @@ const TaskDetail = ({ task, fetchTasks }) => {
 				fetchTasks={fetchTasks}
 				fetchSubtasks={fetchSubtasks} // Pass fetchSubtasks to SubtaskModal
 			/>
+			{isDeleteModalOpen && (
+				<div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+					<div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+						<h2 className="text-xl font-bold mb-4">Delete Task</h2>
+						<p>
+							Deleting this task will also remove all associated subtasks. Are
+							you sure you want to continue?
+						</p>
+						<div className="flex justify-end space-x-2 mt-4">
+							<button
+								onClick={() => setIsDeleteModalOpen(false)}
+								className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+							>
+								Cancel
+							</button>
+							<button
+								onClick={handleDeleteTask}
+								className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+							>
+								Delete
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };
