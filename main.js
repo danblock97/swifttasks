@@ -25,7 +25,7 @@ async function createWindow() {
 
 	win.loadURL(
 		isDev
-			? "http://localhost:3000"
+			? "https://swifttasks.co.uk/"
 			: `file://${path.join(__dirname, "build/index.html")}`
 	);
 
