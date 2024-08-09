@@ -10,9 +10,19 @@ const TaskList = ({ onOpenTaskModal }) => {
 	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
 	const fetchTasks = useCallback(async (selectLastTask = false) => {
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+
+		if (!user) {
+			console.error("User not authenticated");
+			return;
+		}
+
 		const { data, error } = await supabase
 			.from("tasks")
 			.select("*")
+			.eq("user_id", user.id) // Filter tasks by user_id
 			.order("created_at", { ascending: false });
 
 		if (error) {

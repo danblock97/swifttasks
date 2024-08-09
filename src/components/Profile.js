@@ -2,33 +2,58 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 const Profile = () => {
-	const [profile, setProfile] = useState({ username: "", avatar_url: "" });
+	const [profile, setProfile] = useState({ fullName: "", email: "" });
+	const [password, setPassword] = useState("");
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		const fetchProfile = async () => {
 			const {
 				data: { session },
 			} = await supabase.auth.getSession();
-			const { data, error } = await supabase
-				.from("profiles")
-				.select("*")
-				.eq("id", session.user.id)
-				.single();
 
-			if (error) console.error("Error fetching profile:", error);
-			else setProfile(data);
+			if (session) {
+				setProfile({
+					fullName: session.user.user_metadata.full_name || "",
+					email: session.user.email || "",
+				});
+			}
 		};
 
 		fetchProfile();
 	}, []);
 
 	const handleUpdate = async () => {
-		const { error } = await supabase
-			.from("profiles")
-			.update(profile)
-			.eq("id", profile.id);
+		setLoading(true);
 
-		if (error) console.error("Error updating profile:", error);
+		// Update full name and email
+		const updates = {
+			data: {
+				full_name: profile.fullName,
+			},
+			email: profile.email,
+		};
+
+		const { error: updateError } = await supabase.auth.updateUser(updates);
+
+		// Update password if provided
+		if (password) {
+			const { error: passwordError } = await supabase.auth.updateUser({
+				password,
+			});
+			if (passwordError) {
+				setLoading(false);
+				return console.error("Error updating password:", passwordError);
+			}
+		}
+
+		if (updateError) {
+			console.error("Error updating profile:", updateError);
+		} else {
+			console.log("Profile updated successfully");
+		}
+
+		setLoading(false);
 	};
 
 	return (
@@ -37,25 +62,31 @@ const Profile = () => {
 			<div>
 				<input
 					type="text"
-					value={profile.username}
-					onChange={(e) => setProfile({ ...profile, username: e.target.value })}
-					placeholder="Username"
+					value={profile.fullName}
+					onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
+					placeholder="Full Name"
 					className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
 				/>
 				<input
-					type="text"
-					value={profile.avatar_url}
-					onChange={(e) =>
-						setProfile({ ...profile, avatar_url: e.target.value })
-					}
-					placeholder="Avatar URL"
+					type="email"
+					value={profile.email}
+					onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+					placeholder="Email"
+					className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+				/>
+				<input
+					type="password"
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					placeholder="New Password (leave blank to keep current)"
 					className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
 				/>
 				<button
 					onClick={handleUpdate}
 					className="px-4 py-2 bg-green-500 text-white rounded"
+					disabled={loading}
 				>
-					Update Profile
+					{loading ? "Updating..." : "Update Profile"}
 				</button>
 			</div>
 		</div>

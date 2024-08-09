@@ -4,6 +4,7 @@
 	"private": true,
 	"main": "main.js",
 	"dependencies": {
+		"@electron/remote": "^2.1.2",
 		"@supabase/supabase-js": "^2.45.1",
 		"@testing-library/jest-dom": "^5.17.0",
 		"@testing-library/react": "^13.4.0",
@@ -13,9 +14,11 @@
 		"postcss": "^8.4.41",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
+		"react-icons": "^5.2.1",
 		"react-router-dom": "^6.26.0",
 		"react-scripts": "5.0.1",
 		"react-toastify": "^10.0.5",
+		"react-type-animation": "^3.2.0",
 		"tailwindcss": "^3.4.7",
 		"web-vitals": "^2.1.4"
 	},
@@ -24,7 +27,8 @@
 		"build": "react-scripts build",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject",
-		"electron": "electron ."
+		"electron": "electron .",
+		"build:electron": "npm run build && electron-builder"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -45,6 +49,32 @@
 		]
 	},
 	"devDependencies": {
-		"electron": "^31.3.1"
+		"crypto-browserify": "^3.12.0",
+		"electron": "^31.3.1",
+		"electron-builder": "^24.6.1",
+		"os-browserify": "^0.3.0",
+		"path-browserify": "^1.0.1",
+		"process": "^0.11.10",
+		"stream-browserify": "^3.0.0"
+	},
+	"build": {
+		"appId": "com.yourapp.id",
+		"productName": "SwiftTasks",
+		"files": [
+			"build/**/*",
+			"main.js",
+			"assets/**/*"
+		],
+		"directories": {
+			"buildResources": "assets"
+		},
+		"win": {
+			"icon": "assets/icon.ico",
+			"target": "nsis"
+		},
+		"nsis": {
+			"oneClick": false,
+			"allowToChangeInstallationDirectory": true
+		}
 	}
 }
