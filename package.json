@@ -58,6 +58,7 @@
 		"stream-browserify": "^3.0.0"
 	},
 	"build": {
+		"extends": null,
 		"appId": "com.yourapp.id",
 		"productName": "SwiftTasks",
 		"files": [
