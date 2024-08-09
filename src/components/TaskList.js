@@ -9,42 +9,35 @@ const TaskList = ({ onOpenTaskModal }) => {
 	const [selectedTask, setSelectedTask] = useState(null);
 	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
-	const fetchTasks = useCallback(
-		async (selectLastTask = false) => {
-			console.log("Fetching tasks...");
-			const { data, error } = await supabase
-				.from("tasks")
-				.select("*")
-				.order("created_at", { ascending: false });
+	const fetchTasks = useCallback(async (selectLastTask = false) => {
+		console.log("Fetching tasks...");
+		const { data, error } = await supabase
+			.from("tasks")
+			.select("*")
+			.order("created_at", { ascending: false });
 
-			if (error) {
-				console.error("Error fetching tasks:", error);
-			} else {
-				const sortedTasks = data.sort(
-					(a, b) => new Date(a.created_at) - new Date(b.created_at)
-				);
-				setTasks(sortedTasks);
+		if (error) {
+			console.error("Error fetching tasks:", error);
+		} else {
+			console.log("Fetched tasks:", data);
+			setTasks(data);
 
+			if (data.length > 0) {
 				const savedTaskId = localStorage.getItem("selectedTaskId");
-				if (savedTaskId) {
-					const savedTask = sortedTasks.find((task) => task.id === savedTaskId);
-					if (savedTask) {
-						setSelectedTask(savedTask);
-					} else if (!selectedTask || selectLastTask) {
-						setSelectedTask(sortedTasks[0]);
-						localStorage.setItem("selectedTaskId", sortedTasks[0]?.id);
-					}
-				} else if (
-					sortedTasks.length > 0 &&
-					(!selectedTask || selectLastTask)
-				) {
-					setSelectedTask(sortedTasks[0]);
-					localStorage.setItem("selectedTaskId", sortedTasks[0]?.id);
+				let selected = savedTaskId
+					? data.find((task) => task.id === parseInt(savedTaskId))
+					: null;
+				if (!selected || selectLastTask) {
+					selected = data[0];
+					localStorage.setItem("selectedTaskId", selected.id);
 				}
+				console.log("Setting selected task:", selected);
+				setSelectedTask(selected);
+			} else {
+				setSelectedTask(null);
 			}
-		},
-		[selectedTask]
-	);
+		}
+	}, []);
 
 	useEffect(() => {
 		fetchTasks();

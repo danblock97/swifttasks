@@ -44,21 +44,25 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 				console.error("Error creating task:", error);
 				toast.error("Error creating task");
 			} else {
-				if (data && data.length > 0) {
-					setNewTask({
-						title: "",
-						description: "",
-						due_date: "",
-						priority: "low",
-					});
-					onClose();
-					await fetchTasks(true); // Ensure tasks are fetched and select the last created task
-					toast.success("Task created successfully");
-				}
+				console.log("Created task:", data[0]);
+				setNewTask({
+					title: "",
+					description: "",
+					due_date: "",
+					priority: "low",
+				});
+				onClose();
+				await fetchTasks(true); // Ensure tasks are fetched and select the last created task
+				toast.success("Task created successfully");
 			}
 		} catch (error) {
 			console.error("Error fetching user:", error);
 			toast.error("Error fetching user");
+		} finally {
+			// As a last resort, force a page refresh to update the task list
+			setTimeout(() => {
+				window.location.reload();
+			}, 500);
 		}
 	};
 
