@@ -70,7 +70,7 @@
 			"buildResources": "assets"
 		},
 		"win": {
-			"icon": "assets/icon.ico",
+			"icon": "assets/logo.ico",
 			"target": "nsis"
 		},
 		"nsis": {
