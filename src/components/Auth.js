@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 const Auth = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [fullName, setFullName] = useState(""); // New state for full name
 	const [isLogin, setIsLogin] = useState(true);
 	const [user, setUser] = useState(null);
 	const navigate = useNavigate();
@@ -38,7 +39,7 @@ const Auth = () => {
 	const handleAuth = async (e) => {
 		e.preventDefault();
 		const authAction = isLogin ? signInWithRetries : signUpWithRetries;
-		await authAction(email, password);
+		await authAction(email, password, fullName);
 	};
 
 	const signInWithRetries = async (email, password, retries = 5) => {
@@ -65,13 +66,22 @@ const Auth = () => {
 		}
 	};
 
-	const signUpWithRetries = async (email, password, retries = 5) => {
+	const signUpWithRetries = async (email, password, fullName, retries = 5) => {
 		try {
-			const { error } = await supabase.auth.signUp({ email, password });
+			const { error } = await supabase.auth.signUp({
+				email,
+				password,
+				options: {
+					data: {
+						full_name: fullName, // Store full name in user_metadata
+					},
+				},
+			});
+
 			if (error) {
 				if (error.status === 429 && retries > 0) {
 					setTimeout(
-						() => signUpWithRetries(email, password, retries - 1),
+						() => signUpWithRetries(email, password, fullName, retries - 1),
 						2 ** (5 - retries) * 1000
 					);
 				} else {
@@ -119,6 +129,16 @@ const Auth = () => {
 					{isLogin ? "Login" : "Sign Up"}
 				</h2>
 				<form onSubmit={handleAuth}>
+					{!isLogin && ( // Only show Full Name input for sign up
+						<input
+							type="text"
+							value={fullName}
+							onChange={(e) => setFullName(e.target.value)}
+							placeholder="Full Name"
+							className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							required
+						/>
+					)}
 					<input
 						type="email"
 						value={email}
