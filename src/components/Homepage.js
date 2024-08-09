@@ -37,7 +37,7 @@ const Homepage = () => {
 							Get Started
 						</a>
 						<a
-							href="#"
+							href="https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v0.10/SwiftTasks.Setup.0.1.0.exe"
 							className="inline-block px-6 py-3 bg-gray-700 text-white font-semibold rounded-full hover:bg-gray-600 transition"
 						>
 							Download for Windows
