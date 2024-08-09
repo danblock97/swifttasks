@@ -44,7 +44,6 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 				console.error("Error creating task:", error);
 				toast.error("Error creating task");
 			} else {
-				console.log("Created task:", data[0]);
 				setNewTask({
 					title: "",
 					description: "",

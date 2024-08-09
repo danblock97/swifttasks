@@ -52,29 +52,40 @@ const SubtaskList = ({
 			<ul>
 				{subtasks.map((subtask) => (
 					<li key={subtask.id} className="mb-4">
-						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg mt-4 transition-shadow bg-white">
-							<div className="flex justify-between items-center mb-2">
-								<p className="font-semibold text-lg">{subtask.title}</p>
-								<div className="flex items-center">
-									<button
-										onClick={() => handleEditSubtask(subtask)}
-										className="text-blue-500 hover:text-blue-700 mr-2"
-									>
-										Edit
-									</button>
-									<button
-										onClick={() => deleteSubtask(subtask.id)}
-										className="text-red-500 hover:text-red-700"
-									>
-										Delete
-									</button>
+						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg mt-4 transition-shadow bg-white flex">
+							<div
+								className={`w-2 h-full mr-4 ${
+									subtask.priority === "low"
+										? "bg-green-500"
+										: subtask.priority === "medium"
+										? "bg-orange-500"
+										: "bg-red-500"
+								}`}
+							></div>
+							<div className="flex-1">
+								<div className="flex justify-between items-center mb-2">
+									<p className="font-semibold text-lg">{subtask.title}</p>
+									<div className="flex items-center">
+										<button
+											onClick={() => handleEditSubtask(subtask)}
+											className="text-blue-500 hover:text-blue-700 mr-2"
+										>
+											Edit
+										</button>
+										<button
+											onClick={() => deleteSubtask(subtask.id)}
+											className="text-red-500 hover:text-red-700"
+										>
+											Delete
+										</button>
+									</div>
 								</div>
-							</div>
-							<p className="text-gray-600 mb-1">{subtask.description}</p>
-							<div className="text-sm text-gray-500">
-								<p>Due Date: {subtask.due_date}</p>
-								<p>Priority: {subtask.priority}</p>
-								<p>Status: {subtask.status}</p>
+								<p className="text-gray-600 mb-1">{subtask.description}</p>
+								<div className="text-sm text-gray-500">
+									<p>Due Date: {subtask.due_date}</p>
+									<p>Priority: {subtask.priority}</p>
+									<p>Status: {subtask.status}</p>
+								</div>
 							</div>
 						</div>
 					</li>

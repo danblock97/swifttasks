@@ -10,7 +10,6 @@ const TaskList = ({ onOpenTaskModal }) => {
 	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
 	const fetchTasks = useCallback(async (selectLastTask = false) => {
-		console.log("Fetching tasks...");
 		const { data, error } = await supabase
 			.from("tasks")
 			.select("*")
@@ -19,7 +18,6 @@ const TaskList = ({ onOpenTaskModal }) => {
 		if (error) {
 			console.error("Error fetching tasks:", error);
 		} else {
-			console.log("Fetched tasks:", data);
 			setTasks(data);
 
 			if (data.length > 0) {
@@ -31,7 +29,6 @@ const TaskList = ({ onOpenTaskModal }) => {
 					selected = data[0];
 					localStorage.setItem("selectedTaskId", selected.id);
 				}
-				console.log("Setting selected task:", selected);
 				setSelectedTask(selected);
 			} else {
 				setSelectedTask(null);
@@ -78,13 +75,26 @@ const TaskList = ({ onOpenTaskModal }) => {
 					{tasks.map((task) => (
 						<li key={task.id} onClick={() => handleTaskClick(task)}>
 							<div
-								className={`task-item hover:bg-gray-100 p-4 mb-2 rounded-lg shadow-md ${
-									selectedTask && selectedTask.id === task.id
-										? "bg-blue-100"
-										: ""
-								}`}
+								className={`task-item hover:bg-gray-100 p-4 mb-2 rounded-lg shadow-md flex`}
 							>
-								<p className="font-semibold">{task.title}</p>
+								<div
+									className={`w-2 h-full mr-4 ${
+										task.priority === "low"
+											? "bg-green-500"
+											: task.priority === "medium"
+											? "bg-orange-500"
+											: "bg-red-500"
+									}`}
+								></div>
+								<div
+									className={`flex-1 ${
+										selectedTask && selectedTask.id === task.id
+											? "bg-grey-100"
+											: ""
+									}`}
+								>
+									<p className="font-semibold">{task.title}</p>
+								</div>
 							</div>
 						</li>
 					))}

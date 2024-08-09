@@ -149,160 +149,175 @@ const TaskDetail = ({ task, fetchTasks }) => {
 	};
 
 	return (
-		<div className="p-6">
-			{isEditing ? (
-				<div>
-					<div className="mb-4">
-						<label className="block text-gray-700 font-bold mb-2">Title</label>
-						<input
-							type="text"
-							value={title}
-							onChange={(e) => setTitle(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-					</div>
-					<div className="mb-4">
-						<label className="block text-gray-700 font-bold mb-2">
-							Description
-						</label>
-						<textarea
-							value={description}
-							onChange={(e) => setDescription(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-					</div>
-					<div className="mb-4">
-						<label className="block text-gray-700 font-bold mb-2">
-							Due Date
-						</label>
-						<input
-							type="date"
-							value={dueDate}
-							onChange={(e) => setDueDate(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-					</div>
-					<div className="mb-4">
-						<label className="block text-gray-700 font-bold mb-2">
-							Priority
-						</label>
-						<select
-							value={priority}
-							onChange={(e) => setPriority(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-						>
-							<option value="low">Low</option>
-							<option value="medium">Medium</option>
-							<option value="high">High</option>
-						</select>
-					</div>
-					<div className="mb-4">
-						<label className="block text-gray-700 font-bold mb-2">Status</label>
-						<select
-							value={status}
-							onChange={(e) => setStatus(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-						>
-							<option value="To Do">To Do</option>
-							<option value="In Progress">In Progress</option>
-							<option value="Done">Done</option>
-						</select>
-					</div>
-					<div className="flex justify-end space-x-2">
-						<button
-							onClick={updateTask}
-							className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-						>
-							Update
-						</button>
-						<button
-							onClick={() => setIsEditing(false)}
-							className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
-						>
-							Cancel
-						</button>
-					</div>
-				</div>
-			) : (
-				<div>
-					<h3 className="text-xl font-bold mb-2">{title}</h3>
-					<p className="text-gray-700 mb-2">{description}</p>
-					<p className="text-gray-600 mb-2">Due Date: {dueDate}</p>
-					<p className="text-gray-600 mb-2">Priority: {priority}</p>
-					<p className="text-gray-600 mb-2">Status: {status}</p>
-					<div className="flex justify-end space-x-2">
-						<button
-							onClick={() => setIsEditing(true)}
-							className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-						>
-							Edit
-						</button>
-						<button
-							onClick={confirmDeleteTask}
-							className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-						>
-							Delete
-						</button>
-					</div>
-					<div className="mt-4">
-						<div className="flex items-center">
+		<div className="p-6 flex">
+			<div
+				className={`w-2 h-auto mr-4 ${
+					task.priority === "low"
+						? "bg-green-500"
+						: task.priority === "medium"
+						? "bg-orange-500"
+						: "bg-red-500"
+				}`}
+			></div>
+			<div className="flex-1">
+				{isEditing ? (
+					<div>
+						<div className="mb-4">
+							<label className="block text-gray-700 font-bold mb-2">
+								Title
+							</label>
 							<input
 								type="text"
-								value={newSubtaskTitle}
-								onChange={(e) => setNewSubtaskTitle(e.target.value)}
-								onKeyDown={handleQuickCreateSubtask}
-								placeholder="Quick create subtask"
+								value={title}
+								onChange={(e) => setTitle(e.target.value)}
 								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
 							/>
-							<button
-								onClick={handleOpenSubtaskModal}
-								className="ml-2 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-							>
-								+
-							</button>
 						</div>
-					</div>
-					<SubtaskList
-						taskId={task.id}
-						fetchTasks={fetchTasks}
-						subtasks={subtasks}
-						fetchSubtasks={fetchSubtasks}
-						setSubtasks={setSubtasks} // Ensure this is passed down to SubtaskList
-					/>
-				</div>
-			)}
-			<SubtaskModal
-				isOpen={isSubtaskModalOpen}
-				onClose={handleCloseSubtaskModal}
-				parentTaskId={task.id}
-				fetchTasks={fetchTasks}
-				fetchSubtasks={fetchSubtasks} // Pass fetchSubtasks to SubtaskModal
-			/>
-			{isDeleteModalOpen && (
-				<div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
-					<div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-						<h2 className="text-xl font-bold mb-4">Delete Task</h2>
-						<p>
-							Deleting this task will also remove all associated subtasks. Are
-							you sure you want to continue?
-						</p>
-						<div className="flex justify-end space-x-2 mt-4">
+						<div className="mb-4">
+							<label className="block text-gray-700 font-bold mb-2">
+								Description
+							</label>
+							<textarea
+								value={description}
+								onChange={(e) => setDescription(e.target.value)}
+								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							/>
+						</div>
+						<div className="mb-4">
+							<label className="block text-gray-700 font-bold mb-2">
+								Due Date
+							</label>
+							<input
+								type="date"
+								value={dueDate}
+								onChange={(e) => setDueDate(e.target.value)}
+								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							/>
+						</div>
+						<div className="mb-4">
+							<label className="block text-gray-700 font-bold mb-2">
+								Priority
+							</label>
+							<select
+								value={priority}
+								onChange={(e) => setPriority(e.target.value)}
+								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							>
+								<option value="low">Low</option>
+								<option value="medium">Medium</option>
+								<option value="high">High</option>
+							</select>
+						</div>
+						<div className="mb-4">
+							<label className="block text-gray-700 font-bold mb-2">
+								Status
+							</label>
+							<select
+								value={status}
+								onChange={(e) => setStatus(e.target.value)}
+								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							>
+								<option value="To Do">To Do</option>
+								<option value="In Progress">In Progress</option>
+								<option value="Done">Done</option>
+							</select>
+						</div>
+						<div className="flex justify-end space-x-2">
 							<button
-								onClick={() => setIsDeleteModalOpen(false)}
+								onClick={updateTask}
+								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+							>
+								Update
+							</button>
+							<button
+								onClick={() => setIsEditing(false)}
 								className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
 							>
 								Cancel
 							</button>
+						</div>
+					</div>
+				) : (
+					<div>
+						<h3 className="text-xl font-bold mb-2">{title}</h3>
+						<p className="text-gray-700 mb-2">{description}</p>
+						<p className="text-gray-600 mb-2">Due Date: {dueDate}</p>
+						<p className="text-gray-600 mb-2">Priority: {priority}</p>
+						<p className="text-gray-600 mb-2">Status: {status}</p>
+						<div className="flex justify-end space-x-2">
 							<button
-								onClick={handleDeleteTask}
+								onClick={() => setIsEditing(true)}
+								className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+							>
+								Edit
+							</button>
+							<button
+								onClick={confirmDeleteTask}
 								className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
 							>
 								Delete
 							</button>
 						</div>
+						<div className="mt-4">
+							<div className="flex items-center">
+								<input
+									type="text"
+									value={newSubtaskTitle}
+									onChange={(e) => setNewSubtaskTitle(e.target.value)}
+									onKeyDown={handleQuickCreateSubtask}
+									placeholder="Quick create subtask"
+									className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								/>
+								<button
+									onClick={handleOpenSubtaskModal}
+									className="ml-2 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+								>
+									+
+								</button>
+							</div>
+						</div>
+						<SubtaskList
+							taskId={task.id}
+							fetchTasks={fetchTasks}
+							subtasks={subtasks}
+							fetchSubtasks={fetchSubtasks}
+							setSubtasks={setSubtasks} // Ensure this is passed down to SubtaskList
+						/>
 					</div>
-				</div>
-			)}
+				)}
+				<SubtaskModal
+					isOpen={isSubtaskModalOpen}
+					onClose={handleCloseSubtaskModal}
+					parentTaskId={task.id}
+					fetchTasks={fetchTasks}
+					fetchSubtasks={fetchSubtasks} // Pass fetchSubtasks to SubtaskModal
+				/>
+				{isDeleteModalOpen && (
+					<div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+						<div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+							<h2 className="text-xl font-bold mb-4">Delete Task</h2>
+							<p>
+								Deleting this task will also remove all associated subtasks. Are
+								you sure you want to continue?
+							</p>
+							<div className="flex justify-end space-x-2 mt-4">
+								<button
+									onClick={() => setIsDeleteModalOpen(false)}
+									className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+								>
+									Cancel
+								</button>
+								<button
+									onClick={handleDeleteTask}
+									className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+								>
+									Delete
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 };
