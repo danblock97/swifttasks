@@ -11,7 +11,7 @@ async function createWindow() {
 		width: 1280,
 		height: 720,
 		frame: false, // Remove window border
-		icon: path.join(__dirname, "assets", "icon.png"), // Path to your icon file
+		icon: path.join(__dirname, "assets", "logo.jpg"), // Path to your icon file
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
