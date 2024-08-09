@@ -49,11 +49,10 @@ const SubtaskList = ({
 
 	return (
 		<div>
-			<h3 className="text-xl font-bold mb-4">Subtasks</h3>
 			<ul>
 				{subtasks.map((subtask) => (
 					<li key={subtask.id} className="mb-4">
-						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white">
+						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg mt-4 transition-shadow bg-white">
 							<div className="flex justify-between items-center mb-2">
 								<p className="font-semibold text-lg">{subtask.title}</p>
 								<div className="flex items-center">

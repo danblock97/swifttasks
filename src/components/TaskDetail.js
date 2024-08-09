@@ -266,7 +266,8 @@ const TaskDetail = ({ task, fetchTasks }) => {
 						taskId={task.id}
 						fetchTasks={fetchTasks}
 						subtasks={subtasks}
-						fetchSubtasks={fetchSubtasks} // Pass fetchSubtasks to SubtaskList
+						fetchSubtasks={fetchSubtasks}
+						setSubtasks={setSubtasks} // Ensure this is passed down to SubtaskList
 					/>
 				</div>
 			)}
