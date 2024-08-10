@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-	BrowserRouter as Router,
+	BrowserRouter as WebRouter,
+	HashRouter as ElectronRouter,
 	Route,
 	Routes,
 	Navigate,
@@ -9,6 +10,7 @@ import TaskList from "./components/TaskList";
 import Profile from "./components/Profile";
 import Auth from "./components/Auth";
 import EmailVerification from "./components/EmailVerification";
+import ForgotPassword from "./components/ForgotPassword"; // Import your ForgotPassword component
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import TaskModal from "./components/TaskModal";
@@ -65,6 +67,9 @@ const App = () => {
 		return <div>Loading...</div>;
 	}
 
+	// Select the appropriate Router based on environment
+	const Router = isElectron ? ElectronRouter : WebRouter;
+
 	return (
 		<Router>
 			<Navbar onOpenTaskModal={handleOpenTaskModal} />
@@ -72,6 +77,8 @@ const App = () => {
 				<Route path="/" element={<Homepage />} />
 				<Route path="/auth" element={<Auth />} />
 				<Route path="/verify-email" element={<EmailVerification />} />
+				<Route path="/forgot-password" element={<ForgotPassword />} />{" "}
+				{/* Add ForgotPassword route */}
 				<Route element={<ProtectedRoute session={session} />}>
 					<Route
 						path="/tasks"

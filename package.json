@@ -2,6 +2,7 @@
 	"name": "swifttasks",
 	"version": "0.1.0",
 	"private": true,
+	"homepage": "./",
 	"main": "main.js",
 	"dependencies": {
 		"@electron/remote": "^2.1.2",

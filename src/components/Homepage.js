@@ -1,8 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabaseClient";
 import { TypeAnimation } from "react-type-animation";
 import logo from "../images/logo.jpg";
 
 const Homepage = () => {
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const navigate = useNavigate();
+
+	// Check if the app is running in Electron
+	const isElectron = !!window.require;
+
+	useEffect(() => {
+		const checkSession = async () => {
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+
+			setIsLoggedIn(!!session);
+		};
+
+		checkSession();
+	}, []);
+
+	const handleGetStartedClick = () => {
+		if (isLoggedIn) {
+			navigate("/tasks");
+		} else {
+			navigate("/auth");
+		}
+	};
+
 	return (
 		<div className="flex items-center justify-center min-h-screen text-indigo-500">
 			<div className="max-w-5xl mx-auto p-6 flex flex-col md:flex-row items-center justify-between">
@@ -30,18 +58,20 @@ const Homepage = () => {
 						SwiftTasks has you covered.
 					</p>
 					<div className="flex justify-center md:justify-start space-x-4">
-						<a
-							href="/auth"
+						<button
+							onClick={handleGetStartedClick}
 							className="inline-block px-6 py-3 bg-indigo-500 text-white font-semibold rounded-full hover:bg-indigo-600 transition"
 						>
 							Get Started
-						</a>
-						<a
-							href="https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v0.10/SwiftTasks.Setup.0.1.0.exe"
-							className="inline-block px-6 py-3 bg-gray-700 text-white font-semibold rounded-full hover:bg-gray-600 transition"
-						>
-							Download for Windows
-						</a>
+						</button>
+						{!isElectron && (
+							<a
+								href="https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v0.10/SwiftTasks.Setup.0.1.0.exe"
+								className="inline-block px-6 py-3 bg-gray-700 text-white font-semibold rounded-full hover:bg-gray-600 transition"
+							>
+								Download for Windows
+							</a>
+						)}
 					</div>
 				</div>
 				<div className="mt-10 md:mt-0">
