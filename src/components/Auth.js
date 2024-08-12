@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { Transition } from "@headlessui/react";
 
 const Auth = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [fullName, setFullName] = useState(""); // New state for full name
+	const [fullName, setFullName] = useState("");
 	const [isLogin, setIsLogin] = useState(true);
 	const [user, setUser] = useState(null);
 	const navigate = useNavigate();
@@ -73,7 +74,7 @@ const Auth = () => {
 				password,
 				options: {
 					data: {
-						full_name: fullName, // Store full name in user_metadata
+						full_name: fullName,
 					},
 				},
 			});
@@ -113,7 +114,7 @@ const Auth = () => {
 					</h2>
 					<button
 						onClick={handleLogout}
-						className="w-full py-2 font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-600"
+						className="w-full py-2 font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-600 transition duration-200"
 					>
 						Logout
 					</button>
@@ -124,61 +125,115 @@ const Auth = () => {
 
 	return (
 		<div className="flex items-center justify-center min-h-screen bg-gray-100">
-			<div className="w-full max-w-md p-8 space-y-8 bg-white shadow-lg rounded-lg">
-				<h2 className="text-2xl font-bold text-center">
-					{isLogin ? "Login" : "Sign Up"}
-				</h2>
-				<form onSubmit={handleAuth}>
-					{!isLogin && ( // Only show Full Name input for sign up
-						<input
-							type="text"
-							value={fullName}
-							onChange={(e) => setFullName(e.target.value)}
-							placeholder="Full Name"
-							className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-							required
-						/>
-					)}
-					<input
-						type="email"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						placeholder="Email"
-						className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-						required
-					/>
-					<input
-						type="password"
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						placeholder="Password"
-						className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-						required
-					/>
-					<button
-						type="submit"
-						className="w-full py-2 mb-4 font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-600"
-					>
-						{isLogin ? "Login" : "Sign Up"}
-					</button>
-				</form>
-				<button
-					onClick={() => setIsLogin(!isLogin)}
-					className="w-full py-2 font-semibold text-indigo-500 border border-indigo-500 rounded hover:bg-indigo-50"
-				>
-					{isLogin ? "Switch to Sign Up" : "Switch to Login"}
-				</button>
-				{isLogin && (
-					<div className="text-center mt-4">
-						<Link
-							to="/forgot-password"
-							className="text-indigo-500 hover:underline"
+			<Transition
+				show={!user}
+				enter="transform transition duration-[400ms]"
+				enterFrom="opacity-0 rotate-[-120deg] scale-50"
+				enterTo="opacity-100 rotate-0 scale-100"
+				leave="transform duration-200 transition ease-in-out"
+				leaveFrom="opacity-100 rotate-0 scale-100"
+				leaveTo="opacity-0 scale-95"
+			>
+				<div className="w-full max-w-md p-8 space-y-8 bg-white shadow-lg rounded-lg">
+					<h2 className="text-3xl font-extrabold text-center text-indigo-600">
+						{isLogin ? "SwiftTasks Login" : "SwiftTasks Sign Up"}
+					</h2>
+					<form onSubmit={handleAuth} className="space-y-6">
+						{!isLogin && (
+							<div className="relative">
+								<input
+									type="text"
+									id="fullName"
+									value={fullName}
+									onChange={(e) => setFullName(e.target.value)}
+									className="w-full px-3 py-2 text-gray-900 placeholder-transparent border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 peer"
+									placeholder="Full Name"
+									required
+								/>
+								<label
+									htmlFor="fullName"
+									className="absolute left-3 top-0 px-1 text-sm text-gray-600 bg-white transition-all transform -translate-y-3 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-2 peer-focus:scale-75 peer-focus:-translate-y-3"
+								>
+									Full Name
+								</label>
+							</div>
+						)}
+						<div className="relative">
+							<input
+								type="email"
+								id="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								className="w-full px-3 py-2 text-gray-900 placeholder-transparent border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 peer"
+								placeholder="Email"
+								required
+							/>
+							<label
+								htmlFor="email"
+								className="absolute left-3 top-0 px-1 text-sm text-gray-600 bg-white transition-all transform -translate-y-3 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-2 peer-focus:scale-75 peer-focus:-translate-y-3"
+							>
+								Email
+							</label>
+						</div>
+						<div className="relative">
+							<input
+								type="password"
+								id="password"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								className="w-full px-3 py-2 text-gray-900 placeholder-transparent border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 peer"
+								placeholder="Password"
+								required
+							/>
+							<label
+								htmlFor="password"
+								className="absolute left-3 top-0 px-1 text-sm text-gray-600 bg-white transition-all transform -translate-y-3 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-2 peer-focus:scale-75 peer-focus:-translate-y-3"
+							>
+								Password
+							</label>
+						</div>
+						<button
+							type="submit"
+							className="w-full py-2 font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-600 transition duration-200"
 						>
-							Forgot Password?
-						</Link>
+							{isLogin ? "Login" : "Sign Up"}
+						</button>
+					</form>
+					<div className="text-center mt-4">
+						{isLogin ? (
+							<p className="text-gray-600">
+								Don't have an account?{" "}
+								<span
+									onClick={() => setIsLogin(false)}
+									className="text-indigo-500 cursor-pointer hover:underline"
+								>
+									Sign up Now!
+								</span>
+							</p>
+						) : (
+							<p className="text-gray-600">
+								Already have an account?{" "}
+								<span
+									onClick={() => setIsLogin(true)}
+									className="text-indigo-500 cursor-pointer hover:underline"
+								>
+									Login Here!
+								</span>
+							</p>
+						)}
 					</div>
-				)}
-			</div>
+					{isLogin && (
+						<div className="text-center mt-2">
+							<Link
+								to="/forgot-password"
+								className="text-indigo-500 hover:underline"
+							>
+								Forgot Password?
+							</Link>
+						</div>
+					)}
+				</div>
+			</Transition>
 		</div>
 	);
 };
