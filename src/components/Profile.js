@@ -1,93 +1,98 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-	const [profile, setProfile] = useState({ fullName: "", email: "" });
-	const [password, setPassword] = useState("");
-	const [loading, setLoading] = useState(false);
+	const [user, setUser] = useState(null);
+	const [loading, setLoading] = useState(true);
+	const [newPassword, setNewPassword] = useState("");
+	const [message, setMessage] = useState("");
+	const navigate = useNavigate();
 
 	useEffect(() => {
-		const fetchProfile = async () => {
+		const fetchUserProfile = async () => {
 			const {
-				data: { session },
-			} = await supabase.auth.getSession();
+				data: { user },
+				error,
+			} = await supabase.auth.getUser();
 
-			if (session) {
-				setProfile({
-					fullName: session.user.user_metadata.full_name || "",
-					email: session.user.email || "",
-				});
+			if (error) {
+				setMessage("Error fetching user details: " + error.message);
+			} else {
+				setUser(user);
 			}
+			setLoading(false);
 		};
 
-		fetchProfile();
+		fetchUserProfile();
 	}, []);
 
-	const handleUpdate = async () => {
+	const handleUpdatePassword = async () => {
 		setLoading(true);
+		const { error } = await supabase.auth.updateUser({ password: newPassword });
 
-		// Update full name and email
-		const updates = {
-			data: {
-				full_name: profile.fullName,
-			},
-			email: profile.email,
-		};
-
-		const { error: updateError } = await supabase.auth.updateUser(updates);
-
-		// Update password if provided
-		if (password) {
-			const { error: passwordError } = await supabase.auth.updateUser({
-				password,
-			});
-			if (passwordError) {
-				setLoading(false);
-				return console.error("Error updating password:", passwordError);
-			}
-		}
-
-		if (updateError) {
-			console.error("Error updating profile:", updateError);
+		if (error) {
+			setMessage("Error updating password: " + error.message);
 		} else {
-			console.log("Profile updated successfully");
+			setMessage(
+				"Password updated successfully. You will be logged out to reauthenticate."
+			);
+			await supabase.auth.signOut(); // Log the user out
+			navigate("/auth"); // Redirect to login page
 		}
-
 		setLoading(false);
 	};
 
+	if (loading) {
+		return <div>Loading...</div>;
+	}
+
 	return (
-		<div className="container mx-auto p-4">
-			<h2 className="text-2xl font-bold mb-4">Profile</h2>
-			<div>
-				<input
-					type="text"
-					value={profile.fullName}
-					onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
-					placeholder="Full Name"
-					className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-				/>
-				<input
-					type="email"
-					value={profile.email}
-					onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-					placeholder="Email"
-					className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-				/>
-				<input
-					type="password"
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					placeholder="New Password (leave blank to keep current)"
-					className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-				/>
-				<button
-					onClick={handleUpdate}
-					className="px-4 py-2 bg-green-500 text-white rounded"
-					disabled={loading}
-				>
-					{loading ? "Updating..." : "Update Profile"}
-				</button>
+		<div className="flex items-center justify-center min-h-screen bg-gray-100">
+			<div className="w-full max-w-md p-8 space-y-8 bg-white shadow-lg rounded-lg">
+				<h2 className="text-2xl font-bold text-center">Your Profile</h2>
+
+				{user ? (
+					<div>
+						<div className="mb-4">
+							<label className="block text-gray-700 text-sm font-bold mb-2">
+								Name
+							</label>
+							<p className="border border-gray-300 p-2 rounded bg-gray-100">
+								{user.user_metadata?.full_name || "N/A"}
+							</p>
+						</div>
+						<div className="mb-4">
+							<label className="block text-gray-700 text-sm font-bold mb-2">
+								Email
+							</label>
+							<p className="border border-gray-300 p-2 rounded bg-gray-100">
+								{user.email}
+							</p>
+						</div>
+						<div className="mb-4">
+							<label className="block text-gray-700 text-sm font-bold mb-2">
+								Update Password
+							</label>
+							<input
+								type="password"
+								value={newPassword}
+								onChange={(e) => setNewPassword(e.target.value)}
+								placeholder="New Password"
+								className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							/>
+							<button
+								onClick={handleUpdatePassword}
+								className="w-full py-2 font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-600"
+							>
+								Update Password
+							</button>
+						</div>
+						{message && <p>{message}</p>}
+					</div>
+				) : (
+					<p>No user details found.</p>
+				)}
 			</div>
 		</div>
 	);
