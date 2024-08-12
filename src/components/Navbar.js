@@ -3,7 +3,6 @@ import { supabase } from "../lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { MdMinimize, MdClose, MdCropSquare } from "react-icons/md"; // Importing icons from react-icons
 
-// Conditional import of Electron's remote module
 let remote;
 if (typeof window !== "undefined" && window.require) {
 	remote = window.require("@electron/remote");
@@ -18,7 +17,11 @@ const Navbar = ({ onOpenTaskModal }) => {
 			const {
 				data: { session },
 			} = await supabase.auth.getSession();
-			setSession(session);
+			if (session && session.user.last_sign_in_at !== null) {
+				setSession(session);
+			} else {
+				setSession(null);
+			}
 		};
 
 		fetchSession();
@@ -26,7 +29,11 @@ const Navbar = ({ onOpenTaskModal }) => {
 		const {
 			data: { subscription },
 		} = supabase.auth.onAuthStateChange((_event, session) => {
-			setSession(session);
+			if (session && session.user.last_sign_in_at !== null) {
+				setSession(session);
+			} else {
+				setSession(null);
+			}
 		});
 
 		return () => {
@@ -36,8 +43,8 @@ const Navbar = ({ onOpenTaskModal }) => {
 
 	const handleLogout = async () => {
 		await supabase.auth.signOut();
-		setSession(null); // Ensure session is cleared on logout
-		localStorage.clear(); // Clear any local storage that might hold session data
+		setSession(null);
+		localStorage.clear();
 		navigate("/auth");
 	};
 
@@ -63,14 +70,14 @@ const Navbar = ({ onOpenTaskModal }) => {
 	return (
 		<nav
 			className="bg-indigo-500 p-4 shadow-lg flex justify-between items-center select-none"
-			style={{ WebkitAppRegion: "drag" }} // Makes the entire navbar draggable
-			onDoubleClick={handleMaximizeToggle} // Handle double-click to maximize/restore
+			style={{ WebkitAppRegion: "drag" }}
+			onDoubleClick={handleMaximizeToggle}
 		>
 			<div className="flex items-center space-x-4">
 				<h1
 					className="text-white text-2xl font-bold cursor-pointer"
 					onClick={() => navigate("/")}
-					style={{ WebkitAppRegion: "no-drag" }} // Exclude the title from dragging
+					style={{ WebkitAppRegion: "no-drag" }}
 				>
 					SwiftTasks
 				</h1>
@@ -109,7 +116,6 @@ const Navbar = ({ onOpenTaskModal }) => {
 					</button>
 				)}
 			</div>
-			{/* Conditionally render Electron window controls */}
 			{remote && (
 				<div
 					className="flex items-center space-x-2"
