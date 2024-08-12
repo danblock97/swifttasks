@@ -241,9 +241,34 @@ const TaskDetail = ({ task, fetchTasks }) => {
 					<div>
 						<h3 className="text-xl font-bold mb-2">{title}</h3>
 						<p className="text-gray-700 mb-2">{description}</p>
-						<p className="text-gray-600 mb-2">Due Date: {dueDate}</p>
-						<p className="text-gray-600 mb-2">Priority: {priority}</p>
-						<p className="text-gray-600 mb-2">Status: {status}</p>
+
+						{/* Due Date */}
+						<p className="text-gray-600 mb-2">
+							<span className="font-semibold">Due Date:</span>{" "}
+							<span className="font-medium">{dueDate}</span>
+						</p>
+
+						{/* Priority */}
+						<p className="text-gray-600 mb-2">
+							<span className="font-semibold">Priority:</span>
+							<span
+								className={`font-medium ml-2 capitalize ${
+									priority === "low"
+										? "text-green-600"
+										: priority === "medium"
+										? "text-orange-600"
+										: "text-red-600"
+								}`}
+							>
+								{priority}
+							</span>
+						</p>
+
+						{/* Status */}
+						<p className="text-gray-600 mb-2">
+							<span className="font-semibold">Status:</span>{" "}
+							<span className="font-medium">{status}</span>
+						</p>
 						<div className="flex justify-end space-x-2">
 							<button
 								onClick={() => setIsEditing(true)}
