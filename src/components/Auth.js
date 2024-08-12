@@ -232,6 +232,23 @@ const Auth = () => {
 							</Link>
 						</div>
 					)}
+					<div className="text-center mt-6 text-sm text-gray-600">
+						By authenticating with SwiftTasks, you agree to our{" "}
+						<Link
+							to="/terms-of-service"
+							className="text-indigo-500 hover:underline"
+						>
+							Terms of Service
+						</Link>{" "}
+						and{" "}
+						<Link
+							to="/privacy-policy"
+							className="text-indigo-500 hover:underline"
+						>
+							Privacy Policy
+						</Link>
+						.
+					</div>
 				</div>
 			</Transition>
 		</div>

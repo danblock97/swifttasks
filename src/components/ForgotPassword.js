@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 const ForgotPassword = () => {
 	const [email, setEmail] = useState("");
 	const [otp, setOtp] = useState("");
-	const [step, setStep] = useState(1); // Step 1: Enter email, Step 2: Enter OTP
+	const [step, setStep] = useState(1);
 	const [message, setMessage] = useState("");
 	const navigate = useNavigate();
 
@@ -14,8 +14,8 @@ const ForgotPassword = () => {
 			const { error } = await supabase.auth.signInWithOtp({
 				email,
 				options: {
-					emailRedirectTo: "http://localhost:3000/otp-token", // Adjust your redirect URL as needed
-					shouldCreateUser: false, // Ensure that no new user is created
+					emailRedirectTo: process.env.REACT_APP_URL + "/otp-token",
+					shouldCreateUser: false,
 				},
 			});
 
@@ -23,7 +23,7 @@ const ForgotPassword = () => {
 				setMessage("Error: " + error.message);
 			} else {
 				setMessage("OTP has been sent to your email!");
-				setStep(2); // Move to the next step to enter OTP
+				setStep(2);
 			}
 		} catch (error) {
 			setMessage("Error: " + error.message);
@@ -35,7 +35,7 @@ const ForgotPassword = () => {
 			const { error } = await supabase.auth.verifyOtp({
 				email,
 				token: otp,
-				type: "magiclink", // Use 'magiclink' for OTP verification
+				type: "magiclink",
 				options: {
 					shouldCreateUser: false,
 				},
@@ -45,7 +45,7 @@ const ForgotPassword = () => {
 				setMessage("Error: " + error.message);
 			} else {
 				setMessage("OTP verified! Redirecting to your profile...");
-				navigate("/profile"); // Redirect to profile page after successful OTP verification
+				navigate("/profile");
 			}
 		} catch (error) {
 			setMessage("Error: " + error.message);

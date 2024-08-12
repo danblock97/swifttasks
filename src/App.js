@@ -15,10 +15,13 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import TaskModal from "./components/TaskModal";
 import Homepage from "./components/Homepage";
-import OtpToken from "./components/OtpToken"; // Import OtpToken component
+import OtpToken from "./components/OtpToken";
+import TermsOfService from "./components/TermsOfService";
+import PrivacyPolicy from "./components/PrivacyPolicy";
 import { supabase } from "./lib/supabaseClient";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Footer from "./components/Footer";
 
 const App = () => {
 	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -74,8 +77,9 @@ const App = () => {
 				<Route path="/auth" element={<Auth />} />
 				<Route path="/verify-email" element={<EmailVerification />} />
 				<Route path="/forgot-password" element={<ForgotPassword />} />
-				<Route path="/otp-token" element={<OtpToken />} />{" "}
-				{/* Add route for OtpToken */}
+				<Route path="/otp-token" element={<OtpToken />} />
+				<Route path="/terms-of-service" element={<TermsOfService />} />{" "}
+				<Route path="/privacy-policy" element={<PrivacyPolicy />} />{" "}
 				<Route element={<ProtectedRoute session={session} />}>
 					<Route
 						path="/tasks"
@@ -96,6 +100,7 @@ const App = () => {
 				fetchTasks={fetchTasksCallback}
 			/>
 			<ToastContainer />
+			<Footer />
 		</Router>
 	);
 };
