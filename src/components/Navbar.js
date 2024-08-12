@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
-import { MdMinimize, MdClose, MdCropSquare } from "react-icons/md"; // Importing icons from react-icons
+import { MdMinimize, MdClose, MdCropSquare } from "react-icons/md";
 
 let remote;
 if (typeof window !== "undefined" && window.require) {
@@ -10,6 +10,8 @@ if (typeof window !== "undefined" && window.require) {
 
 const Navbar = ({ onOpenTaskModal }) => {
 	const [session, setSession] = useState(null);
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const dropdownRef = useRef(null);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -67,6 +69,23 @@ const Navbar = ({ onOpenTaskModal }) => {
 		if (remote) remote.getCurrentWindow().close();
 	};
 
+	const toggleDropdown = () => {
+		setIsDropdownOpen(!isDropdownOpen);
+	};
+
+	const closeDropdown = (event) => {
+		if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+			setIsDropdownOpen(false);
+		}
+	};
+
+	useEffect(() => {
+		document.addEventListener("mousedown", closeDropdown);
+		return () => {
+			document.removeEventListener("mousedown", closeDropdown);
+		};
+	}, []);
+
 	return (
 		<nav
 			className="bg-indigo-500 p-4 shadow-lg flex justify-between items-center select-none"
@@ -83,26 +102,50 @@ const Navbar = ({ onOpenTaskModal }) => {
 				</h1>
 			</div>
 			<div
-				className="flex items-center space-x-4"
+				className="flex items-center space-x-6"
 				style={{ WebkitAppRegion: "no-drag" }}
 			>
 				{session ? (
 					<>
 						<button
 							onClick={() => navigate("/profile")}
-							className="px-4 py-2 text-indigo-500 bg-white font-semibold rounded hover:bg-gray-200"
+							className="text-white cursor-pointer hover:text-gray-200 bg-transparent border-0 p-0"
 						>
 							Profile
 						</button>
-						<button
-							onClick={onOpenTaskModal}
-							className="px-4 py-2 text-indigo-500 bg-white font-semibold rounded hover:bg-gray-200"
-						>
-							Create Task
-						</button>
+						<div className="relative" ref={dropdownRef}>
+							<button
+								onClick={toggleDropdown}
+								className="text-white cursor-pointer hover:text-gray-200 bg-transparent border-0 p-0"
+							>
+								Tasks
+							</button>
+							{isDropdownOpen && (
+								<div className="absolute left-0 mt-2 bg-white rounded shadow-lg w-40 z-50">
+									<button
+										onClick={() => {
+											navigate("/tasks");
+											setIsDropdownOpen(false);
+										}}
+										className="block px-4 py-2 text-indigo-500 hover:bg-gray-200 text-left w-full"
+									>
+										View Tasks
+									</button>
+									<button
+										onClick={() => {
+											onOpenTaskModal();
+											setIsDropdownOpen(false);
+										}}
+										className="block px-4 py-2 text-indigo-500 hover:bg-gray-200 text-left w-full"
+									>
+										Create Task
+									</button>
+								</div>
+							)}
+						</div>
 						<button
 							onClick={handleLogout}
-							className="px-4 py-2 text-white bg-red-500 font-semibold rounded hover:bg-red-600"
+							className="text-white cursor-pointer hover:text-gray-200 bg-transparent border-0 p-0"
 						>
 							Logout
 						</button>
@@ -110,7 +153,7 @@ const Navbar = ({ onOpenTaskModal }) => {
 				) : (
 					<button
 						onClick={handleLogin}
-						className="px-4 py-2 text-white bg-indigo-500 font-semibold border border-white rounded hover:bg-indigo-600"
+						className="text-white cursor-pointer hover:text-gray-200 bg-transparent border-0 p-0"
 					>
 						Login
 					</button>
