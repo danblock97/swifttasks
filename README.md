@@ -1,31 +1,19 @@
-## SwiftTasks v1.0.0
+# SwiftTasks v1.1.0 - Release Notes
 
-We are thrilled to announce the release of SwiftTasks v1.0.0! This version includes several enhancements, bug fixes, and new features to improve your experience.
+## 🚀 New Features
 
-### What's New
+- **Responsive Design**: We've implemented a full responsive design for the entire application, ensuring a seamless experience from mobile devices to desktop screens.
 
-- **OTP Auth Tokens for Password Recovery**  
-  We've fixed the bug related to password recovery by introducing One-Time Password (OTP) authentication tokens sent via email. This enhances the security and reliability of account recovery.
+## 🐛 Bug Fixes
 
-- **New Logo**  
-  SwiftTasks now features a brand-new logo, giving the app a refreshed visual identity.
+- **Footer Positioning**: Fixed an issue where the footer was appearing at the bottom of individual components instead of staying at the bottom of the screen.
 
-- **Readability Improvements to Task Details**  
-  We've made improvements to the readability of Task Details, making it easier to view and manage your tasks.
+## 🔗 Useful Links
 
-- **Legal ToS and Privacy Policy**  
-  Added Terms of Service (ToS) and Privacy Policy for better legal clarity and protection.
+- **(https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v1.1.0/SwiftTasks.Setup.1.1.0.exe)**
 
-- **Enhanced Signup/Login Forms**  
-  We've improved the authentication forms with better styling and smoother animations for a more polished user experience.
+- **[Visit our Website](https://swifttasks.co.uk)**
 
-- **Navbar Enhancements**  
-  The look and feel of the navbar have been significantly improved for a cleaner and more intuitive navigation experience.
+---
 
-### Download
-
-[Download SwiftTasks v0.1.0 for Windows](https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v1.0.0/SwiftTasks.Setup.1.0.0.exe)
-
-### Visit Our Website
-
-For more information, visit our website: [swifttasks.co.uk](https://swifttasks.co.uk).
+Thank you for using SwiftTasks! We appreciate your feedback and support. If you encounter any issues or have suggestions, feel free to [open an issue](https://github.com/danblock97/swifttasks/issues) on GitHub.
