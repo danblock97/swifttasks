@@ -2,6 +2,8 @@ const { app, BrowserWindow } = require("electron");
 const path = require("path");
 const remoteMain = require("@electron/remote/main");
 
+require("update-electron-app")();
+
 remoteMain.initialize();
 
 async function createWindow() {
