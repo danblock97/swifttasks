@@ -14,17 +14,17 @@ async function createWindow() {
 	win = new BrowserWindow({
 		width: 1280,
 		height: 720,
-		frame: false, // Remove window border
-		icon: path.join(__dirname, "assets", "logo.ico"), // Path to your icon file
+		frame: false,
+		icon: path.join(__dirname, "assets", "logo.ico"),
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
-			enableRemoteModule: true, // Important for enabling remote access
+			enableRemoteModule: true,
 		},
 		show: false, // Initially hide the window
 	});
 
-	remoteMain.enable(win.webContents); // Enable remote module for this window
+	remoteMain.enable(win.webContents);
 
 	// Load the splash screen
 	win.loadURL(`file://${path.join(__dirname, "assets", "splash.html")}`);

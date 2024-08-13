@@ -35,7 +35,7 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 				user_id: user.id,
 			};
 
-			const { data, error } = await supabase
+			const { error } = await supabase
 				.from("tasks")
 				.insert([taskData])
 				.select();

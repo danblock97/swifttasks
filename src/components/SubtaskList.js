@@ -39,8 +39,8 @@ const SubtaskList = ({
 	const handleCloseSubtaskModal = async () => {
 		setSelectedSubtask(null);
 		setIsSubtaskModalOpen(false);
-		await fetchSubtasks(); // Refresh the subtask list after closing the modal
-		fetchTasks(); // Also refresh the task list
+		await fetchSubtasks();
+		fetchTasks();
 	};
 
 	useEffect(() => {

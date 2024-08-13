@@ -37,8 +37,8 @@ const Profile = () => {
 			setMessage(
 				"Password updated successfully. You will be logged out to reauthenticate."
 			);
-			await supabase.auth.signOut(); // Log the user out
-			navigate("/auth"); // Redirect to login page
+			await supabase.auth.signOut();
+			navigate("/auth");
 		}
 		setLoading(false);
 	};
