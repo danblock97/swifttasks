@@ -149,9 +149,9 @@ const TaskDetail = ({ task, fetchTasks }) => {
 	};
 
 	return (
-		<div className="p-6 flex">
+		<div className="p-6 flex flex-col md:flex-row">
 			<div
-				className={`w-2 h-auto mr-4 ${
+				className={`w-full md:w-2 h-2 md:h-auto md:mr-4 mb-4 md:mb-0 ${
 					task.priority === "low"
 						? "bg-green-500"
 						: task.priority === "medium"

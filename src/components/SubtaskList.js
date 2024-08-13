@@ -52,9 +52,9 @@ const SubtaskList = ({
 			<ul>
 				{subtasks.map((subtask) => (
 					<li key={subtask.id} className="mb-4">
-						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg mt-4 transition-shadow bg-white flex">
+						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white flex flex-col md:flex-row">
 							<div
-								className={`w-2 h-full mr-4 ${
+								className={`w-2 h-auto md:h-full mb-4 md:mb-0 md:mr-4 ${
 									subtask.priority === "low"
 										? "bg-green-500"
 										: subtask.priority === "medium"
@@ -63,9 +63,9 @@ const SubtaskList = ({
 								}`}
 							></div>
 							<div className="flex-1">
-								<div className="flex justify-between items-center mb-2">
+								<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
 									<p className="font-semibold text-lg">{subtask.title}</p>
-									<div className="flex items-center">
+									<div className="flex mt-2 md:mt-0">
 										<button
 											onClick={() => handleEditSubtask(subtask)}
 											className="text-blue-500 hover:text-blue-700 mr-2"

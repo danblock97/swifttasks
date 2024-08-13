@@ -71,36 +71,40 @@ const App = () => {
 
 	return (
 		<Router>
-			<Navbar onOpenTaskModal={handleOpenTaskModal} />
-			<Routes>
-				<Route path="/" element={<Homepage />} />
-				<Route path="/auth" element={<Auth />} />
-				<Route path="/verify-email" element={<EmailVerification />} />
-				<Route path="/forgot-password" element={<ForgotPassword />} />
-				<Route path="/otp-token" element={<OtpToken />} />
-				<Route path="/terms-of-service" element={<TermsOfService />} />{" "}
-				<Route path="/privacy-policy" element={<PrivacyPolicy />} />{" "}
-				<Route element={<ProtectedRoute session={session} />}>
-					<Route
-						path="/tasks"
-						element={
-							<TaskList
-								onOpenTaskModal={handleOpenTaskModal}
-								setFetchTasksCallback={setFetchTasksCallback}
+			<div className="flex flex-col min-h-screen">
+				<Navbar onOpenTaskModal={handleOpenTaskModal} />
+				<div className="flex-grow">
+					<Routes>
+						<Route path="/" element={<Homepage />} />
+						<Route path="/auth" element={<Auth />} />
+						<Route path="/verify-email" element={<EmailVerification />} />
+						<Route path="/forgot-password" element={<ForgotPassword />} />
+						<Route path="/otp-token" element={<OtpToken />} />
+						<Route path="/terms-of-service" element={<TermsOfService />} />
+						<Route path="/privacy-policy" element={<PrivacyPolicy />} />
+						<Route element={<ProtectedRoute session={session} />}>
+							<Route
+								path="/tasks"
+								element={
+									<TaskList
+										onOpenTaskModal={handleOpenTaskModal}
+										setFetchTasksCallback={setFetchTasksCallback}
+									/>
+								}
 							/>
-						}
-					/>
-					<Route path="/profile" element={<Profile />} />
-				</Route>
-				<Route path="*" element={<Navigate to="/" />} />
-			</Routes>
-			<TaskModal
-				isOpen={isTaskModalOpen}
-				onClose={handleCloseTaskModal}
-				fetchTasks={fetchTasksCallback}
-			/>
-			<ToastContainer />
-			<Footer />
+							<Route path="/profile" element={<Profile />} />
+						</Route>
+						<Route path="*" element={<Navigate to="/" />} />
+					</Routes>
+				</div>
+				<TaskModal
+					isOpen={isTaskModalOpen}
+					onClose={handleCloseTaskModal}
+					fetchTasks={fetchTasksCallback}
+				/>
+				<ToastContainer />
+				<Footer />
+			</div>
 		</Router>
 	);
 };

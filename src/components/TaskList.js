@@ -78,9 +78,9 @@ const TaskList = ({ onOpenTaskModal }) => {
 	}
 
 	return (
-		<div className="flex">
-			<div className="w-1/3 p-4">
-				<h2 className="text-2xl font-bold mb-4">Your Tasks</h2>
+		<div className="flex flex-col md:flex-row">
+			<div className="w-full md:w-1/3 p-4">
+				<h2 className="text-xl md:text-2xl font-bold mb-4">Your Tasks</h2>
 				<ul>
 					{tasks.map((task) => (
 						<li key={task.id} onClick={() => handleTaskClick(task)}>
@@ -110,7 +110,7 @@ const TaskList = ({ onOpenTaskModal }) => {
 					))}
 				</ul>
 			</div>
-			<div className="w-2/3 p-4">
+			<div className="w-full md:w-2/3 p-4">
 				{selectedTask && (
 					<TaskDetail task={selectedTask} fetchTasks={fetchTasks} />
 				)}
