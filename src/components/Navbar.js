@@ -2,11 +2,17 @@ import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { MdMinimize, MdClose, MdCropSquare } from "react-icons/md";
-import { FaCloudDownloadAlt } from "react-icons/fa"; // Add this line for the download icon
-const { ipcRenderer } = window.require("electron");
+import { FaCloudDownloadAlt } from "react-icons/fa";
 
+let ipcRenderer;
 let remote;
-if (typeof window !== "undefined" && window.require) {
+
+if (
+	typeof window !== "undefined" &&
+	window.process &&
+	window.process.type === "renderer"
+) {
+	ipcRenderer = window.require("electron").ipcRenderer;
 	remote = window.require("@electron/remote");
 }
 
@@ -18,18 +24,22 @@ const Navbar = ({ onOpenTaskModal }) => {
 	const [updateAvailable, setUpdateAvailable] = useState(false);
 
 	useEffect(() => {
-		ipcRenderer.on("update_available", () => {
-			setUpdateAvailable(true);
-		});
+		if (ipcRenderer) {
+			ipcRenderer.on("update_available", () => {
+				setUpdateAvailable(true);
+			});
 
-		ipcRenderer.on("update_downloaded", () => {
-			ipcRenderer.removeAllListeners("update_available");
-			ipcRenderer.removeAllListeners("update_downloaded");
-		});
+			ipcRenderer.on("update_downloaded", () => {
+				ipcRenderer.removeAllListeners("update_available");
+				ipcRenderer.removeAllListeners("update_downloaded");
+			});
+		}
 
 		return () => {
-			ipcRenderer.removeAllListeners("update_available");
-			ipcRenderer.removeAllListeners("update_downloaded");
+			if (ipcRenderer) {
+				ipcRenderer.removeAllListeners("update_available");
+				ipcRenderer.removeAllListeners("update_downloaded");
+			}
 		};
 	}, []);
 
@@ -99,7 +109,9 @@ const Navbar = ({ onOpenTaskModal }) => {
 	};
 
 	const handleUpdate = () => {
-		ipcRenderer.send("restart_app");
+		if (ipcRenderer) {
+			ipcRenderer.send("restart_app");
+		}
 	};
 
 	useEffect(() => {
