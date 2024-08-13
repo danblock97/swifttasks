@@ -52,7 +52,7 @@ const SubtaskList = ({
 			<ul>
 				{subtasks.map((subtask) => (
 					<li key={subtask.id} className="mb-4">
-						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white flex flex-col md:flex-row">
+						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg mt-4 transition-shadow bg-white flex flex-col md:flex-row">
 							<div
 								className={`w-2 h-auto md:h-full mb-4 md:mb-0 md:mr-4 ${
 									subtask.priority === "low"
