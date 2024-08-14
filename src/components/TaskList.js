@@ -3,11 +3,14 @@ import { supabase } from "../lib/supabaseClient";
 import TaskDetail from "./TaskDetail";
 import NoTasks from "./NoTasks";
 import TaskModal from "./TaskModal";
+import { toast } from "react-toastify";
 
 const TaskList = ({ onOpenTaskModal }) => {
 	const [tasks, setTasks] = useState([]);
 	const [selectedTask, setSelectedTask] = useState(null);
 	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+	const [shownNotifications, setShownNotifications] = useState(new Set()); // Use Set to track shown notifications
+	const [notificationChecked, setNotificationChecked] = useState(false); // Track if notifications have been checked
 
 	const fetchTasks = useCallback(async (selectLastTask = false) => {
 		const {
@@ -46,9 +49,39 @@ const TaskList = ({ onOpenTaskModal }) => {
 		}
 	}, []);
 
+	const checkForDueOrOverdueTasks = useCallback(() => {
+		if (notificationChecked) return; // Ensure this runs only once
+
+		const today = new Date().toDateString();
+
+		tasks.forEach((task) => {
+			if (shownNotifications.has(task.id)) return; // Skip if notification already shown
+
+			const taskDueDate = new Date(task.due_date).toDateString();
+			const isOverdue = taskDueDate < today && task.status !== "done";
+			const isDueToday = taskDueDate === today && task.status !== "done";
+
+			if (isDueToday) {
+				toast.info(`You have tasks due today: "${task.title}"`);
+				setShownNotifications((prev) => new Set(prev).add(task.id)); // Mark as shown
+			} else if (isOverdue) {
+				toast.warning(`You have overdue tasks: "${task.title}"`);
+				setShownNotifications((prev) => new Set(prev).add(task.id)); // Mark as shown
+			}
+		});
+
+		setNotificationChecked(true); // Mark as checked to avoid rerunning
+	}, [tasks, shownNotifications, notificationChecked]);
+
 	useEffect(() => {
 		fetchTasks();
 	}, [fetchTasks]);
+
+	useEffect(() => {
+		if (tasks.length > 0) {
+			checkForDueOrOverdueTasks();
+		}
+	}, [tasks, checkForDueOrOverdueTasks]);
 
 	const handleTaskClick = (task) => {
 		setSelectedTask(task);
