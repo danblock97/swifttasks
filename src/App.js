@@ -23,6 +23,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Footer from "./components/Footer";
 import Loading from "./components/Loading";
+import { DarkModeProvider } from "./context/DarkModeContext"; // Import DarkModeProvider
 
 const App = () => {
 	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -71,42 +72,44 @@ const App = () => {
 	const Router = isElectron ? ElectronRouter : WebRouter;
 
 	return (
-		<Router>
-			<div className="flex flex-col min-h-screen">
-				<Navbar onOpenTaskModal={handleOpenTaskModal} />
-				<div className="flex-grow">
-					<Routes>
-						<Route path="/" element={<Homepage />} />
-						<Route path="/auth" element={<Auth />} />
-						<Route path="/verify-email" element={<EmailVerification />} />
-						<Route path="/forgot-password" element={<ForgotPassword />} />
-						<Route path="/otp-token" element={<OtpToken />} />
-						<Route path="/terms-of-service" element={<TermsOfService />} />
-						<Route path="/privacy-policy" element={<PrivacyPolicy />} />
-						<Route element={<ProtectedRoute session={session} />}>
-							<Route
-								path="/tasks"
-								element={
-									<TaskList
-										onOpenTaskModal={handleOpenTaskModal}
-										setFetchTasksCallback={setFetchTasksCallback}
-									/>
-								}
-							/>
-							<Route path="/profile" element={<Profile />} />
-						</Route>
-						<Route path="*" element={<Navigate to="/" />} />
-					</Routes>
+		<DarkModeProvider>
+			<Router>
+				<div className="flex flex-col min-h-screen">
+					<Navbar onOpenTaskModal={handleOpenTaskModal} />
+					<div className="flex-grow">
+						<Routes>
+							<Route path="/" element={<Homepage />} />
+							<Route path="/auth" element={<Auth />} />
+							<Route path="/verify-email" element={<EmailVerification />} />
+							<Route path="/forgot-password" element={<ForgotPassword />} />
+							<Route path="/otp-token" element={<OtpToken />} />
+							<Route path="/terms-of-service" element={<TermsOfService />} />
+							<Route path="/privacy-policy" element={<PrivacyPolicy />} />
+							<Route element={<ProtectedRoute session={session} />}>
+								<Route
+									path="/tasks"
+									element={
+										<TaskList
+											onOpenTaskModal={handleOpenTaskModal}
+											setFetchTasksCallback={setFetchTasksCallback}
+										/>
+									}
+								/>
+								<Route path="/profile" element={<Profile />} />
+							</Route>
+							<Route path="*" element={<Navigate to="/" />} />
+						</Routes>
+					</div>
+					<TaskModal
+						isOpen={isTaskModalOpen}
+						onClose={handleCloseTaskModal}
+						fetchTasks={fetchTasksCallback}
+					/>
+					<ToastContainer />
+					<Footer />
 				</div>
-				<TaskModal
-					isOpen={isTaskModalOpen}
-					onClose={handleCloseTaskModal}
-					fetchTasks={fetchTasksCallback}
-				/>
-				<ToastContainer />
-				<Footer />
-			</div>
-		</Router>
+			</Router>
+		</DarkModeProvider>
 	);
 };
 

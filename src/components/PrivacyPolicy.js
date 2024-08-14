@@ -2,8 +2,8 @@ import React from "react";
 
 const PrivacyPolicy = () => {
 	return (
-		<div className="max-w-3xl mx-auto p-6 bg-white text-gray-800">
-			<h1 className="text-3xl font-bold text-indigo-500 mb-4">
+		<div className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300">
+			<h1 className="text-3xl font-bold text-indigo-500 dark:text-indigo-300 mb-4">
 				Privacy Policy
 			</h1>
 			<p className="mb-4">
@@ -12,7 +12,7 @@ const PrivacyPolicy = () => {
 				you use our Service.
 			</p>
 
-			<h2 className="text-2xl font-semibold text-indigo-500 mt-6 mb-2">
+			<h2 className="text-2xl font-semibold text-indigo-500 dark:text-indigo-300 mt-6 mb-2">
 				1. Information We Collect
 			</h2>
 			<p className="mb-4">
@@ -21,7 +21,7 @@ const PrivacyPolicy = () => {
 				account creation, authentication, and communication purposes.
 			</p>
 
-			<h2 className="text-2xl font-semibold text-indigo-500 mt-6 mb-2">
+			<h2 className="text-2xl font-semibold text-indigo-500 dark:text-indigo-300 mt-6 mb-2">
 				2. How We Use Your Information
 			</h2>
 			<p className="mb-4">
@@ -31,7 +31,7 @@ const PrivacyPolicy = () => {
 				law or with your explicit consent.
 			</p>
 
-			<h2 className="text-2xl font-semibold text-indigo-500 mt-6 mb-2">
+			<h2 className="text-2xl font-semibold text-indigo-500 dark:text-indigo-300 mt-6 mb-2">
 				3. Data Security
 			</h2>
 			<p className="mb-4">
@@ -41,7 +41,7 @@ const PrivacyPolicy = () => {
 				guarantee absolute security.
 			</p>
 
-			<h2 className="text-2xl font-semibold text-indigo-500 mt-6 mb-2">
+			<h2 className="text-2xl font-semibold text-indigo-500 dark:text-indigo-300 mt-6 mb-2">
 				4. Your Rights
 			</h2>
 			<p className="mb-4">
@@ -50,7 +50,7 @@ const PrivacyPolicy = () => {
 				please contact us at support@swifttasks.com.
 			</p>
 
-			<h2 className="text-2xl font-semibold text-indigo-500 mt-6 mb-2">
+			<h2 className="text-2xl font-semibold text-indigo-500 dark:text-indigo-300 mt-6 mb-2">
 				5. Changes to This Policy
 			</h2>
 			<p className="mb-4">
@@ -60,12 +60,18 @@ const PrivacyPolicy = () => {
 				of the updated policy.
 			</p>
 
-			<h2 className="text-2xl font-semibold text-indigo-500 mt-6 mb-2">
+			<h2 className="text-2xl font-semibold text-indigo-500 dark:text-indigo-300 mt-6 mb-2">
 				6. Contact Us
 			</h2>
 			<p className="mb-4">
 				If you have any questions about this Privacy Policy, please contact{" "}
-				<a href="mailto:danblock1997@hotmail.co.uk">SwiftTasks Support.</a>
+				<a
+					href="mailto:danblock1997@hotmail.co.uk"
+					className="text-indigo-500 dark:text-indigo-300 underline"
+				>
+					SwiftTasks Support
+				</a>
+				.
 			</p>
 		</div>
 	);

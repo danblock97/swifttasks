@@ -78,14 +78,14 @@ const TaskList = ({ onOpenTaskModal }) => {
 	}
 
 	return (
-		<div className="flex flex-col md:flex-row">
+		<div className="flex flex-col md:flex-row h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300">
 			<div className="w-full md:w-1/3 p-4">
 				<h2 className="text-xl md:text-2xl font-bold mb-4">Your Tasks</h2>
 				<ul>
 					{tasks.map((task) => (
 						<li key={task.id} onClick={() => handleTaskClick(task)}>
 							<div
-								className={`task-item hover:bg-gray-100 p-4 mb-2 rounded-lg shadow-md flex`}
+								className={`task-item hover:bg-gray-100 dark:hover:bg-gray-800 p-4 mb-2 rounded-lg shadow-md flex`}
 							>
 								<div
 									className={`w-2 h-full mr-4 ${
