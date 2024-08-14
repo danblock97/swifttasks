@@ -2,9 +2,17 @@ import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { MdMinimize, MdClose, MdCropSquare } from "react-icons/md";
+import { FaCloudDownloadAlt } from "react-icons/fa";
 
+let ipcRenderer;
 let remote;
-if (typeof window !== "undefined" && window.require) {
+
+if (
+	typeof window !== "undefined" &&
+	window.process &&
+	window.process.type === "renderer"
+) {
+	ipcRenderer = window.require("electron").ipcRenderer;
 	remote = window.require("@electron/remote");
 }
 
@@ -13,6 +21,27 @@ const Navbar = ({ onOpenTaskModal }) => {
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const dropdownRef = useRef(null);
 	const navigate = useNavigate();
+	const [updateAvailable, setUpdateAvailable] = useState(false);
+
+	useEffect(() => {
+		if (ipcRenderer) {
+			ipcRenderer.on("update_available", () => {
+				setUpdateAvailable(true);
+			});
+
+			ipcRenderer.on("update_downloaded", () => {
+				ipcRenderer.removeAllListeners("update_available");
+				ipcRenderer.removeAllListeners("update_downloaded");
+			});
+		}
+
+		return () => {
+			if (ipcRenderer) {
+				ipcRenderer.removeAllListeners("update_available");
+				ipcRenderer.removeAllListeners("update_downloaded");
+			}
+		};
+	}, []);
 
 	useEffect(() => {
 		const fetchSession = async () => {
@@ -76,6 +105,12 @@ const Navbar = ({ onOpenTaskModal }) => {
 	const closeDropdown = (event) => {
 		if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
 			setIsDropdownOpen(false);
+		}
+	};
+
+	const handleUpdate = () => {
+		if (ipcRenderer) {
+			ipcRenderer.send("restart_app");
 		}
 	};
 
@@ -159,6 +194,20 @@ const Navbar = ({ onOpenTaskModal }) => {
 					</button>
 				)}
 			</div>
+			{updateAvailable && (
+				<div
+					className="flex items-center space-x-2"
+					style={{ WebkitAppRegion: "no-drag" }}
+				>
+					<button
+						onClick={handleUpdate}
+						className="w-8 h-8 flex items-center justify-center text-white bg-green-600 hover:bg-green-700 rounded"
+						aria-label="Update Available"
+					>
+						<FaCloudDownloadAlt size={20} />
+					</button>
+				</div>
+			)}
 			{remote && (
 				<div
 					className="flex items-center space-x-2"

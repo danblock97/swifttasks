@@ -14,7 +14,7 @@ const SubtaskModal = ({
 		description: "",
 		due_date: "",
 		priority: "low",
-		status: "todo", // Default status
+		status: "todo",
 	});
 
 	useEffect(() => {
@@ -24,7 +24,7 @@ const SubtaskModal = ({
 				description: subtask.description,
 				due_date: subtask.due_date,
 				priority: subtask.priority,
-				status: subtask.status || "todo", // Set status if available
+				status: subtask.status || "todo",
 			});
 		} else {
 			setNewSubtask({
