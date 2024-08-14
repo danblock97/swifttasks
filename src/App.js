@@ -22,6 +22,7 @@ import { supabase } from "./lib/supabaseClient";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Footer from "./components/Footer";
+import Loading from "./components/Loading";
 
 const App = () => {
 	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -64,7 +65,7 @@ const App = () => {
 	};
 
 	if (loading) {
-		return <div>Loading...</div>;
+		return <Loading />;
 	}
 
 	const Router = isElectron ? ElectronRouter : WebRouter;
