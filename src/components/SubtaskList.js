@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import SubtaskModal from "./SubtaskModal";
-import { supabase } from "../lib/supabaseClient";
 import { toast } from "react-toastify";
+import { supabase } from "../lib/supabaseClient";
 
 const SubtaskList = ({
 	taskId,
@@ -42,10 +42,6 @@ const SubtaskList = ({
 		await fetchSubtasks();
 		fetchTasks();
 	};
-
-	useEffect(() => {
-		fetchSubtasks();
-	}, [fetchSubtasks]);
 
 	return (
 		<div>
