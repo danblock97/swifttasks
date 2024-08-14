@@ -149,7 +149,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 	};
 
 	return (
-		<div className="p-6 flex flex-col md:flex-row">
+		<div className="p-6 flex flex-col md:flex-row bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300">
 			<div
 				className={`w-full md:w-2 h-2 md:h-auto md:mr-4 mb-4 md:mb-0 ${
 					task.priority === "low"
@@ -163,45 +163,45 @@ const TaskDetail = ({ task, fetchTasks }) => {
 				{isEditing ? (
 					<div>
 						<div className="mb-4">
-							<label className="block text-gray-700 font-bold mb-2">
+							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
 								Title
 							</label>
 							<input
 								type="text"
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
-								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 							/>
 						</div>
 						<div className="mb-4">
-							<label className="block text-gray-700 font-bold mb-2">
+							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
 								Description
 							</label>
 							<textarea
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
-								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 							/>
 						</div>
 						<div className="mb-4">
-							<label className="block text-gray-700 font-bold mb-2">
+							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
 								Due Date
 							</label>
 							<input
 								type="date"
 								value={dueDate}
 								onChange={(e) => setDueDate(e.target.value)}
-								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 							/>
 						</div>
 						<div className="mb-4">
-							<label className="block text-gray-700 font-bold mb-2">
+							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
 								Priority
 							</label>
 							<select
 								value={priority}
 								onChange={(e) => setPriority(e.target.value)}
-								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 							>
 								<option value="low">Low</option>
 								<option value="medium">Medium</option>
@@ -209,13 +209,13 @@ const TaskDetail = ({ task, fetchTasks }) => {
 							</select>
 						</div>
 						<div className="mb-4">
-							<label className="block text-gray-700 font-bold mb-2">
+							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
 								Status
 							</label>
 							<select
 								value={status}
 								onChange={(e) => setStatus(e.target.value)}
-								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 							>
 								<option value="To Do">To Do</option>
 								<option value="In Progress">In Progress</option>
@@ -225,13 +225,13 @@ const TaskDetail = ({ task, fetchTasks }) => {
 						<div className="flex justify-end space-x-2">
 							<button
 								onClick={updateTask}
-								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+								className="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700"
 							>
 								Update
 							</button>
 							<button
 								onClick={() => setIsEditing(false)}
-								className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+								className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-800"
 							>
 								Cancel
 							</button>
@@ -240,24 +240,26 @@ const TaskDetail = ({ task, fetchTasks }) => {
 				) : (
 					<div>
 						<h3 className="text-xl font-bold mb-2">{title}</h3>
-						<p className="text-gray-700 mb-2">{description}</p>
+						<p className="text-gray-700 dark:text-gray-300 mb-2">
+							{description}
+						</p>
 
 						{/* Due Date */}
-						<p className="text-gray-600 mb-2">
+						<p className="text-gray-600 dark:text-gray-400 mb-2">
 							<span className="font-semibold">Due Date:</span>{" "}
 							<span className="font-medium">{dueDate}</span>
 						</p>
 
 						{/* Priority */}
-						<p className="text-gray-600 mb-2">
+						<p className="text-gray-600 dark:text-gray-400 mb-2">
 							<span className="font-semibold">Priority:</span>
 							<span
 								className={`font-medium ml-2 capitalize ${
 									priority === "low"
-										? "text-green-600"
+										? "text-green-600 dark:text-green-400"
 										: priority === "medium"
-										? "text-orange-600"
-										: "text-red-600"
+										? "text-orange-600 dark:text-orange-400"
+										: "text-red-600 dark:text-red-400"
 								}`}
 							>
 								{priority}
@@ -265,20 +267,20 @@ const TaskDetail = ({ task, fetchTasks }) => {
 						</p>
 
 						{/* Status */}
-						<p className="text-gray-600 mb-2">
+						<p className="text-gray-600 dark:text-gray-400 mb-2">
 							<span className="font-semibold">Status:</span>{" "}
 							<span className="font-medium">{status}</span>
 						</p>
 						<div className="flex justify-end space-x-2">
 							<button
 								onClick={() => setIsEditing(true)}
-								className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+								className="px-4 py-2 bg-yellow-500 dark:bg-yellow-600 text-white rounded hover:bg-yellow-600 dark:hover:bg-yellow-700"
 							>
 								Edit
 							</button>
 							<button
 								onClick={confirmDeleteTask}
-								className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+								className="px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded hover:bg-red-600 dark:hover:bg-red-700"
 							>
 								Delete
 							</button>
@@ -291,11 +293,11 @@ const TaskDetail = ({ task, fetchTasks }) => {
 									onChange={(e) => setNewSubtaskTitle(e.target.value)}
 									onKeyDown={handleQuickCreateSubtask}
 									placeholder="Quick create subtask"
-									className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+									className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 								/>
 								<button
 									onClick={handleOpenSubtaskModal}
-									className="ml-2 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+									className="ml-2 px-3 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700"
 								>
 									+
 								</button>
@@ -319,7 +321,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 				/>
 				{isDeleteModalOpen && (
 					<div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
-						<div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+						<div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md">
 							<h2 className="text-xl font-bold mb-4">Delete Task</h2>
 							<p>
 								Deleting this task will also remove all associated subtasks. Are
@@ -328,13 +330,13 @@ const TaskDetail = ({ task, fetchTasks }) => {
 							<div className="flex justify-end space-x-2 mt-4">
 								<button
 									onClick={() => setIsDeleteModalOpen(false)}
-									className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+									className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-800"
 								>
 									Cancel
 								</button>
 								<button
 									onClick={handleDeleteTask}
-									className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+									className="px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded hover:bg-red-600 dark:hover:bg-red-700"
 								>
 									Delete
 								</button>

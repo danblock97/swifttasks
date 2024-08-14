@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import SubtaskModal from "./SubtaskModal";
-import { supabase } from "../lib/supabaseClient";
 import { toast } from "react-toastify";
+import { supabase } from "../lib/supabaseClient";
 
 const SubtaskList = ({
 	taskId,
@@ -43,16 +43,12 @@ const SubtaskList = ({
 		fetchTasks();
 	};
 
-	useEffect(() => {
-		fetchSubtasks();
-	}, [fetchSubtasks]);
-
 	return (
 		<div>
 			<ul>
 				{subtasks.map((subtask) => (
 					<li key={subtask.id} className="mb-4">
-						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg mt-4 transition-shadow bg-white flex flex-col md:flex-row">
+						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg mt-4 transition-shadow bg-white dark:bg-gray-800 flex flex-col md:flex-row">
 							<div
 								className={`w-2 h-auto md:h-full mb-4 md:mb-0 md:mr-4 ${
 									subtask.priority === "low"
@@ -68,20 +64,22 @@ const SubtaskList = ({
 									<div className="flex mt-2 md:mt-0">
 										<button
 											onClick={() => handleEditSubtask(subtask)}
-											className="text-blue-500 hover:text-blue-700 mr-2"
+											className="text-blue-500 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 mr-2"
 										>
 											Edit
 										</button>
 										<button
 											onClick={() => deleteSubtask(subtask.id)}
-											className="text-red-500 hover:text-red-700"
+											className="text-red-500 dark:text-red-300 hover:text-red-700 dark:hover:text-red-500"
 										>
 											Delete
 										</button>
 									</div>
 								</div>
-								<p className="text-gray-600 mb-1">{subtask.description}</p>
-								<div className="text-sm text-gray-500">
+								<p className="text-gray-600 dark:text-gray-400 mb-1">
+									{subtask.description}
+								</p>
+								<div className="text-sm text-gray-500 dark:text-gray-400">
 									<p>Due Date: {subtask.due_date}</p>
 									<p>Priority: {subtask.priority}</p>
 									<p>Status: {subtask.status}</p>
