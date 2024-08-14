@@ -69,23 +69,27 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 
 	return (
 		<div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
-			<div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-				<h2 className="text-2xl font-bold mb-4">Create New Task</h2>
+			<div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md">
+				<h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-300">
+					Create New Task
+				</h2>
 				<form onSubmit={createTask} className="mb-4">
 					<div className="mb-4">
-						<label className="block text-gray-700 font-bold mb-2">Title</label>
+						<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+							Title
+						</label>
 						<input
 							type="text"
 							name="title"
 							value={newTask.title}
 							onChange={handleInputChange}
 							placeholder="Title"
-							className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 							required
 						/>
 					</div>
 					<div className="mb-4">
-						<label className="block text-gray-700 font-bold mb-2">
+						<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
 							Description
 						</label>
 						<textarea
@@ -93,11 +97,11 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 							value={newTask.description}
 							onChange={handleInputChange}
 							placeholder="Description"
-							className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 						/>
 					</div>
 					<div className="mb-4">
-						<label className="block text-gray-700 font-bold mb-2">
+						<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
 							Due Date
 						</label>
 						<input
@@ -105,18 +109,18 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 							name="due_date"
 							value={newTask.due_date}
 							onChange={handleInputChange}
-							className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 						/>
 					</div>
 					<div className="mb-4">
-						<label className="block text-gray-700 font-bold mb-2">
+						<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
 							Priority
 						</label>
 						<select
 							name="priority"
 							value={newTask.priority}
 							onChange={handleInputChange}
-							className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 						>
 							<option value="low">Low</option>
 							<option value="medium">Medium</option>
@@ -127,13 +131,13 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 						<button
 							type="button"
 							onClick={onClose}
-							className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+							className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-800"
 						>
 							Cancel
 						</button>
 						<button
 							type="submit"
-							className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+							className="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700"
 						>
 							Create
 						</button>

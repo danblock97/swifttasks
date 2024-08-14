@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
-import { supabase } from "../lib/supabaseClient";
+import Switch from "react-switch";
+import { useDarkMode } from "../context/DarkModeContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabaseClient";
 import { MdMinimize, MdClose, MdCropSquare } from "react-icons/md";
 import { FaCloudDownloadAlt } from "react-icons/fa";
 
@@ -22,6 +24,7 @@ const Navbar = ({ onOpenTaskModal }) => {
 	const dropdownRef = useRef(null);
 	const navigate = useNavigate();
 	const [updateAvailable, setUpdateAvailable] = useState(false);
+	const { isDarkMode, toggleDarkMode } = useDarkMode();
 
 	useEffect(() => {
 		if (ipcRenderer) {
@@ -140,6 +143,14 @@ const Navbar = ({ onOpenTaskModal }) => {
 				className="flex items-center space-x-6"
 				style={{ WebkitAppRegion: "no-drag" }}
 			>
+				<Switch
+					onChange={toggleDarkMode}
+					checked={isDarkMode}
+					offColor="#888"
+					onColor="#000"
+					uncheckedIcon={false}
+					checkedIcon={false}
+				/>
 				{session ? (
 					<>
 						<button
