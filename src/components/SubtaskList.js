@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import SubtaskModal from "./SubtaskModal";
 import { toast } from "react-toastify";
 import { supabase } from "../lib/supabaseClient";
+import { statusMapping } from "../utils"; // Import the statusMapping
 
 const SubtaskList = ({
 	taskId,
@@ -12,6 +13,7 @@ const SubtaskList = ({
 }) => {
 	const [isSubtaskModalOpen, setIsSubtaskModalOpen] = useState(false);
 	const [selectedSubtask, setSelectedSubtask] = useState(null);
+	const [expandedSubtaskId, setExpandedSubtaskId] = useState(null);
 
 	const handleEditSubtask = (subtask) => {
 		setSelectedSubtask(subtask);
@@ -43,48 +45,67 @@ const SubtaskList = ({
 		fetchTasks();
 	};
 
+	const toggleExpandSubtask = (subtaskId) => {
+		setExpandedSubtaskId(expandedSubtaskId === subtaskId ? null : subtaskId);
+	};
+
+	const capitalizeFirstLetter = (string) => {
+		return string.charAt(0).toUpperCase() + string.slice(1);
+	};
+
 	return (
-		<div>
-			<ul>
+		<div className="flex-1 h-96 overflow-y-auto no-scrollbar">
+			<ul className="space-y-2">
 				{subtasks.map((subtask) => (
-					<li key={subtask.id} className="mb-4">
-						<div className="p-4 border rounded-lg shadow-md hover:shadow-lg mt-4 transition-shadow bg-white dark:bg-gray-800 flex flex-col md:flex-row">
-							<div
-								className={`w-2 h-auto md:h-full mb-4 md:mb-0 md:mr-4 ${
-									subtask.priority === "low"
-										? "bg-green-500"
-										: subtask.priority === "medium"
-										? "bg-orange-500"
-										: "bg-red-500"
-								}`}
-							></div>
-							<div className="flex-1">
-								<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
-									<p className="font-semibold text-lg">{subtask.title}</p>
-									<div className="flex mt-2 md:mt-0">
+					<li key={subtask.id} className="mb-2">
+						<div
+							onClick={() => toggleExpandSubtask(subtask.id)}
+							className="p-2 border rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 cursor-pointer flex flex-col"
+						>
+							<div className="flex justify-between items-center">
+								<p className="font-semibold text-lg">{subtask.title}</p>
+								<div
+									className={`w-2 h-2 rounded-full ${
+										subtask.priority === "low"
+											? "bg-green-500"
+											: subtask.priority === "medium"
+											? "bg-orange-500"
+											: "bg-red-500"
+									}`}
+								></div>
+							</div>
+							{expandedSubtaskId === subtask.id && (
+								<div className="mt-2 flex justify-between items-start text-gray-600 dark:text-gray-400">
+									<div className="flex-1">
+										<p className="mb-1">{subtask.description}</p>
+										<div className="text-sm text-gray-500 dark:text-gray-400">
+											<p>Due Date: {subtask.due_date}</p>
+											<p>Priority: {capitalizeFirstLetter(subtask.priority)}</p>
+											<p>Status: {statusMapping[subtask.status]}</p>
+										</div>
+									</div>
+									<div className="flex ml-4">
 										<button
-											onClick={() => handleEditSubtask(subtask)}
+											onClick={(e) => {
+												e.stopPropagation();
+												handleEditSubtask(subtask);
+											}}
 											className="text-blue-500 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 mr-2"
 										>
 											Edit
 										</button>
 										<button
-											onClick={() => deleteSubtask(subtask.id)}
+											onClick={(e) => {
+												e.stopPropagation();
+												deleteSubtask(subtask.id);
+											}}
 											className="text-red-500 dark:text-red-300 hover:text-red-700 dark:hover:text-red-500"
 										>
 											Delete
 										</button>
 									</div>
 								</div>
-								<p className="text-gray-600 dark:text-gray-400 mb-1">
-									{subtask.description}
-								</p>
-								<div className="text-sm text-gray-500 dark:text-gray-400">
-									<p>Due Date: {subtask.due_date}</p>
-									<p>Priority: {subtask.priority}</p>
-									<p>Status: {subtask.status}</p>
-								</div>
-							</div>
+							)}
 						</div>
 					</li>
 				))}
