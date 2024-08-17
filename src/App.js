@@ -74,9 +74,9 @@ const App = () => {
 	return (
 		<DarkModeProvider>
 			<Router>
-				<div className="flex flex-col min-h-screen">
+				<div className="flex flex-col min-h-screen bg-gray-900 text-white">
 					<Navbar onOpenTaskModal={handleOpenTaskModal} />
-					<div className="flex-grow">
+					<main className="flex-grow overflow-y-auto">
 						<Routes>
 							<Route path="/" element={<Homepage />} />
 							<Route path="/auth" element={<Auth />} />
@@ -99,14 +99,14 @@ const App = () => {
 							</Route>
 							<Route path="*" element={<Navigate to="/" />} />
 						</Routes>
-					</div>
+					</main>
 					<TaskModal
 						isOpen={isTaskModalOpen}
 						onClose={handleCloseTaskModal}
 						fetchTasks={fetchTasksCallback}
 					/>
-					<ToastContainer />
 					<Footer />
+					<ToastContainer />
 				</div>
 			</Router>
 		</DarkModeProvider>

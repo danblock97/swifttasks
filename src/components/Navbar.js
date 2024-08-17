@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Switch from "react-switch";
 import { useDarkMode } from "../context/DarkModeContext";
 import { useNavigate } from "react-router-dom";
@@ -117,7 +117,7 @@ const Navbar = ({ onOpenTaskModal }) => {
 	};
 
 	return (
-		<nav className="bg-indigo-500 p-4 shadow-lg flex justify-between items-center select-none sticky top-0 z-50">
+		<nav className="bg-indigo-500 p-4 shadow-lg flex justify-between items-center sticky top-0 z-50">
 			<div className="flex items-center justify-between w-full lg:w-auto">
 				<h1
 					className="text-white text-2xl font-bold cursor-pointer"

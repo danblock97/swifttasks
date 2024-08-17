@@ -49,8 +49,8 @@ const SubtaskList = ({
 	};
 
 	return (
-		<div className="flex-1 h-full overflow-y-auto no-scrollbar">
-			<ul>
+		<div className="flex-1 h-96 overflow-y-auto no-scrollbar">
+			<ul className="space-y-2">
 				{subtasks.map((subtask) => (
 					<li key={subtask.id} className="mb-2">
 						<div
