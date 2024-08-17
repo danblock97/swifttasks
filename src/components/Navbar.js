@@ -126,7 +126,7 @@ const Navbar = ({ onOpenTaskModal }) => {
 
 	return (
 		<nav
-			className="bg-indigo-500 p-4 shadow-lg flex justify-between items-center select-none"
+			className="bg-indigo-500 p-4 shadow-lg flex justify-between items-center select-none sticky top-0 z-50"
 			style={{ WebkitAppRegion: "drag" }}
 			onDoubleClick={handleMaximizeToggle}
 		>
