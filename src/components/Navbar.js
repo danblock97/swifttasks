@@ -3,7 +3,13 @@ import Switch from "react-switch";
 import { useDarkMode } from "../context/DarkModeContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import { MdMinimize, MdClose, MdCropSquare } from "react-icons/md";
+import {
+	MdMinimize,
+	MdClose,
+	MdCropSquare,
+	MdMenu,
+	MdClose as MdCloseIcon,
+} from "react-icons/md";
 import { FaCloudDownloadAlt } from "react-icons/fa";
 
 let ipcRenderer;
@@ -20,8 +26,7 @@ if (
 
 const Navbar = ({ onOpenTaskModal }) => {
 	const [session, setSession] = useState(null);
-	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-	const dropdownRef = useRef(null);
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const navigate = useNavigate();
 	const [updateAvailable, setUpdateAvailable] = useState(false);
 	const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -101,115 +106,112 @@ const Navbar = ({ onOpenTaskModal }) => {
 		if (remote) remote.getCurrentWindow().close();
 	};
 
-	const toggleDropdown = () => {
-		setIsDropdownOpen(!isDropdownOpen);
-	};
-
-	const closeDropdown = (event) => {
-		if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-			setIsDropdownOpen(false);
-		}
-	};
-
 	const handleUpdate = () => {
 		if (ipcRenderer) {
 			ipcRenderer.send("restart_app");
 		}
 	};
 
-	useEffect(() => {
-		document.addEventListener("mousedown", closeDropdown);
-		return () => {
-			document.removeEventListener("mousedown", closeDropdown);
-		};
-	}, []);
+	const toggleMobileMenu = () => {
+		setIsMobileMenuOpen(!isMobileMenuOpen);
+	};
 
 	return (
-		<nav
-			className="bg-indigo-500 p-4 shadow-lg flex justify-between items-center select-none sticky top-0 z-50"
-			style={{ WebkitAppRegion: "drag" }}
-			onDoubleClick={handleMaximizeToggle}
-		>
-			<div className="flex items-center space-x-4">
+		<nav className="bg-indigo-500 p-4 shadow-lg flex justify-between items-center select-none sticky top-0 z-50">
+			<div className="flex items-center justify-between w-full lg:w-auto">
 				<h1
 					className="text-white text-2xl font-bold cursor-pointer"
 					onClick={() => navigate("/")}
-					style={{ WebkitAppRegion: "no-drag" }}
 				>
 					SwiftTasks
 				</h1>
+				<div className="lg:hidden flex items-center">
+					<Switch
+						onChange={toggleDarkMode}
+						checked={isDarkMode}
+						offColor="#888"
+						onColor="#000"
+						uncheckedIcon={false}
+						checkedIcon={false}
+						height={16}
+						width={32}
+						className="mr-4"
+					/>
+					<button onClick={toggleMobileMenu} className="text-white">
+						{isMobileMenuOpen ? (
+							<MdCloseIcon size={24} />
+						) : (
+							<MdMenu size={24} />
+						)}
+					</button>
+				</div>
 			</div>
 			<div
-				className="flex items-center space-x-6"
-				style={{ WebkitAppRegion: "no-drag" }}
+				className={`fixed inset-0 bg-indigo-500 z-40 flex flex-col items-center justify-center transform transition-transform duration-300 ease-in-out ${
+					isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+				} lg:relative lg:translate-x-0 lg:flex lg:flex-row lg:items-center lg:space-x-6`}
 			>
-				<Switch
-					onChange={toggleDarkMode}
-					checked={isDarkMode}
-					offColor="#888"
-					onColor="#000"
-					uncheckedIcon={false}
-					checkedIcon={false}
-				/>
+				{isMobileMenuOpen && (
+					<button
+						onClick={toggleMobileMenu}
+						className="absolute top-4 right-4 text-white"
+					>
+						<MdCloseIcon size={24} />
+					</button>
+				)}
 				{session ? (
 					<>
 						<button
-							onClick={() => navigate("/profile")}
-							className="text-white cursor-pointer hover:text-gray-200 bg-transparent border-0 p-0"
+							onClick={() => {
+								navigate("/profile");
+								setIsMobileMenuOpen(false);
+							}}
+							className="text-white cursor-pointer hover:text-gray-200 text-2xl lg:text-base mt-4"
 						>
 							Profile
 						</button>
-						<div className="relative" ref={dropdownRef}>
-							<button
-								onClick={toggleDropdown}
-								className="text-white cursor-pointer hover:text-gray-200 bg-transparent border-0 p-0"
-							>
-								Tasks
-							</button>
-							{isDropdownOpen && (
-								<div className="absolute left-0 mt-2 bg-white rounded shadow-lg w-40 z-50">
-									<button
-										onClick={() => {
-											navigate("/tasks");
-											setIsDropdownOpen(false);
-										}}
-										className="block px-4 py-2 text-indigo-500 hover:bg-gray-200 text-left w-full"
-									>
-										View Tasks
-									</button>
-									<button
-										onClick={() => {
-											onOpenTaskModal();
-											setIsDropdownOpen(false);
-										}}
-										className="block px-4 py-2 text-indigo-500 hover:bg-gray-200 text-left w-full"
-									>
-										Create Task
-									</button>
-								</div>
-							)}
-						</div>
 						<button
-							onClick={handleLogout}
-							className="text-white cursor-pointer hover:text-gray-200 bg-transparent border-0 p-0"
+							onClick={() => {
+								navigate("/tasks");
+								setIsMobileMenuOpen(false);
+							}}
+							className="text-white cursor-pointer hover:text-gray-200 text-2xl lg:text-base mt-4"
+						>
+							View Tasks
+						</button>
+						<button
+							onClick={() => {
+								onOpenTaskModal();
+								setIsMobileMenuOpen(false);
+							}}
+							className="text-white cursor-pointer hover:text-gray-200 text-2xl lg:text-base mt-4"
+						>
+							Create Task
+						</button>
+						<button
+							onClick={() => {
+								handleLogout();
+								setIsMobileMenuOpen(false);
+							}}
+							className="text-white cursor-pointer hover:text-gray-200 text-2xl lg:text-base mt-4"
 						>
 							Logout
 						</button>
 					</>
 				) : (
 					<button
-						onClick={handleLogin}
-						className="text-white cursor-pointer hover:text-gray-200 bg-transparent border-0 p-0"
+						onClick={() => {
+							handleLogin();
+							setIsMobileMenuOpen(false);
+						}}
+						className="text-white cursor-pointer hover:text-gray-200 text-2xl lg:text-base mt-4"
 					>
 						Login
 					</button>
 				)}
 			</div>
 			{updateAvailable && (
-				<div
-					className="flex items-center space-x-2"
-					style={{ WebkitAppRegion: "no-drag" }}
-				>
+				<div className="lg:flex items-center space-x-2 hidden">
 					<button
 						onClick={handleUpdate}
 						className="w-8 h-8 flex items-center justify-center text-white bg-green-600 hover:bg-green-700 rounded"
@@ -220,10 +222,7 @@ const Navbar = ({ onOpenTaskModal }) => {
 				</div>
 			)}
 			{remote && (
-				<div
-					className="flex items-center space-x-2"
-					style={{ WebkitAppRegion: "no-drag" }}
-				>
+				<div className="hidden lg:flex items-center space-x-2">
 					<button
 						onClick={handleMinimize}
 						className="w-8 h-8 flex items-center justify-center text-white hover:bg-indigo-700 rounded"
