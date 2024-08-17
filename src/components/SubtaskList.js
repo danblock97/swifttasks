@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import SubtaskModal from "./SubtaskModal";
 import { toast } from "react-toastify";
 import { supabase } from "../lib/supabaseClient";
+import { statusMapping } from "../utils"; // Import the statusMapping
 
 const SubtaskList = ({
 	taskId,
@@ -48,6 +49,10 @@ const SubtaskList = ({
 		setExpandedSubtaskId(expandedSubtaskId === subtaskId ? null : subtaskId);
 	};
 
+	const capitalizeFirstLetter = (string) => {
+		return string.charAt(0).toUpperCase() + string.slice(1);
+	};
+
 	return (
 		<div className="flex-1 h-96 overflow-y-auto no-scrollbar">
 			<ul className="space-y-2">
@@ -75,8 +80,8 @@ const SubtaskList = ({
 										<p className="mb-1">{subtask.description}</p>
 										<div className="text-sm text-gray-500 dark:text-gray-400">
 											<p>Due Date: {subtask.due_date}</p>
-											<p>Priority: {subtask.priority}</p>
-											<p>Status: {subtask.status}</p>
+											<p>Priority: {capitalizeFirstLetter(subtask.priority)}</p>
+											<p>Status: {statusMapping[subtask.status]}</p>
 										</div>
 									</div>
 									<div className="flex ml-4">
