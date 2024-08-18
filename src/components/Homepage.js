@@ -65,7 +65,7 @@ const Homepage = () => {
 							Get Started
 						</button>
 						<a
-							href="https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v1.4.1/SwiftTasks-1.4.1.exe"
+							href="https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v1.4.2/SwiftTasks-1.4.2.exe"
 							className="inline-block px-6 py-3 bg-gray-700 dark:bg-gray-800 text-white font-semibold rounded-full hover:bg-gray-600 dark:hover:bg-gray-700 transition"
 						>
 							Download for Windows
@@ -76,7 +76,7 @@ const Homepage = () => {
 					<img
 						src={logo}
 						alt="SwiftTasks Logo"
-						className="w-64 h-64 object-contain mx-auto" // No dark mode styles applied to the logo
+						className="w-64 h-64 object-contain mx-auto"
 					/>
 				</div>
 			</div>

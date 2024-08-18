@@ -74,7 +74,7 @@ const App = () => {
 	return (
 		<DarkModeProvider>
 			<Router>
-				<div className="flex flex-col min-h-screen bg-gray-900 text-white">
+				<div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300">
 					<Navbar onOpenTaskModal={handleOpenTaskModal} />
 					<main className="flex-grow overflow-y-auto">
 						<Routes>
