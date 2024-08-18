@@ -6,6 +6,7 @@ const remoteMain = require("@electron/remote/main");
 remoteMain.initialize();
 
 let win;
+let progressWin;
 
 async function createWindow() {
 	const isDev = (await import("electron-is-dev")).default;
@@ -49,12 +50,35 @@ async function createWindow() {
 	autoUpdater.checkForUpdatesAndNotify();
 
 	autoUpdater.on("update-available", () => {
+		createProgressWindow();
 		win.webContents.send("update_available");
 	});
 
 	autoUpdater.on("update-downloaded", () => {
+		if (progressWin) {
+			progressWin.close(); // Close the progress window when update is downloaded
+		}
 		win.webContents.send("update_downloaded");
 	});
+}
+
+async function createProgressWindow() {
+	progressWin = new BrowserWindow({
+		width: 400,
+		height: 200,
+		frame: false,
+		icon: path.join(__dirname, "assets", "logo.ico"),
+		webPreferences: {
+			nodeIntegration: true,
+			contextIsolation: false,
+		},
+	});
+
+	progressWin.loadURL(
+		`file://${path.join(__dirname, "assets", "progress.html")}`
+	);
+	progressWin.setAlwaysOnTop(true);
+	progressWin.setSkipTaskbar(true);
 }
 
 app.on("ready", createWindow);

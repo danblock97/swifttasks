@@ -1,6 +1,6 @@
 {
 	"name": "swifttasks",
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"private": true,
 	"homepage": "./",
 	"main": "main.js",
@@ -66,7 +66,7 @@
 	},
 	"build": {
 		"extends": null,
-		"appId": "com.yourapp.id",
+		"appId": "co.uk.danblock97.swifttasks",
 		"productName": "SwiftTasks",
 		"files": [
 			"build/**/*",
@@ -87,10 +87,11 @@
 			"createStartMenuShortcut": true,
 			"deleteAppDataOnUninstall": true
 		},
+		"repository": "https://github.com/danblock97/swifttasks",
 		"publish": {
 			"provider": "github",
-			"owner": "danblock97",
-			"repo": "swifttasks"
+			"releaseType": "release"
 		}
-	}
+	},
+	"author": "danblock97"
 }
