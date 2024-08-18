@@ -4,6 +4,10 @@
 	"private": true,
 	"homepage": "./",
 	"main": "main.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/your-username/swifttasks.git"
+	},
 	"dependencies": {
 		"@electron/remote": "^2.1.2",
 		"@headlessui/react": "^2.1.2",
@@ -87,9 +91,10 @@
 			"createStartMenuShortcut": true,
 			"deleteAppDataOnUninstall": true
 		},
-		"repository": "https://github.com/danblock97/swifttasks",
 		"publish": {
 			"provider": "github",
+			"owner": "danblock97",
+			"repo": "swifttasks",
 			"releaseType": "release"
 		}
 	},
