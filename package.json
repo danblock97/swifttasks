@@ -82,7 +82,8 @@
 		},
 		"win": {
 			"icon": "assets/logo.ico",
-			"target": "nsis"
+			"target": "nsis",
+			"artifactName": "SwiftTasks-${version}.exe"
 		},
 		"nsis": {
 			"allowElevation": false,
@@ -98,5 +99,5 @@
 			"releaseType": "release"
 		}
 	},
-	"author": "danblock97"
+	"author": "SwiftTasks"
 }
