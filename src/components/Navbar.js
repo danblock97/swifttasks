@@ -136,7 +136,7 @@ const Navbar = ({ onOpenTaskModal }) => {
 
 			{/* Centered Navigation Options */}
 			<div
-				className="absolute left-1/2 transform -translate-x-1/2"
+				className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 space-x-4"
 				style={{ WebkitAppRegion: "no-drag" }} // Prevent dragging on this section
 			>
 				{session ? (
@@ -210,7 +210,7 @@ const Navbar = ({ onOpenTaskModal }) => {
 
 				{/* Window Control Buttons */}
 				{remote && (
-					<div className="flex items-center space-x-2">
+					<div className="hidden lg:flex items-center space-x-2">
 						<button
 							onClick={handleMinimize}
 							className="w-8 h-8 flex items-center justify-center text-white hover:bg-indigo-700 rounded"
@@ -236,7 +236,7 @@ const Navbar = ({ onOpenTaskModal }) => {
 				)}
 			</div>
 
-			{/* Mobile Menu */}
+			{/* Mobile Menu Toggle */}
 			<div className="lg:hidden ml-auto">
 				<button
 					onClick={toggleMobileMenu}
@@ -247,10 +247,11 @@ const Navbar = ({ onOpenTaskModal }) => {
 				</button>
 			</div>
 
+			{/* Mobile Menu */}
 			<div
 				className={`fixed inset-0 bg-indigo-500 z-40 flex flex-col items-center justify-center transform transition-transform duration-300 ease-in-out ${
 					isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-				} lg:relative lg:translate-x-0 lg:flex lg:flex-row lg:items-center lg:space-x-6`}
+				} lg:hidden`}
 				style={{ WebkitAppRegion: "no-drag" }} // Prevent dragging on this section
 			>
 				{isMobileMenuOpen && (
@@ -261,9 +262,61 @@ const Navbar = ({ onOpenTaskModal }) => {
 						<MdCloseIcon size={24} />
 					</button>
 				)}
+
+				{session ? (
+					<div className="flex flex-col space-y-4">
+						<button
+							onClick={() => {
+								navigate("/profile");
+								setIsMobileMenuOpen(false);
+							}}
+							className="text-white text-xl cursor-pointer hover:text-gray-200"
+						>
+							Profile
+						</button>
+						<button
+							onClick={() => {
+								navigate("/tasks");
+								setIsMobileMenuOpen(false);
+							}}
+							className="text-white text-xl cursor-pointer hover:text-gray-200"
+						>
+							View Tasks
+						</button>
+						<button
+							onClick={() => {
+								onOpenTaskModal();
+								setIsMobileMenuOpen(false);
+							}}
+							className="text-white text-xl cursor-pointer hover:text-gray-200"
+						>
+							Create Task
+						</button>
+						<button
+							onClick={() => {
+								handleLogout();
+								setIsMobileMenuOpen(false);
+							}}
+							className="text-white text-xl cursor-pointer hover:text-gray-200"
+						>
+							Logout
+						</button>
+					</div>
+				) : (
+					<button
+						onClick={() => {
+							handleLogin();
+							setIsMobileMenuOpen(false);
+						}}
+						className="text-white text-xl cursor-pointer hover:text-gray-200"
+					>
+						Login
+					</button>
+				)}
 			</div>
+
 			{updateAvailable && (
-				<div className="lg:flex items-center space-x-2 hidden">
+				<div className="hidden lg:flex items-center space-x-2">
 					<button
 						onClick={handleUpdate}
 						className="w-8 h-8 flex items-center justify-center text-white bg-green-600 hover:bg-green-700 rounded"
