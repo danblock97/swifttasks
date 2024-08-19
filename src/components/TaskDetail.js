@@ -149,8 +149,8 @@ const TaskDetail = ({ task, fetchTasks }) => {
 	};
 
 	return (
-		<div className="flex flex-col flex-1 bg-gray-900">
-			<div className="p-6 flex flex-col md:flex-row bg-gray-900 text-gray-300 flex-1">
+		<div className="flex flex-col flex-1 bg-white dark:bg-gray-900 ">
+			<div className="p-6 flex flex-col md:flex-row text-gray-300 flex-1">
 				<div className="flex flex-row space-x-4 flex-1">
 					{/* Priority line */}
 					<div
@@ -167,35 +167,35 @@ const TaskDetail = ({ task, fetchTasks }) => {
 						{isEditing ? (
 							<div>
 								<div className="mb-4">
-									<label className="block text-gray-300 font-bold mb-2">
+									<label className="block text-gray-800 dark:text-gray-300 font-bold mb-2">
 										Title
 									</label>
 									<input
 										type="text"
 										value={title}
 										onChange={(e) => setTitle(e.target.value)}
-										className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-gray-300"
+										className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-gray-300"
 									/>
 								</div>
 								<div className="mb-4">
-									<label className="block text-gray-300 font-bold mb-2">
+									<label className="block text-gray-800 dark:text-gray-300 font-bold mb-2">
 										Description
 									</label>
 									<textarea
 										value={description}
 										onChange={(e) => setDescription(e.target.value)}
-										className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-gray-300"
+										className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500  text-gray-800 dark:text-gray-300"
 									/>
 								</div>
 								<div className="mb-4">
-									<label className="block text-gray-300 font-bold mb-2">
+									<label className="block text-gray-800 dark:text-gray-300 font-bold mb-2">
 										Due Date
 									</label>
 									<input
 										type="date"
 										value={dueDate}
 										onChange={(e) => setDueDate(e.target.value)}
-										className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-gray-300"
+										className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500  text-gray-800 dark:text-gray-300"
 									/>
 								</div>
 								<div className="mb-4">
@@ -205,7 +205,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 									<select
 										value={priority}
 										onChange={(e) => setPriority(e.target.value)}
-										className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-gray-300"
+										className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-gray-300"
 									>
 										<option value="low">Low</option>
 										<option value="medium">Medium</option>
@@ -219,7 +219,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 									<select
 										value={status}
 										onChange={(e) => setStatus(e.target.value)}
-										className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-gray-300"
+										className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-gray-800 dark:text-gray-300"
 									>
 										<option value="To Do">To Do</option>
 										<option value="In Progress">In Progress</option>
@@ -243,17 +243,21 @@ const TaskDetail = ({ task, fetchTasks }) => {
 							</div>
 						) : (
 							<div className="flex-1 flex flex-col overflow-hidden">
-								<h3 className="text-xl font-bold mb-2">{title}</h3>
-								<p className="text-gray-300 mb-2">{description}</p>
+								<h3 className="text-xl font-bold mb-2 text-gray-800 dark:text-gray-300">
+									{title}
+								</h3>
+								<p className="text-gray-800 dark:text-gray-300 mb-2">
+									{description}
+								</p>
 
 								{/* Due Date */}
-								<p className="text-gray-400 mb-2">
+								<p className="text-gray-800 dark:text-gray-300 mb-2">
 									<span className="font-semibold">Due Date:</span>{" "}
 									<span className="font-medium">{dueDate}</span>
 								</p>
 
 								{/* Priority */}
-								<p className="text-gray-400 mb-2">
+								<p className="text-gray-800 dark:text-gray-300 mb-2">
 									<span className="font-semibold">Priority:</span>
 									<span
 										className={`font-medium ml-2 capitalize ${
@@ -269,7 +273,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 								</p>
 
 								{/* Status */}
-								<p className="text-gray-400 mb-2">
+								<p className="text-gray-800 dark:text-gray-300 mb-2">
 									<span className="font-semibold">Status:</span>{" "}
 									<span className="font-medium">{status}</span>
 								</p>
@@ -295,7 +299,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 											onChange={(e) => setNewSubtaskTitle(e.target.value)}
 											onKeyDown={handleQuickCreateSubtask}
 											placeholder="Quick create subtask"
-											className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-gray-300"
+											className="w-full px-3 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 bg-white dark:bg-gray-800 focus:ring-blue-500 text-gray-300"
 										/>
 										<button
 											onClick={handleOpenSubtaskModal}

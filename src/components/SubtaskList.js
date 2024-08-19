@@ -64,7 +64,9 @@ const SubtaskList = ({
 							className="p-2 border rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 cursor-pointer flex flex-col"
 						>
 							<div className="flex justify-between items-center">
-								<p className="font-semibold text-lg">{subtask.title}</p>
+								<p className="font-semibold text-lg text-gray-800 dark:text-gray-300">
+									{subtask.title}
+								</p>
 								<div
 									className={`w-2 h-2 rounded-full ${
 										subtask.priority === "low"
@@ -76,7 +78,7 @@ const SubtaskList = ({
 								></div>
 							</div>
 							{expandedSubtaskId === subtask.id && (
-								<div className="mt-2 flex justify-between items-start text-gray-600 dark:text-gray-400">
+								<div className="mt-2 flex justify-between items-start text-gray-800 dark:text-gray-300">
 									<div className="flex-1">
 										<p className="mb-1">{subtask.description}</p>
 										<div className="text-sm text-gray-500 dark:text-gray-400">

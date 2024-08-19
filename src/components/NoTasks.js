@@ -3,7 +3,7 @@ import noTasksImage from "../images/no-tasks.jpg";
 
 const NoTasks = ({ onCreateFirstTask }) => {
 	return (
-		<div className="flex h-screen dark:bg-gray-700 items-center justify-center min-h-88">
+		<div className="flex h-screen dark:bg-gray-900 items-center justify-center min-h-88">
 			<div className="w-full max-w-md p-8 space-y-8 text-center">
 				<img
 					src={noTasksImage}
