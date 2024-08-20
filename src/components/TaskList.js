@@ -136,12 +136,15 @@ const TaskList = ({ onOpenTaskModal }) => {
 	return (
 		<div className="flex flex-col md:flex-row h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300">
 			<div className="w-full md:w-1/3 p-4">
-				<div className="flex justify-between items-center mb-4">
-					<h2 className="text-xl md:text-2xl font-bold">Your Tasks</h2>
+				<div className="flex flex-col md:flex-row md:justify-between items-start md:items-center mb-4">
+					<h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-0">
+						Your Tasks
+					</h2>
 					<select
 						value={selectedCategory}
 						onChange={handleCategoryChange}
-						className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+						className="w-full md:w-48 lg:w-64 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+						style={{ backgroundImage: "none" }}
 					>
 						<option value="">All Categories</option>
 						{taskCategories.map((category, index) => (
