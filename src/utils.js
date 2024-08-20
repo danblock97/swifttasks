@@ -9,3 +9,16 @@ export const statusMappingReverse = {
 	"In Progress": "in-progress",
 	Done: "done",
 };
+
+export const formatStatus = (status) => {
+	switch (status) {
+		case "to_do":
+			return "To Do";
+		case "in_progress":
+			return "In Progress";
+		case "done":
+			return "Done";
+		default:
+			return status;
+	}
+};

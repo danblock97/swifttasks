@@ -6,6 +6,7 @@ import logo from "../images/logo.jpg";
 
 const Homepage = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [isElectron, setIsElectron] = useState(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -17,7 +18,19 @@ const Homepage = () => {
 			setIsLoggedIn(!!session);
 		};
 
+		// Check if the app is running in Electron
+		const checkIfElectron = () => {
+			if (
+				typeof window !== "undefined" &&
+				window.process &&
+				window.process.type === "renderer"
+			) {
+				setIsElectron(true);
+			}
+		};
+
 		checkSession();
+		checkIfElectron();
 	}, []);
 
 	const handleGetStartedClick = () => {
@@ -64,12 +77,14 @@ const Homepage = () => {
 						>
 							Get Started
 						</button>
-						<a
-							href="https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v1.4.2/SwiftTasks-1.4.2.exe"
-							className="inline-block px-6 py-3 bg-gray-700 dark:bg-gray-800 text-white font-semibold rounded-full hover:bg-gray-600 dark:hover:bg-gray-700 transition"
-						>
-							Download for Windows
-						</a>
+						{!isElectron && (
+							<a
+								href="https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v1.5.0/SwiftTasks-1.5.0.exe"
+								className="inline-block px-6 py-3 bg-gray-700 dark:bg-gray-800 text-white font-semibold rounded-full hover:bg-gray-600 dark:hover:bg-gray-700 transition"
+							>
+								Download for Windows
+							</a>
+						)}
 					</div>
 				</div>
 				<div className="mt-10 md:mt-0">

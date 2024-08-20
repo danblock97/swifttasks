@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { toast } from "react-toastify";
+import CategoryInput from "./CategoryInput";
 
 const SubtaskModal = ({
 	isOpen,
@@ -9,92 +10,106 @@ const SubtaskModal = ({
 	parentTaskId,
 	fetchSubtasks,
 }) => {
-	const [newSubtask, setNewSubtask] = useState({
+	const [subtaskData, setSubtaskData] = useState({
 		title: "",
 		description: "",
 		due_date: "",
 		priority: "low",
-		status: "todo",
+		status: "To Do", // Default display value
+		categories: [],
 	});
 
 	useEffect(() => {
 		if (subtask) {
-			setNewSubtask({
+			setSubtaskData({
 				title: subtask.title,
 				description: subtask.description,
 				due_date: subtask.due_date,
 				priority: subtask.priority,
-				status: subtask.status || "todo",
+				status: subtask.status ? formatStatus(subtask.status) : "To Do", // Format status for display
+				categories: subtask.categories || [],
 			});
 		} else {
-			setNewSubtask({
+			setSubtaskData({
 				title: "",
 				description: "",
 				due_date: "",
 				priority: "low",
-				status: "todo",
+				status: "To Do", // Default to display value
+				categories: [],
 			});
 		}
 	}, [subtask]);
 
+	const formatStatus = (status) => {
+		switch (status) {
+			case "to_do":
+				return "To Do";
+			case "in_progress":
+				return "In Progress";
+			case "done":
+				return "Done";
+			default:
+				return status;
+		}
+	};
+
+	const reverseFormatStatus = (status) => {
+		switch (status) {
+			case "To Do":
+				return "to_do";
+			case "In Progress":
+				return "in_progress";
+			case "Done":
+				return "done";
+			default:
+				return status;
+		}
+	};
+
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
-		setNewSubtask((prevTask) => ({ ...prevTask, [name]: value }));
+		setSubtaskData((prevSubtask) => ({ ...prevSubtask, [name]: value }));
 	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		try {
-			const {
-				data: { user },
-			} = await supabase.auth.getUser();
-			if (!user) {
-				toast.error("User not authenticated");
-				return;
-			}
+		const user = await supabase.auth.getUser();
+		if (!user) {
+			toast.error("User not authenticated");
+			return;
+		}
 
-			const subtaskData = {
-				title: newSubtask.title,
-				description: newSubtask.description,
-				due_date: newSubtask.due_date,
-				priority: newSubtask.priority,
-				status: newSubtask.status,
-				parent_task_id: parentTaskId,
-				user_id: user.id,
-			};
+		const subtaskPayload = {
+			title: subtaskData.title,
+			description: subtaskData.description,
+			due_date: subtaskData.due_date,
+			priority: subtaskData.priority,
+			status: reverseFormatStatus(subtaskData.status), // Convert back to storage value
+			parent_task_id: parentTaskId,
+			user_id: user.id,
+			categories: subtaskData.categories,
+		};
 
-			let error;
-			if (subtask) {
-				// Update existing subtask
-				({ error } = await supabase
-					.from("subtasks")
-					.update(subtaskData)
-					.eq("id", subtask.id));
-			} else {
-				// Create new subtask
-				({ error } = await supabase.from("subtasks").insert([subtaskData]));
-			}
+		let error;
+		if (subtask) {
+			// Update existing subtask
+			({ error } = await supabase
+				.from("subtasks")
+				.update(subtaskPayload)
+				.eq("id", subtask.id));
+		} else {
+			// Create new subtask
+			({ error } = await supabase.from("subtasks").insert([subtaskPayload]));
+		}
 
-			if (error) {
-				console.error("Error saving subtask:", error);
-				toast.error("Error saving subtask");
-			} else {
-				setNewSubtask({
-					title: "",
-					description: "",
-					due_date: "",
-					priority: "low",
-					status: "todo",
-				});
-				onClose();
-				fetchSubtasks(); // Fetch subtasks after creating/updating a subtask
-				toast.success(
-					`Subtask ${subtask ? "updated" : "created"} successfully`
-				);
-			}
-		} catch (error) {
-			console.error("Error fetching user:", error);
-			toast.error("Error fetching user");
+		if (error) {
+			console.error("Error saving subtask:", error);
+			toast.error("Error saving subtask");
+		} else {
+			onClose();
+			fetchSubtasks();
+			toast.success(`Subtask ${subtask ? "updated" : "created"} successfully`);
 		}
 	};
 
@@ -114,7 +129,7 @@ const SubtaskModal = ({
 						<input
 							type="text"
 							name="title"
-							value={newSubtask.title}
+							value={subtaskData.title}
 							onChange={handleInputChange}
 							placeholder="Title"
 							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
@@ -127,7 +142,7 @@ const SubtaskModal = ({
 						</label>
 						<textarea
 							name="description"
-							value={newSubtask.description}
+							value={subtaskData.description}
 							onChange={handleInputChange}
 							placeholder="Description"
 							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
@@ -140,7 +155,7 @@ const SubtaskModal = ({
 						<input
 							type="date"
 							name="due_date"
-							value={newSubtask.due_date}
+							value={subtaskData.due_date}
 							onChange={handleInputChange}
 							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 						/>
@@ -151,7 +166,7 @@ const SubtaskModal = ({
 						</label>
 						<select
 							name="priority"
-							value={newSubtask.priority}
+							value={subtaskData.priority}
 							onChange={handleInputChange}
 							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 						>
@@ -160,23 +175,32 @@ const SubtaskModal = ({
 							<option value="high">High</option>
 						</select>
 					</div>
-					{subtask && ( // Only show status when editing
-						<div className="mb-4">
-							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
-								Status
-							</label>
-							<select
-								name="status"
-								value={newSubtask.status}
-								onChange={handleInputChange}
-								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
-							>
-								<option value="todo">To Do</option>
-								<option value="in-progress">In Progress</option>
-								<option value="done">Done</option>
-							</select>
-						</div>
-					)}
+					<div className="mb-4">
+						<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+							Status
+						</label>
+						<select
+							name="status"
+							value={subtaskData.status}
+							onChange={handleInputChange}
+							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+						>
+							<option value="To Do">To Do</option>
+							<option value="In Progress">In Progress</option>
+							<option value="Done">Done</option>
+						</select>
+					</div>
+					<div className="mb-4">
+						<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+							Categories
+						</label>
+						<CategoryInput
+							categories={subtaskData.categories}
+							setCategories={(categories) =>
+								setSubtaskData((prev) => ({ ...prev, categories }))
+							}
+						/>
+					</div>
 					<div className="flex justify-end space-x-2">
 						<button
 							type="button"
