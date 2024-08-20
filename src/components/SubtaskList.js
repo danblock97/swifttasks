@@ -1,8 +1,9 @@
+// SubtaskList.js
 import React, { useState } from "react";
 import SubtaskModal from "./SubtaskModal";
 import { toast } from "react-toastify";
 import { supabase } from "../lib/supabaseClient";
-import { statusMapping } from "../utils"; // Import the statusMapping
+import { statusMapping } from "../utils";
 
 const SubtaskList = ({
 	taskId,
@@ -85,6 +86,12 @@ const SubtaskList = ({
 											<p>Due Date: {subtask.due_date}</p>
 											<p>Priority: {capitalizeFirstLetter(subtask.priority)}</p>
 											<p>Status: {statusMapping[subtask.status]}</p>
+											<p>
+												Categories:{" "}
+												{subtask.categories && subtask.categories.length > 0
+													? subtask.categories.join(", ")
+													: "None"}
+											</p>
 										</div>
 									</div>
 									<div className="flex ml-4">

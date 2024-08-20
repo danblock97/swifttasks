@@ -1,7 +1,15 @@
 import React, { useState } from "react";
+import Select from "react-select"; // Use a select library like react-select
 import { supabase } from "../lib/supabaseClient";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+const categoryOptions = [
+	{ value: "Home", label: "Home" },
+	{ value: "Work", label: "Work" },
+	{ value: "Personal", label: "Personal" },
+	{ value: "Shopping", label: "Shopping" },
+];
 
 const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 	const [newTask, setNewTask] = useState({
@@ -9,11 +17,19 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 		description: "",
 		due_date: "",
 		priority: "low",
+		categories: [],
 	});
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
 		setNewTask((prevTask) => ({ ...prevTask, [name]: value }));
+	};
+
+	const handleCategoryChange = (selectedOptions) => {
+		setNewTask((prevTask) => ({
+			...prevTask,
+			categories: selectedOptions.map((option) => option.value),
+		}));
 	};
 
 	const createTask = async (e) => {
@@ -32,6 +48,7 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 				description: newTask.description,
 				due_date: newTask.due_date,
 				priority: newTask.priority,
+				categories: newTask.categories,
 				user_id: user.id,
 			};
 
@@ -49,6 +66,7 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 					description: "",
 					due_date: "",
 					priority: "low",
+					categories: [],
 				});
 				onClose();
 				await fetchTasks(true); // Ensure tasks are fetched and select the last created task
@@ -57,11 +75,6 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 		} catch (error) {
 			console.error("Error fetching user:", error);
 			toast.error("Error fetching user");
-		} finally {
-			// As a last resort, force a page refresh to update the task list
-			setTimeout(() => {
-				window.location.reload();
-			}, 500);
 		}
 	};
 
@@ -126,6 +139,19 @@ const TaskModal = ({ isOpen, onClose, fetchTasks }) => {
 							<option value="medium">Medium</option>
 							<option value="high">High</option>
 						</select>
+					</div>
+					<div className="mb-4">
+						<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+							Categories
+						</label>
+						<Select
+							isMulti
+							name="categories"
+							options={categoryOptions}
+							className="basic-multi-select"
+							classNamePrefix="select"
+							onChange={handleCategoryChange}
+						/>
 					</div>
 					<div className="flex justify-end space-x-2">
 						<button

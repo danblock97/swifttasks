@@ -1,9 +1,18 @@
+// TaskDetail.js
 import React, { useState, useEffect, useCallback } from "react";
+import Select from "react-select";
 import { supabase } from "../lib/supabaseClient";
 import SubtaskList from "./SubtaskList";
 import { toast } from "react-toastify";
 import SubtaskModal from "./SubtaskModal";
 import { statusMapping, statusMappingReverse } from "../utils";
+
+const categoryOptions = [
+	{ value: "Home", label: "Home" },
+	{ value: "Work", label: "Work" },
+	{ value: "Personal", label: "Personal" },
+	{ value: "Shopping", label: "Shopping" },
+];
 
 const TaskDetail = ({ task, fetchTasks }) => {
 	const [title, setTitle] = useState(task.title);
@@ -11,6 +20,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 	const [dueDate, setDueDate] = useState(task.due_date);
 	const [priority, setPriority] = useState(task.priority);
 	const [status, setStatus] = useState(statusMapping[task.status]);
+	const [categories, setCategories] = useState(task.categories || []);
 	const [isEditing, setIsEditing] = useState(false);
 	const [isSubtaskModalOpen, setIsSubtaskModalOpen] = useState(false);
 	const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
@@ -41,6 +51,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 		setDueDate(task.due_date);
 		setPriority(task.priority);
 		setStatus(statusMapping[task.status]);
+		setCategories(task.categories || []);
 		fetchSubtasks(); // Fetch subtasks when the task changes
 	}, [task, fetchSubtasks]);
 
@@ -53,6 +64,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 				due_date: dueDate,
 				priority,
 				status: statusMappingReverse[status],
+				categories,
 			})
 			.eq("id", task.id);
 
@@ -226,6 +238,26 @@ const TaskDetail = ({ task, fetchTasks }) => {
 										<option value="Done">Done</option>
 									</select>
 								</div>
+								<div className="mb-4">
+									<label className="block text-gray-300 font-bold mb-2">
+										Categories
+									</label>
+									<Select
+										isMulti
+										name="categories"
+										options={categoryOptions}
+										value={categoryOptions.filter((option) =>
+											categories.includes(option.value)
+										)}
+										onChange={(selectedOptions) =>
+											setCategories(
+												selectedOptions.map((option) => option.value)
+											)
+										}
+										className="basic-multi-select"
+										classNamePrefix="select"
+									/>
+								</div>
 								<div className="flex justify-end space-x-2">
 									<button
 										onClick={updateTask}
@@ -277,6 +309,15 @@ const TaskDetail = ({ task, fetchTasks }) => {
 									<span className="font-semibold">Status:</span>{" "}
 									<span className="font-medium">{status}</span>
 								</p>
+
+								{/* Categories */}
+								<p className="text-gray-800 dark:text-gray-300 mb-2">
+									<span className="font-semibold">Categories:</span>{" "}
+									{categories && categories.length > 0
+										? categories.join(", ")
+										: "None"}
+								</p>
+
 								<div className="flex justify-end space-x-2">
 									<button
 										onClick={() => setIsEditing(true)}

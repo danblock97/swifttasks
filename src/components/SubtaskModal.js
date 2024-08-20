@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
+import Select from "react-select";
 import { supabase } from "../lib/supabaseClient";
 import { toast } from "react-toastify";
+
+const categoryOptions = [
+	{ value: "Home", label: "Home" },
+	{ value: "Work", label: "Work" },
+	{ value: "Personal", label: "Personal" },
+	{ value: "Shopping", label: "Shopping" },
+];
 
 const SubtaskModal = ({
 	isOpen,
@@ -15,6 +23,7 @@ const SubtaskModal = ({
 		due_date: "",
 		priority: "low",
 		status: "todo",
+		categories: [],
 	});
 
 	useEffect(() => {
@@ -25,6 +34,7 @@ const SubtaskModal = ({
 				due_date: subtask.due_date,
 				priority: subtask.priority,
 				status: subtask.status || "todo",
+				categories: subtask.categories || [],
 			});
 		} else {
 			setNewSubtask({
@@ -33,6 +43,7 @@ const SubtaskModal = ({
 				due_date: "",
 				priority: "low",
 				status: "todo",
+				categories: [],
 			});
 		}
 	}, [subtask]);
@@ -40,6 +51,13 @@ const SubtaskModal = ({
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
 		setNewSubtask((prevTask) => ({ ...prevTask, [name]: value }));
+	};
+
+	const handleCategoryChange = (selectedOptions) => {
+		setNewSubtask((prevTask) => ({
+			...prevTask,
+			categories: selectedOptions.map((option) => option.value),
+		}));
 	};
 
 	const handleSubmit = async (e) => {
@@ -61,6 +79,7 @@ const SubtaskModal = ({
 				status: newSubtask.status,
 				parent_task_id: parentTaskId,
 				user_id: user.id,
+				categories: newSubtask.categories,
 			};
 
 			let error;
@@ -85,6 +104,7 @@ const SubtaskModal = ({
 					due_date: "",
 					priority: "low",
 					status: "todo",
+					categories: [],
 				});
 				onClose();
 				fetchSubtasks(); // Fetch subtasks after creating/updating a subtask
@@ -177,6 +197,22 @@ const SubtaskModal = ({
 							</select>
 						</div>
 					)}
+					<div className="mb-4">
+						<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+							Categories
+						</label>
+						<Select
+							isMulti
+							name="categories"
+							options={categoryOptions}
+							className="basic-multi-select"
+							classNamePrefix="select"
+							onChange={handleCategoryChange}
+							value={categoryOptions.filter((option) =>
+								newSubtask.categories.includes(option.value)
+							)}
+						/>
+					</div>
 					<div className="flex justify-end space-x-2">
 						<button
 							type="button"
