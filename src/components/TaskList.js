@@ -134,7 +134,7 @@ const TaskList = ({ onOpenTaskModal }) => {
 	}
 
 	return (
-		<div className="flex flex-col md:flex-row h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300">
+		<div className="flex flex-col md:flex-row min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300">
 			<div className="w-full md:w-1/3 p-4">
 				<div className="flex flex-col md:flex-row md:justify-between items-start md:items-center mb-4">
 					<h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-0">
