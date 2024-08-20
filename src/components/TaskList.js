@@ -13,6 +13,8 @@ const TaskList = ({ onOpenTaskModal }) => {
 	const [shownNotifications, setShownNotifications] = useState(new Set());
 	const [notificationChecked, setNotificationChecked] = useState(false);
 	const [isLoading, setIsLoading] = useState(true); // Add a loading state
+	const [taskCategories, setTaskCategories] = useState([]); // State to hold unique categories
+	const [selectedCategory, setSelectedCategory] = useState(""); // State for selected category filter
 
 	const fetchTasks = useCallback(async (selectLastTask = false) => {
 		const {
@@ -34,6 +36,12 @@ const TaskList = ({ onOpenTaskModal }) => {
 			console.error("Error fetching tasks:", error);
 		} else {
 			setTasks(data);
+
+			// Collect unique categories from tasks
+			const categories = [
+				...new Set(data.flatMap((task) => task.categories || [])),
+			];
+			setTaskCategories(categories);
 
 			if (data.length > 0) {
 				const savedTaskId = localStorage.getItem("selectedTaskId");
@@ -104,6 +112,10 @@ const TaskList = ({ onOpenTaskModal }) => {
 		fetchTasks(true); // Refresh tasks and select the newly created task
 	};
 
+	const handleCategoryChange = (e) => {
+		setSelectedCategory(e.target.value);
+	};
+
 	if (isLoading) {
 		return <Loading />; // Show loading spinner while fetching data
 	}
@@ -124,34 +136,54 @@ const TaskList = ({ onOpenTaskModal }) => {
 	return (
 		<div className="flex flex-col md:flex-row h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300">
 			<div className="w-full md:w-1/3 p-4">
-				<h2 className="text-xl md:text-2xl font-bold mb-4">Your Tasks</h2>
+				<div className="flex justify-between items-center mb-4">
+					<h2 className="text-xl md:text-2xl font-bold">Your Tasks</h2>
+					<select
+						value={selectedCategory}
+						onChange={handleCategoryChange}
+						className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					>
+						<option value="">All Categories</option>
+						{taskCategories.map((category, index) => (
+							<option key={index} value={category}>
+								{category}
+							</option>
+						))}
+					</select>
+				</div>
 				<ul>
-					{tasks.map((task) => (
-						<li key={task.id} onClick={() => handleTaskClick(task)}>
-							<div
-								className={`task-item hover:bg-gray-100 dark:hover:bg-gray-800 p-4 mb-2 rounded-lg shadow-md flex`}
-							>
+					{tasks
+						.filter(
+							(task) =>
+								selectedCategory === "" ||
+								(task.categories && task.categories.includes(selectedCategory))
+						)
+						.map((task) => (
+							<li key={task.id} onClick={() => handleTaskClick(task)}>
 								<div
-									className={`w-2 h-full mr-4 ${
-										task.priority === "low"
-											? "bg-green-500"
-											: task.priority === "medium"
-											? "bg-orange-500"
-											: "bg-red-500"
-									}`}
-								></div>
-								<div
-									className={`flex-1 ${
-										selectedTask && selectedTask.id === task.id
-											? "bg-grey-100"
-											: ""
-									}`}
+									className={`task-item hover:bg-gray-100 dark:hover:bg-gray-800 p-4 mb-2 rounded-lg shadow-md flex`}
 								>
-									<p className="font-semibold">{task.title}</p>
+									<div
+										className={`w-2 h-full mr-4 ${
+											task.priority === "low"
+												? "bg-green-500"
+												: task.priority === "medium"
+												? "bg-orange-500"
+												: "bg-red-500"
+										}`}
+									></div>
+									<div
+										className={`flex-1 ${
+											selectedTask && selectedTask.id === task.id
+												? "bg-grey-100"
+												: ""
+										}`}
+									>
+										<p className="font-semibold">{task.title}</p>
+									</div>
 								</div>
-							</div>
-						</li>
-					))}
+							</li>
+						))}
 				</ul>
 			</div>
 			<div className="w-full md:w-2/3 p-4">
