@@ -3,14 +3,16 @@ import { supabase } from "../lib/supabaseClient";
 import TaskDetail from "./TaskDetail";
 import NoTasks from "./NoTasks";
 import TaskModal from "./TaskModal";
+import Loading from "./Loading"; // Import the LoadingSpinner component
 import { toast } from "react-toastify";
 
 const TaskList = ({ onOpenTaskModal }) => {
 	const [tasks, setTasks] = useState([]);
 	const [selectedTask, setSelectedTask] = useState(null);
 	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-	const [shownNotifications, setShownNotifications] = useState(new Set()); // Use Set to track shown notifications
-	const [notificationChecked, setNotificationChecked] = useState(false); // Track if notifications have been checked
+	const [shownNotifications, setShownNotifications] = useState(new Set());
+	const [notificationChecked, setNotificationChecked] = useState(false);
+	const [isLoading, setIsLoading] = useState(true); // Add a loading state
 
 	const fetchTasks = useCallback(async (selectLastTask = false) => {
 		const {
@@ -25,7 +27,7 @@ const TaskList = ({ onOpenTaskModal }) => {
 		const { data, error } = await supabase
 			.from("tasks")
 			.select("*")
-			.eq("user_id", user.id) // Filter tasks by user_id
+			.eq("user_id", user.id)
 			.order("created_at", { ascending: false });
 
 		if (error) {
@@ -47,30 +49,35 @@ const TaskList = ({ onOpenTaskModal }) => {
 				setSelectedTask(null);
 			}
 		}
+		setIsLoading(false); // Set loading to false once data is fetched
 	}, []);
 
 	const checkForDueOrOverdueTasks = useCallback(() => {
-		if (notificationChecked) return; // Ensure this runs only once
+		if (notificationChecked) return;
 
-		const today = new Date().toDateString();
+		const today = new Date();
+		today.setHours(0, 0, 0, 0); // Ensure the time component is removed
 
 		tasks.forEach((task) => {
-			if (shownNotifications.has(task.id)) return; // Skip if notification already shown
+			if (shownNotifications.has(task.id)) return;
 
-			const taskDueDate = new Date(task.due_date).toDateString();
+			const taskDueDate = new Date(task.due_date);
+			taskDueDate.setHours(0, 0, 0, 0); // Remove the time component for accurate comparison
+
 			const isOverdue = taskDueDate < today && task.status !== "done";
-			const isDueToday = taskDueDate === today && task.status !== "done";
+			const isDueToday =
+				taskDueDate.getTime() === today.getTime() && task.status !== "done";
 
 			if (isDueToday) {
 				toast.info(`You have tasks due today: "${task.title}"`);
-				setShownNotifications((prev) => new Set(prev).add(task.id)); // Mark as shown
+				setShownNotifications((prev) => new Set(prev).add(task.id));
 			} else if (isOverdue) {
 				toast.warning(`You have overdue tasks: "${task.title}"`);
-				setShownNotifications((prev) => new Set(prev).add(task.id)); // Mark as shown
+				setShownNotifications((prev) => new Set(prev).add(task.id));
 			}
 		});
 
-		setNotificationChecked(true); // Mark as checked to avoid rerunning
+		setNotificationChecked(true);
 	}, [tasks, shownNotifications, notificationChecked]);
 
 	useEffect(() => {
@@ -94,8 +101,12 @@ const TaskList = ({ onOpenTaskModal }) => {
 
 	const handleCloseTaskModal = () => {
 		setIsTaskModalOpen(false);
-		fetchTasks(true); // Pass true to select the last created task
+		fetchTasks(true); // Refresh tasks and select the newly created task
 	};
+
+	if (isLoading) {
+		return <Loading />; // Show loading spinner while fetching data
+	}
 
 	if (tasks.length === 0) {
 		return (

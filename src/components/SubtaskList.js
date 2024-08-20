@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import SubtaskModal from "./SubtaskModal";
 import { toast } from "react-toastify";
 import { supabase } from "../lib/supabaseClient";
-import { statusMapping } from "../utils";
+import { formatStatus } from "../utils";
 
 const SubtaskList = ({
 	taskId,
@@ -85,7 +85,7 @@ const SubtaskList = ({
 										<div className="text-sm text-gray-500 dark:text-gray-400">
 											<p>Due Date: {subtask.due_date}</p>
 											<p>Priority: {capitalizeFirstLetter(subtask.priority)}</p>
-											<p>Status: {statusMapping[subtask.status]}</p>
+											<p>Status: {formatStatus(subtask.status)}</p>
 											<p>
 												Categories:{" "}
 												{subtask.categories && subtask.categories.length > 0
