@@ -315,6 +315,7 @@ const Navbar = ({ onOpenTaskModal }) => {
 				)}
 			</div>
 
+			{/* Update Available Icon */}
 			{updateAvailable && (
 				<div className="hidden lg:flex items-center space-x-2">
 					<button

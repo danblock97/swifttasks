@@ -8,41 +8,7 @@ remoteMain.initialize();
 let win;
 let updateWin;
 
-async function createWindow() {
-	const isDev = (await import("electron-is-dev")).default;
-
-	// Create the main application window
-	await createMainWindow(isDev);
-
-	if (!isDev) {
-		// AutoUpdater setup in production
-		autoUpdater.checkForUpdatesAndNotify();
-	}
-
-	autoUpdater.on("update-available", () => {
-		createUpdateWindow();
-		if (win) {
-			win.hide(); // Hide the main window if it's already open
-		}
-	});
-
-	autoUpdater.on("update-downloaded", () => {
-		if (updateWin) {
-			updateWin.close(); // Close the update window when update is downloaded
-		}
-		showMainWindow(); // Show the main window after the update
-	});
-
-	autoUpdater.on("error", (err) => {
-		console.error("Update error:", err);
-		if (updateWin) {
-			updateWin.close(); // Close the update window if there's an error
-		}
-		showMainWindow(); // Show the main window if there's an error
-	});
-}
-
-async function createMainWindow(isDev) {
+async function createMainWindow() {
 	win = new BrowserWindow({
 		width: 1280,
 		height: 720,
@@ -58,28 +24,14 @@ async function createMainWindow(isDev) {
 
 	remoteMain.enable(win.webContents);
 
-	win.loadURL(
-		isDev
-			? "http://localhost:3000"
-			: `file://${path.join(__dirname, "build", "index.html")}`
-	);
+	win.loadURL(`file://${path.join(__dirname, "build", "index.html")}`);
 
 	win.once("ready-to-show", () => {
-		win.show(); // Show the main window after it is ready
+		win.show();
 	});
-
-	if (isDev) {
-		win.webContents.openDevTools(); // Open DevTools in development
-	}
 }
 
-function showMainWindow() {
-	if (win) {
-		win.show(); // Show the main window after the update
-	}
-}
-
-function createUpdateWindow() {
+async function createUpdateWindow() {
 	updateWin = new BrowserWindow({
 		width: 400,
 		height: 300,
@@ -102,7 +54,37 @@ function createUpdateWindow() {
 	updateWin.show(); // Show the update window immediately
 }
 
-app.on("ready", createWindow);
+function setupAutoUpdater() {
+	autoUpdater.on("update-available", () => {
+		if (win) {
+			win.webContents.send("update_available"); // Notify the renderer process
+		}
+		createUpdateWindow(); // Show the update window when an update is available
+	});
+
+	autoUpdater.on("update-downloaded", () => {
+		if (win) {
+			win.webContents.send("update_downloaded"); // Notify the renderer process
+		}
+		// After the update is downloaded, quit and install the update
+		autoUpdater.quitAndInstall();
+	});
+
+	autoUpdater.on("error", (err) => {
+		console.error("Update error:", err);
+		if (updateWin) {
+			updateWin.close(); // Close the update window if there's an error
+		}
+	});
+
+	autoUpdater.checkForUpdatesAndNotify(); // Check for updates immediately
+}
+
+app.on("ready", () => {
+	createMainWindow().then(() => {
+		setupAutoUpdater();
+	});
+});
 
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
@@ -112,7 +94,9 @@ app.on("window-all-closed", () => {
 
 app.on("activate", () => {
 	if (BrowserWindow.getAllWindows().length === 0) {
-		createWindow();
+		createMainWindow().then(() => {
+			setupAutoUpdater();
+		});
 	}
 });
 
