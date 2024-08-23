@@ -11,14 +11,11 @@ let updateWin;
 async function createWindow() {
 	const isDev = (await import("electron-is-dev")).default;
 
-	// Create the main application window but don't show it yet
+	// Create the main application window
 	await createMainWindow(isDev);
 
-	if (isDev) {
-		// Simulate update in development mode
-		simulateUpdateProcess();
-	} else {
-		// AutoUpdater setup
+	if (!isDev) {
+		// AutoUpdater setup in production
 		autoUpdater.checkForUpdatesAndNotify();
 	}
 
@@ -68,18 +65,16 @@ async function createMainWindow(isDev) {
 	);
 
 	win.once("ready-to-show", () => {
-		console.log("Main window ready to show");
-		// The main window will only be shown after the update process is complete
+		win.show(); // Show the main window after it is ready
 	});
 
 	if (isDev) {
-		win.webContents.openDevTools();
+		win.webContents.openDevTools(); // Open DevTools in development
 	}
 }
 
 function showMainWindow() {
 	if (win) {
-		console.log("Showing main window");
 		win.show(); // Show the main window after the update
 	}
 }
@@ -87,7 +82,7 @@ function showMainWindow() {
 function createUpdateWindow() {
 	updateWin = new BrowserWindow({
 		width: 400,
-		height: 500,
+		height: 300,
 		frame: false,
 		alwaysOnTop: true,
 		resizable: false,
@@ -105,17 +100,6 @@ function createUpdateWindow() {
 	});
 
 	updateWin.show(); // Show the update window immediately
-}
-
-function simulateUpdateProcess() {
-	// Show the update window first
-	createUpdateWindow();
-
-	// Simulate the download process after a few seconds
-	setTimeout(() => {
-		console.log("Simulating update download...");
-		autoUpdater.emit("update-downloaded");
-	}, 5000); // Simulate download time
 }
 
 app.on("ready", createWindow);
