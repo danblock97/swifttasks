@@ -10,21 +10,28 @@
 				justify-content: center;
 				align-items: center;
 				height: 100vh;
-				margin: 0;
-				font-family: Arial, sans-serif;
 				background-color: #6366f1;
-				color: white;
+				color: #ffffff;
+				font-family: Arial, sans-serif;
+				margin: 0;
 			}
-			img {
-				max-width: 100px;
+			.loader {
+				text-align: center;
+			}
+			.loader img {
+				width: 150px;
 				margin-bottom: 20px;
+			}
+			.loader p {
+				font-size: 18px;
+				margin: 0;
 			}
 		</style>
 	</head>
 	<body>
-		<div>
-			<img src="logo.jpg" alt="Logo" />
-			<h1>Updating...</h1>
+		<div class="loader">
+			<img src="./logo.jpg" alt="App Logo" />
+			<p>Updating, please wait...</p>
 		</div>
 	</body>
 </html>

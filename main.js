@@ -6,12 +6,46 @@ const remoteMain = require("@electron/remote/main");
 remoteMain.initialize();
 
 let win;
-let progressWin;
+let updateWin;
 
 async function createWindow() {
 	const isDev = (await import("electron-is-dev")).default;
 
-	// Create the browser window.
+	// Create the main application window but don't show it yet
+	await createMainWindow(isDev);
+
+	if (isDev) {
+		// Simulate update in development mode
+		simulateUpdateProcess();
+	} else {
+		// AutoUpdater setup
+		autoUpdater.checkForUpdatesAndNotify();
+	}
+
+	autoUpdater.on("update-available", () => {
+		createUpdateWindow();
+		if (win) {
+			win.hide(); // Hide the main window if it's already open
+		}
+	});
+
+	autoUpdater.on("update-downloaded", () => {
+		if (updateWin) {
+			updateWin.close(); // Close the update window when update is downloaded
+		}
+		showMainWindow(); // Show the main window after the update
+	});
+
+	autoUpdater.on("error", (err) => {
+		console.error("Update error:", err);
+		if (updateWin) {
+			updateWin.close(); // Close the update window if there's an error
+		}
+		showMainWindow(); // Show the main window if there's an error
+	});
+}
+
+async function createMainWindow(isDev) {
 	win = new BrowserWindow({
 		width: 1280,
 		height: 720,
@@ -27,46 +61,36 @@ async function createWindow() {
 
 	remoteMain.enable(win.webContents);
 
-	// Load the splash screen
-	win.loadURL(`file://${path.join(__dirname, "assets", "splash.html")}`);
+	win.loadURL(
+		isDev
+			? "http://localhost:3000"
+			: `file://${path.join(__dirname, "build", "index.html")}`
+	);
 
-	// Once ready, show the main window
 	win.once("ready-to-show", () => {
-		win.show();
-
-		// Load the main application window
-		win.loadURL(
-			isDev
-				? "http://localhost:3000"
-				: `file://${path.join(__dirname, "build", "index.html")}`
-		);
-
-		if (isDev) {
-			win.webContents.openDevTools();
-		}
+		console.log("Main window ready to show");
+		// The main window will only be shown after the update process is complete
 	});
 
-	// AutoUpdater setup
-	autoUpdater.checkForUpdatesAndNotify();
-
-	autoUpdater.on("update-available", () => {
-		createProgressWindow();
-		win.webContents.send("update_available");
-	});
-
-	autoUpdater.on("update-downloaded", () => {
-		if (progressWin) {
-			progressWin.close(); // Close the progress window when update is downloaded
-		}
-		win.webContents.send("update_downloaded");
-	});
+	if (isDev) {
+		win.webContents.openDevTools();
+	}
 }
 
-async function createProgressWindow() {
-	progressWin = new BrowserWindow({
+function showMainWindow() {
+	if (win) {
+		console.log("Showing main window");
+		win.show(); // Show the main window after the update
+	}
+}
+
+function createUpdateWindow() {
+	updateWin = new BrowserWindow({
 		width: 400,
-		height: 200,
+		height: 500,
 		frame: false,
+		alwaysOnTop: true,
+		resizable: false,
 		icon: path.join(__dirname, "assets", "logo.ico"),
 		webPreferences: {
 			nodeIntegration: true,
@@ -74,11 +98,24 @@ async function createProgressWindow() {
 		},
 	});
 
-	progressWin.loadURL(
-		`file://${path.join(__dirname, "assets", "progress.html")}`
-	);
-	progressWin.setAlwaysOnTop(true);
-	progressWin.setSkipTaskbar(true);
+	updateWin.loadURL(`file://${path.join(__dirname, "assets", "update.html")}`);
+
+	updateWin.on("closed", () => {
+		updateWin = null;
+	});
+
+	updateWin.show(); // Show the update window immediately
+}
+
+function simulateUpdateProcess() {
+	// Show the update window first
+	createUpdateWindow();
+
+	// Simulate the download process after a few seconds
+	setTimeout(() => {
+		console.log("Simulating update download...");
+		autoUpdater.emit("update-downloaded");
+	}, 5000); // Simulate download time
 }
 
 app.on("ready", createWindow);
