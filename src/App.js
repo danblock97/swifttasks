@@ -20,6 +20,7 @@ import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import { supabase } from "./lib/supabaseClient";
 import { ToastContainer } from "react-toastify";
+import { Flip } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Footer from "./components/Footer";
 import Loading from "./components/Loading";
@@ -106,7 +107,19 @@ const App = () => {
 						fetchTasks={fetchTasksCallback}
 					/>
 					<Footer />
-					<ToastContainer />
+					<ToastContainer
+						position="bottom-right"
+						autoClose={3000}
+						hideProgressBar={false}
+						newestOnTop
+						closeOnClick
+						rtl={false}
+						pauseOnFocusLoss={false}
+						draggable
+						pauseOnHover
+						theme="colored"
+						transition={Flip}
+					/>
 				</div>
 			</Router>
 		</DarkModeProvider>

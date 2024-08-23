@@ -12,6 +12,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 	const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
 	const [subtasks, setSubtasks] = useState([]);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+	const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
 
 	const fetchSubtasks = useCallback(async () => {
 		const { data, error } = await supabase
@@ -110,6 +111,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 			toast.error("Error deleting task or subtasks");
 		} finally {
 			setIsDeleteModalOpen(false);
+			setIsWarningModalOpen(false); // Close the warning modal
 		}
 	};
 
@@ -119,6 +121,14 @@ const TaskDetail = ({ task, fetchTasks }) => {
 		} else {
 			handleDeleteTask();
 		}
+	};
+
+	const handleWarningModalClose = () => {
+		setIsWarningModalOpen(false);
+	};
+
+	const showWarningModal = () => {
+		setIsWarningModalOpen(true);
 	};
 
 	return (
@@ -188,7 +198,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 								Edit
 							</button>
 							<button
-								onClick={confirmDeleteTask}
+								onClick={showWarningModal}
 								className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
 							>
 								Delete
@@ -254,6 +264,32 @@ const TaskDetail = ({ task, fetchTasks }) => {
 							</button>
 							<button
 								onClick={handleDeleteTask}
+								className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+							>
+								Delete
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{isWarningModalOpen && (
+				<div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+					<div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md">
+						<h2 className="text-xl font-bold mb-4">Warning</h2>
+						<p>
+							Are you sure you want to delete this task? This action cannot be
+							undone.
+						</p>
+						<div className="flex justify-end space-x-2 mt-4">
+							<button
+								onClick={handleWarningModalClose}
+								className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
+							>
+								Cancel
+							</button>
+							<button
+								onClick={confirmDeleteTask}
 								className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
 							>
 								Delete
