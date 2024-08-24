@@ -34,7 +34,7 @@ async function createMainWindow() {
 async function createUpdateWindow() {
 	updateWin = new BrowserWindow({
 		width: 400,
-		height: 300,
+		height: 500,
 		frame: false,
 		alwaysOnTop: true,
 		resizable: false,
@@ -77,7 +77,7 @@ function setupAutoUpdater() {
 		}
 	});
 
-	autoUpdater.checkForUpdatesAndNotify(); // Check for updates immediately
+	autoUpdater.checkForUpdates(); // Check for updates immediately
 }
 
 app.on("ready", () => {

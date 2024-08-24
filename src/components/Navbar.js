@@ -10,16 +10,15 @@ import {
 	MdMenu,
 	MdClose as MdCloseIcon,
 } from "react-icons/md";
-import { FaCloudDownloadAlt } from "react-icons/fa";
 
 let ipcRenderer;
 let remote;
-
-if (
+const isElectron =
 	typeof window !== "undefined" &&
 	window.process &&
-	window.process.type === "renderer"
-) {
+	window.process.type === "renderer";
+
+if (isElectron) {
 	ipcRenderer = window.require("electron").ipcRenderer;
 	remote = window.require("@electron/remote");
 }
@@ -28,14 +27,11 @@ const Navbar = ({ onOpenTaskModal }) => {
 	const [session, setSession] = useState(null);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const navigate = useNavigate();
-	const [updateAvailable, setUpdateAvailable] = useState(false);
 	const { isDarkMode, toggleDarkMode } = useDarkMode();
 
 	useEffect(() => {
 		if (ipcRenderer) {
-			ipcRenderer.on("update_available", () => {
-				setUpdateAvailable(true);
-			});
+			ipcRenderer.on("update_available", () => {});
 
 			ipcRenderer.on("update_downloaded", () => {
 				ipcRenderer.removeAllListeners("update_available");
@@ -104,12 +100,6 @@ const Navbar = ({ onOpenTaskModal }) => {
 
 	const handleClose = () => {
 		if (remote) remote.getCurrentWindow().close();
-	};
-
-	const handleUpdate = () => {
-		if (ipcRenderer) {
-			ipcRenderer.send("restart_app");
-		}
 	};
 
 	const toggleMobileMenu = () => {
@@ -215,6 +205,12 @@ const Navbar = ({ onOpenTaskModal }) => {
 							onClick={handleMinimize}
 							className="w-8 h-8 flex items-center justify-center text-white hover:bg-indigo-700 rounded"
 							aria-label="Minimize"
+							style={{
+								lineHeight: 1,
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+							}}
 						>
 							<MdMinimize size={20} />
 						</button>
@@ -314,19 +310,6 @@ const Navbar = ({ onOpenTaskModal }) => {
 					</button>
 				)}
 			</div>
-
-			{/* Update Available Icon */}
-			{updateAvailable && (
-				<div className="hidden lg:flex items-center space-x-2">
-					<button
-						onClick={handleUpdate}
-						className="w-8 h-8 flex items-center justify-center text-white bg-green-600 hover:bg-green-700 rounded"
-						aria-label="Update Available"
-					>
-						<FaCloudDownloadAlt size={20} />
-					</button>
-				</div>
-			)}
 		</nav>
 	);
 };

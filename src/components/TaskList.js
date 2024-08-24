@@ -66,6 +66,9 @@ const TaskList = ({ onOpenTaskModal }) => {
 		const today = new Date();
 		today.setHours(0, 0, 0, 0); // Ensure the time component is removed
 
+		let dueTodayTasks = [];
+		let overdueTasks = [];
+
 		tasks.forEach((task) => {
 			if (shownNotifications.has(task.id)) return;
 
@@ -77,13 +80,21 @@ const TaskList = ({ onOpenTaskModal }) => {
 				taskDueDate.getTime() === today.getTime() && task.status !== "done";
 
 			if (isDueToday) {
-				toast.info(`You have tasks due today: "${task.title}"`);
+				dueTodayTasks.push(task.title);
 				setShownNotifications((prev) => new Set(prev).add(task.id));
 			} else if (isOverdue) {
-				toast.warning(`You have overdue tasks: "${task.title}"`);
+				overdueTasks.push(task.title);
 				setShownNotifications((prev) => new Set(prev).add(task.id));
 			}
 		});
+
+		if (dueTodayTasks.length > 0) {
+			toast.info(`You have ${dueTodayTasks.length} tasks due today`);
+		}
+
+		if (overdueTasks.length > 0) {
+			toast.warning(`You have ${overdueTasks.length} overdue tasks`);
+		}
 
 		setNotificationChecked(true);
 	}, [tasks, shownNotifications, notificationChecked]);

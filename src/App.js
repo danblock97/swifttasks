@@ -117,7 +117,7 @@ const App = () => {
 						pauseOnFocusLoss={false}
 						draggable
 						pauseOnHover
-						theme="colored"
+						theme="light"
 						transition={Flip}
 					/>
 				</div>
