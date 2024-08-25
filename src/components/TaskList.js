@@ -5,6 +5,7 @@ import NoTasks from "./NoTasks";
 import TaskModal from "./TaskModal";
 import Loading from "./Loading"; // Import the LoadingSpinner component
 import { toast } from "react-toastify";
+import { useLocation } from "react-router-dom"; // Added to handle task highlighting
 
 const TaskList = ({ onOpenTaskModal }) => {
 	const [tasks, setTasks] = useState([]);
@@ -15,50 +16,59 @@ const TaskList = ({ onOpenTaskModal }) => {
 	const [isLoading, setIsLoading] = useState(true); // Add a loading state
 	const [taskCategories, setTaskCategories] = useState([]); // State to hold unique categories
 	const [selectedCategory, setSelectedCategory] = useState(""); // State for selected category filter
+	const location = useLocation(); // Added to handle task highlighting
 
-	const fetchTasks = useCallback(async (selectLastTask = false) => {
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
+	const fetchTasks = useCallback(
+		async (selectLastTask = false) => {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
 
-		if (!user) {
-			console.error("User not authenticated");
-			return;
-		}
-
-		const { data, error } = await supabase
-			.from("tasks")
-			.select("*")
-			.eq("user_id", user.id)
-			.order("created_at", { ascending: false });
-
-		if (error) {
-			console.error("Error fetching tasks:", error);
-		} else {
-			setTasks(data);
-
-			// Collect unique categories from tasks
-			const categories = [
-				...new Set(data.flatMap((task) => task.categories || [])),
-			];
-			setTaskCategories(categories);
-
-			if (data.length > 0) {
-				const savedTaskId = localStorage.getItem("selectedTaskId");
-				let selected = savedTaskId
-					? data.find((task) => task.id === parseInt(savedTaskId))
-					: null;
-				if (!selected || selectLastTask) {
-					selected = data[0];
-					localStorage.setItem("selectedTaskId", selected.id);
-				}
-				setSelectedTask(selected);
-			} else {
-				setSelectedTask(null);
+			if (!user) {
+				console.error("User not authenticated");
+				return;
 			}
-		}
-		setIsLoading(false); // Set loading to false once data is fetched
-	}, []);
+
+			const { data, error } = await supabase
+				.from("tasks")
+				.select("*")
+				.eq("user_id", user.id)
+				.order("created_at", { ascending: false });
+
+			if (error) {
+				console.error("Error fetching tasks:", error);
+			} else {
+				setTasks(data);
+
+				// Collect unique categories from tasks
+				const categories = [
+					...new Set(data.flatMap((task) => task.categories || [])),
+				];
+				setTaskCategories(categories);
+
+				if (data.length > 0) {
+					const savedTaskId = localStorage.getItem("selectedTaskId");
+					const taskIdToHighlight = location.state?.highlightTaskId;
+					let selected =
+						taskIdToHighlight &&
+						data.find((task) => task.id === taskIdToHighlight);
+
+					if (!selected && savedTaskId) {
+						selected = data.find((task) => task.id === parseInt(savedTaskId));
+					}
+					if (!selected || selectLastTask) {
+						selected = data[0];
+						localStorage.setItem("selectedTaskId", selected.id);
+					}
+					setSelectedTask(selected);
+				} else {
+					setSelectedTask(null);
+				}
+			}
+			setIsLoading(false); // Set loading to false once data is fetched
+		},
+		[location.state?.highlightTaskId]
+	);
 
 	const checkForDueOrOverdueTasks = useCallback(() => {
 		if (notificationChecked) return;
@@ -148,9 +158,7 @@ const TaskList = ({ onOpenTaskModal }) => {
 		<div className="flex flex-col md:flex-row min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300">
 			<div className="w-full md:w-1/3 p-4">
 				<div className="flex flex-col md:flex-row md:justify-between items-start md:items-center mb-4">
-					<h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-0">
-						Your Tasks
-					</h2>
+					<h2 className="text-xl font-bold mb-2 md:mb-0">Your Tasks</h2>
 					<select
 						value={selectedCategory}
 						onChange={handleCategoryChange}
@@ -175,7 +183,11 @@ const TaskList = ({ onOpenTaskModal }) => {
 						.map((task) => (
 							<li key={task.id} onClick={() => handleTaskClick(task)}>
 								<div
-									className={`task-item hover:bg-gray-100 dark:hover:bg-gray-800 p-4 mb-2 rounded-lg shadow-md flex`}
+									className={`task-item hover:bg-gray-100 dark:hover:bg-gray-800 p-4 mb-2 rounded-lg shadow-md flex ${
+										selectedTask && selectedTask.id === task.id
+											? "bg-grey-100"
+											: ""
+									}`}
 								>
 									<div
 										className={`w-2 h-full mr-4 ${

@@ -14,6 +14,12 @@ async function initStore() {
 	return new Store();
 }
 
+// Function to dynamically import electron-is-dev
+async function isDev() {
+	const electronIsDev = (await import("electron-is-dev")).default;
+	return electronIsDev;
+}
+
 async function createMainWindow() {
 	win = new BrowserWindow({
 		width: 1280,
@@ -30,7 +36,14 @@ async function createMainWindow() {
 
 	remoteMain.enable(win.webContents);
 
-	win.loadURL(`file://${path.join(__dirname, "build", "index.html")}`);
+	const devMode = await isDev();
+
+	if (devMode) {
+		win.loadURL("http://localhost:3000"); // Load from localhost in development
+		win.webContents.openDevTools(); // Open DevTools automatically in development
+	} else {
+		win.loadURL(`file://${path.join(__dirname, "build", "index.html")}`); // Load the built React app in production
+	}
 
 	win.once("ready-to-show", () => {
 		win.show();
@@ -113,7 +126,14 @@ function setupAutoUpdater(store) {
 
 app.on("ready", async () => {
 	const store = await initStore();
-	setupAutoUpdater(store); // Start checking for updates
+
+	const devMode = await isDev();
+
+	if (devMode) {
+		createMainWindow(); // Skip the updater and just show the main window in development
+	} else {
+		setupAutoUpdater(store); // Start checking for updates in production
+	}
 });
 
 app.on("window-all-closed", () => {

@@ -8,7 +8,7 @@ import {
 	MdClose,
 	MdCropSquare,
 	MdMenu,
-	MdClose as MdCloseIcon,
+	MdSearch,
 } from "react-icons/md";
 
 let ipcRenderer;
@@ -26,6 +26,8 @@ if (isElectron) {
 const Navbar = ({ onOpenTaskModal }) => {
 	const [session, setSession] = useState(null);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const [searchTerm, setSearchTerm] = useState("");
+	const [searchResults, setSearchResults] = useState([]);
 	const navigate = useNavigate();
 	const { isDarkMode, toggleDarkMode } = useDarkMode();
 
@@ -76,6 +78,32 @@ const Navbar = ({ onOpenTaskModal }) => {
 		};
 	}, []);
 
+	const handleSearch = async (e) => {
+		const term = e.target.value;
+		setSearchTerm(term);
+
+		if (term.trim() !== "") {
+			const { data, error } = await supabase
+				.from("tasks")
+				.select("id, title")
+				.ilike("title", `%${term}%`);
+
+			if (error) {
+				console.error("Error searching tasks:", error);
+			} else {
+				setSearchResults(data);
+			}
+		} else {
+			setSearchResults([]);
+		}
+	};
+
+	const handleSearchClick = (taskId) => {
+		navigate(`/tasks`, { state: { highlightTaskId: taskId } });
+		setSearchResults([]);
+		setSearchTerm("");
+	};
+
 	const handleLogout = async () => {
 		await supabase.auth.signOut();
 		setSession(null);
@@ -107,210 +135,241 @@ const Navbar = ({ onOpenTaskModal }) => {
 	};
 
 	return (
-		<nav
-			className="bg-indigo-500 p-4 shadow-lg flex justify-between items-center sticky top-0 z-50"
-			style={{ WebkitAppRegion: "drag" }} // Enable dragging for the navbar
-		>
-			{/* Logo and Title on the left */}
-			<div
-				className="flex items-center"
-				style={{ WebkitAppRegion: "no-drag" }} // Prevent dragging on this section
-			>
-				<h1
-					className="text-white text-2xl font-bold cursor-pointer"
-					onClick={() => navigate("/")}
+		<div className="flex h-full">
+			{/* Main Content Area */}
+			<div className={"flex-1"}>
+				{/* Small Electron Header Bar */}
+				{isElectron && (
+					<div
+						className="bg-indigo-600 h-8 flex justify-between items-center px-4 text-gray-300"
+						style={{ WebkitAppRegion: "drag" }}
+					>
+						<div
+							className="text-sm absolute left-0 pl-2"
+							style={{ WebkitAppRegion: "no-drag" }}
+						>
+							SwiftTasks
+						</div>
+						<div className="flex space-x-2 ml-auto">
+							<button
+								onClick={handleMinimize}
+								className="hover:bg-gray-700 p-1 rounded"
+								style={{ WebkitAppRegion: "no-drag" }}
+							>
+								<MdMinimize size={16} />
+							</button>
+							<button
+								onClick={handleMaximizeToggle}
+								className="hover:bg-gray-700 p-1 rounded"
+								style={{ WebkitAppRegion: "no-drag" }}
+							>
+								<MdCropSquare size={16} />
+							</button>
+							<button
+								onClick={handleClose}
+								className="hover:bg-red-600 p-1 rounded"
+								style={{ WebkitAppRegion: "no-drag" }}
+							>
+								<MdClose size={16} />
+							</button>
+						</div>
+					</div>
+				)}
+
+				{/* Main Navbar */}
+				<nav
+					className={`shadow-lg flex justify-between items-center sticky top-0 z-40 ${
+						isElectron ? "bg-indigo-500" : "bg-indigo-500"
+					} `}
+					style={{ WebkitAppRegion: isElectron ? "drag" : "no-drag" }}
 				>
-					SwiftTasks
-				</h1>
-			</div>
+					{/* Centered Navigation Options */}
+					<div
+						className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 space-x-4"
+						style={{ WebkitAppRegion: "no-drag" }}
+					>
+						{session ? (
+							<div className="flex space-x-4">
+								<button
+									onClick={() => {
+										navigate("/profile");
+										setIsMobileMenuOpen(false);
+									}}
+									className="text-white cursor-pointer hover:text-gray-200"
+								>
+									Profile
+								</button>
+								<button
+									onClick={() => {
+										navigate("/tasks");
+										setIsMobileMenuOpen(false);
+									}}
+									className="text-white cursor-pointer hover:text-gray-200"
+								>
+									View Tasks
+								</button>
+								<button
+									onClick={() => {
+										onOpenTaskModal();
+										setIsMobileMenuOpen(false);
+									}}
+									className="text-white cursor-pointer hover:text-gray-200"
+								>
+									Create Task
+								</button>
+								<button
+									onClick={() => {
+										handleLogout();
+										setIsMobileMenuOpen(false);
+									}}
+									className="text-white cursor-pointer hover:text-gray-200"
+								>
+									Logout
+								</button>
+							</div>
+						) : (
+							<button
+								onClick={() => {
+									handleLogin();
+									setIsMobileMenuOpen(false);
+								}}
+								className="text-white cursor-pointer hover:text-gray-200"
+							>
+								Login
+							</button>
+						)}
+					</div>
 
-			{/* Centered Navigation Options */}
-			<div
-				className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 space-x-4"
-				style={{ WebkitAppRegion: "no-drag" }} // Prevent dragging on this section
-			>
-				{session ? (
-					<div className="flex space-x-4">
+					{/* Search Bar and Dark Mode Toggle */}
+					<div
+						className="flex items-center space-x-4 ml-auto mr-3"
+						style={{ WebkitAppRegion: "no-drag" }}
+					>
+						<div className="relative w-full max-w-xs md:max-w-md lg:max-w-lg">
+							<div className="flex items-center bg-white dark:bg-gray-700 rounded-lg shadow focus-within:ring-2 focus-within:ring-blue-500 transition">
+								<input
+									type="text"
+									value={searchTerm}
+									onChange={handleSearch}
+									placeholder="Search tasks..."
+									className="w-full py-2 pl-4 rounded-lg focus:outline-none bg-transparent text-gray-800 dark:text-gray-300"
+								/>
+								<MdSearch
+									className="absolute right-2 text-gray-400 dark:text-gray-500"
+									size={24}
+								/>
+							</div>
+							{searchResults.length > 0 && (
+								<ul className="absolute bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg mt-2 w-full z-10 max-h-60 overflow-y-auto">
+									{searchResults.map((result) => (
+										<li
+											key={result.id}
+											onClick={() => handleSearchClick(result.id)}
+											className="px-4 py-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-300"
+										>
+											{result.title}
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
+
+						{/* Dark Mode Toggle */}
+						<Switch
+							onChange={toggleDarkMode}
+							checked={isDarkMode}
+							offColor="#888"
+							onColor="#000"
+							uncheckedIcon={false}
+							checkedIcon={false}
+							height={16}
+							width={32}
+						/>
+					</div>
+
+					{/* Mobile Menu Toggle */}
+					<div className="lg:hidden ml-auto">
 						<button
-							onClick={() => {
-								navigate("/profile");
-								setIsMobileMenuOpen(false);
-							}}
-							className="text-white cursor-pointer hover:text-gray-200"
+							onClick={toggleMobileMenu}
+							className="text-white"
+							style={{ WebkitAppRegion: "no-drag" }}
 						>
-							Profile
-						</button>
-						<button
-							onClick={() => {
-								navigate("/tasks");
-								setIsMobileMenuOpen(false);
-							}}
-							className="text-white cursor-pointer hover:text-gray-200"
-						>
-							View Tasks
-						</button>
-						<button
-							onClick={() => {
-								onOpenTaskModal();
-								setIsMobileMenuOpen(false);
-							}}
-							className="text-white cursor-pointer hover:text-gray-200"
-						>
-							Create Task
-						</button>
-						<button
-							onClick={() => {
-								handleLogout();
-								setIsMobileMenuOpen(false);
-							}}
-							className="text-white cursor-pointer hover:text-gray-200"
-						>
-							Logout
+							{isMobileMenuOpen ? <MdClose size={24} /> : <MdMenu size={24} />}
 						</button>
 					</div>
-				) : (
-					<button
-						onClick={() => {
-							handleLogin();
-							setIsMobileMenuOpen(false);
-						}}
-						className="text-white cursor-pointer hover:text-gray-200"
+
+					{/* Mobile Menu */}
+					<div
+						className={`fixed inset-0 ${
+							isElectron ? "bg-indigo-500" : "bg-indigo-500"
+						} z-40 flex flex-col items-center justify-center transform transition-transform duration-300 ease-in-out ${
+							isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+						} lg:hidden`}
+						style={{ WebkitAppRegion: "no-drag" }}
 					>
-						Login
-					</button>
-				)}
-			</div>
+						{isMobileMenuOpen && (
+							<button
+								onClick={toggleMobileMenu}
+								className="absolute top-4 right-4 text-white"
+							>
+								<MdClose size={24} />
+							</button>
+						)}
 
-			{/* Right section with Switch and window controls */}
-			<div
-				className="flex items-center space-x-4 ml-auto"
-				style={{ WebkitAppRegion: "no-drag" }} // Prevent dragging on this section
-			>
-				{/* Dark Mode Toggle */}
-				<Switch
-					onChange={toggleDarkMode}
-					checked={isDarkMode}
-					offColor="#888"
-					onColor="#000"
-					uncheckedIcon={false}
-					checkedIcon={false}
-					height={16}
-					width={32}
-				/>
-
-				{/* Window Control Buttons */}
-				{remote && (
-					<div className="hidden lg:flex items-center space-x-2">
-						<button
-							onClick={handleMinimize}
-							className="w-8 h-8 flex items-center justify-center text-white hover:bg-indigo-700 rounded"
-							aria-label="Minimize"
-							style={{
-								lineHeight: 1,
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}
-						>
-							<MdMinimize size={20} />
-						</button>
-						<button
-							onClick={handleMaximizeToggle}
-							className="w-8 h-8 flex items-center justify-center text-white hover:bg-indigo-700 rounded"
-							aria-label="Maximize"
-						>
-							<MdCropSquare size={20} />
-						</button>
-						<button
-							onClick={handleClose}
-							className="w-8 h-8 flex items-center justify-center text-white hover:bg-red-600 rounded"
-							aria-label="Close"
-						>
-							<MdClose size={20} />
-						</button>
+						{session ? (
+							<div className="flex flex-col space-y-4">
+								<button
+									onClick={() => {
+										navigate("/profile");
+										setIsMobileMenuOpen(false);
+									}}
+									className="text-white text-xl cursor-pointer hover:text-gray-200"
+								>
+									Profile
+								</button>
+								<button
+									onClick={() => {
+										navigate("/tasks");
+										setIsMobileMenuOpen(false);
+									}}
+									className="text-white text-xl cursor-pointer hover:text-gray-200"
+								>
+									View Tasks
+								</button>
+								<button
+									onClick={() => {
+										onOpenTaskModal();
+										setIsMobileMenuOpen(false);
+									}}
+									className="text-white text-xl cursor-pointer hover:text-gray-200"
+								>
+									Create Task
+								</button>
+								<button
+									onClick={() => {
+										handleLogout();
+										setIsMobileMenuOpen(false);
+									}}
+									className="text-white text-xl cursor-pointer hover:text-gray-200"
+								>
+									Logout
+								</button>
+							</div>
+						) : (
+							<button
+								onClick={() => {
+									handleLogin();
+									setIsMobileMenuOpen(false);
+								}}
+								className="text-white text-xl cursor-pointer hover:text-gray-200"
+							>
+								Login
+							</button>
+						)}
 					</div>
-				)}
+				</nav>
 			</div>
-
-			{/* Mobile Menu Toggle */}
-			<div className="lg:hidden ml-auto">
-				<button
-					onClick={toggleMobileMenu}
-					className="text-white"
-					style={{ WebkitAppRegion: "no-drag" }} // Prevent dragging on this button
-				>
-					{isMobileMenuOpen ? <MdCloseIcon size={24} /> : <MdMenu size={24} />}
-				</button>
-			</div>
-
-			{/* Mobile Menu */}
-			<div
-				className={`fixed inset-0 bg-indigo-500 z-40 flex flex-col items-center justify-center transform transition-transform duration-300 ease-in-out ${
-					isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-				} lg:hidden`}
-				style={{ WebkitAppRegion: "no-drag" }} // Prevent dragging on this section
-			>
-				{isMobileMenuOpen && (
-					<button
-						onClick={toggleMobileMenu}
-						className="absolute top-4 right-4 text-white"
-					>
-						<MdCloseIcon size={24} />
-					</button>
-				)}
-
-				{session ? (
-					<div className="flex flex-col space-y-4">
-						<button
-							onClick={() => {
-								navigate("/profile");
-								setIsMobileMenuOpen(false);
-							}}
-							className="text-white text-xl cursor-pointer hover:text-gray-200"
-						>
-							Profile
-						</button>
-						<button
-							onClick={() => {
-								navigate("/tasks");
-								setIsMobileMenuOpen(false);
-							}}
-							className="text-white text-xl cursor-pointer hover:text-gray-200"
-						>
-							View Tasks
-						</button>
-						<button
-							onClick={() => {
-								onOpenTaskModal();
-								setIsMobileMenuOpen(false);
-							}}
-							className="text-white text-xl cursor-pointer hover:text-gray-200"
-						>
-							Create Task
-						</button>
-						<button
-							onClick={() => {
-								handleLogout();
-								setIsMobileMenuOpen(false);
-							}}
-							className="text-white text-xl cursor-pointer hover:text-gray-200"
-						>
-							Logout
-						</button>
-					</div>
-				) : (
-					<button
-						onClick={() => {
-							handleLogin();
-							setIsMobileMenuOpen(false);
-						}}
-						className="text-white text-xl cursor-pointer hover:text-gray-200"
-					>
-						Login
-					</button>
-				)}
-			</div>
-		</nav>
+		</div>
 	);
 };
 
