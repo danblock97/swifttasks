@@ -15,8 +15,10 @@ const SubtaskModal = ({
 		description: "",
 		due_date: "",
 		priority: "low",
-		status: "To Do", // Default display value
+		status: "To Do",
 		categories: [],
+		recurrence_type: "none", // New state for recurrence type
+		recurrence_custom_interval: null, // New state for custom recurrence interval
 	});
 
 	useEffect(() => {
@@ -26,8 +28,10 @@ const SubtaskModal = ({
 				description: subtask.description,
 				due_date: subtask.due_date,
 				priority: subtask.priority,
-				status: subtask.status ? formatStatus(subtask.status) : "To Do", // Format status for display
+				status: subtask.status ? formatStatus(subtask.status) : "To Do",
 				categories: subtask.categories || [],
+				recurrence_type: subtask.recurrence_type || "none", // Set recurrence type
+				recurrence_custom_interval: subtask.recurrence_custom_interval || null, // Set custom interval
 			});
 		} else {
 			setSubtaskData({
@@ -35,8 +39,10 @@ const SubtaskModal = ({
 				description: "",
 				due_date: "",
 				priority: "low",
-				status: "To Do", // Default to display value
+				status: "To Do",
 				categories: [],
+				recurrence_type: "none", // Default recurrence type
+				recurrence_custom_interval: null, // Default custom interval
 			});
 		}
 	}, [subtask]);
@@ -74,8 +80,35 @@ const SubtaskModal = ({
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		let newDueDate = subtaskData.due_date;
+		let newStatus = subtaskData.status;
 
-		// Fetch the authenticated user
+		// Check if the subtask is being marked as complete
+		if (reverseFormatStatus(subtaskData.status) === "done") {
+			const currentDate = new Date(subtaskData.due_date);
+
+			if (subtaskData.recurrence_type === "daily") {
+				currentDate.setDate(currentDate.getDate() + 1);
+			} else if (subtaskData.recurrence_type === "weekly") {
+				currentDate.setDate(currentDate.getDate() + 7);
+			} else if (subtaskData.recurrence_type === "monthly") {
+				currentDate.setMonth(currentDate.getMonth() + 1);
+			} else if (
+				subtaskData.recurrence_type === "custom" &&
+				subtaskData.recurrence_custom_interval
+			) {
+				currentDate.setDate(
+					currentDate.getDate() + subtaskData.recurrence_custom_interval
+				);
+			}
+
+			// Convert new date to YYYY-MM-DD format
+			newDueDate = currentDate.toISOString().split("T")[0];
+
+			// Reset the status to "To Do"
+			newStatus = "To Do";
+		}
+
 		const {
 			data: { user },
 			error: authError,
@@ -94,12 +127,14 @@ const SubtaskModal = ({
 		const subtaskPayload = {
 			title: subtaskData.title,
 			description: subtaskData.description,
-			due_date: subtaskData.due_date,
+			due_date: newDueDate, // Update with new due date
 			priority: subtaskData.priority,
-			status: reverseFormatStatus(subtaskData.status), // Convert back to storage value
+			status: reverseFormatStatus(newStatus), // Reset status to "To Do"
 			parent_task_id: parentTaskId,
-			user_id: user.id, // Correctly attach user_id
+			user_id: user.id,
 			categories: subtaskData.categories,
+			recurrence_type: subtaskData.recurrence_type,
+			recurrence_custom_interval: subtaskData.recurrence_custom_interval,
 		};
 
 		let error;
@@ -212,6 +247,39 @@ const SubtaskModal = ({
 							}
 						/>
 					</div>
+					{/* Recurrence Options */}
+					<div className="mb-4">
+						<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+							Recurrence
+						</label>
+						<select
+							name="recurrence_type"
+							value={subtaskData.recurrence_type}
+							onChange={handleInputChange}
+							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+						>
+							<option value="none">None</option>
+							<option value="daily">Daily</option>
+							<option value="weekly">Weekly</option>
+							<option value="monthly">Monthly</option>
+							<option value="custom">Custom</option>
+						</select>
+					</div>
+					{subtaskData.recurrence_type === "custom" && (
+						<div className="mb-4">
+							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+								Custom Interval (Days)
+							</label>
+							<input
+								type="number"
+								name="recurrence_custom_interval"
+								value={subtaskData.recurrence_custom_interval || ""}
+								onChange={handleInputChange}
+								placeholder="Enter number of days"
+								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+							/>
+						</div>
+					)}
 					<div className="flex justify-end space-x-2">
 						<button
 							type="button"

@@ -11,8 +11,10 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 		description: "",
 		due_date: "",
 		priority: "low",
-		status: "To Do", // Default display value
+		status: "To Do",
 		categories: [],
+		recurrence_type: "none", // New state for recurrence type
+		recurrence_custom_interval: null, // New state for custom recurrence interval
 	});
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -23,8 +25,10 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 				description: task.description,
 				due_date: task.due_date,
 				priority: task.priority,
-				status: task.status ? formatStatus(task.status) : "To Do", // Format status for display
+				status: task.status ? formatStatus(task.status) : "To Do",
 				categories: task.categories || [],
+				recurrence_type: task.recurrence_type || "none", // Set recurrence type
+				recurrence_custom_interval: task.recurrence_custom_interval || null, // Set custom interval
 			});
 		} else {
 			setTaskData({
@@ -32,8 +36,10 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 				description: "",
 				due_date: "",
 				priority: "low",
-				status: "To Do", // Default to display value
+				status: "To Do",
 				categories: [],
+				recurrence_type: "none", // Default recurrence type
+				recurrence_custom_interval: null, // Default custom interval
 			});
 		}
 	}, [task]);
@@ -72,6 +78,34 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		let error;
+		let newDueDate = taskData.due_date;
+		let newStatus = taskData.status;
+
+		// Check if the task is being marked as complete
+		if (reverseFormatStatus(taskData.status) === "done") {
+			const currentDate = new Date(taskData.due_date);
+
+			if (taskData.recurrence_type === "daily") {
+				currentDate.setDate(currentDate.getDate() + 1);
+			} else if (taskData.recurrence_type === "weekly") {
+				currentDate.setDate(currentDate.getDate() + 7);
+			} else if (taskData.recurrence_type === "monthly") {
+				currentDate.setMonth(currentDate.getMonth() + 1);
+			} else if (
+				taskData.recurrence_type === "custom" &&
+				taskData.recurrence_custom_interval
+			) {
+				currentDate.setDate(
+					currentDate.getDate() + taskData.recurrence_custom_interval
+				);
+			}
+
+			// Convert new date to YYYY-MM-DD format
+			newDueDate = currentDate.toISOString().split("T")[0];
+
+			// Reset the status to "To Do"
+			newStatus = "To Do";
+		}
 
 		if (task) {
 			// Edit existing task
@@ -80,10 +114,12 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 				.update({
 					title: taskData.title,
 					description: taskData.description,
-					due_date: taskData.due_date,
+					due_date: newDueDate, // Update with new due date
 					priority: taskData.priority,
-					status: reverseFormatStatus(taskData.status), // Convert back to storage value
+					status: reverseFormatStatus(newStatus), // Reset status to "To Do"
 					categories: taskData.categories,
+					recurrence_type: taskData.recurrence_type,
+					recurrence_custom_interval: taskData.recurrence_custom_interval,
 				})
 				.eq("id", task.id));
 		} else {
@@ -99,7 +135,8 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 			({ error } = await supabase.from("tasks").insert([
 				{
 					...taskData,
-					status: reverseFormatStatus(taskData.status), // Convert back to storage value
+					due_date: newDueDate, // Set initial due date
+					status: reverseFormatStatus(newStatus), // Reset status to "To Do"
 					user_id: user.id,
 				},
 			]));
@@ -110,11 +147,11 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 			toast.error("Error saving task");
 		} else {
 			toast.success(`Task ${task ? "updated" : "created"} successfully`);
-			onClose(); // Close modal after save
-			setIsLoading(true); // Start loading spinner
+			onClose();
+			setIsLoading(true);
 			setTimeout(() => {
-				window.location.reload(); // Refresh the page after a delay to show the spinner
-			}, 500); // Adjust delay as needed
+				window.location.reload();
+			}, 500);
 		}
 	};
 
@@ -208,6 +245,39 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 								}
 							/>
 						</div>
+						{/* Recurrence Options */}
+						<div className="mb-4">
+							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+								Recurrence
+							</label>
+							<select
+								name="recurrence_type"
+								value={taskData.recurrence_type}
+								onChange={handleInputChange}
+								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+							>
+								<option value="none">None</option>
+								<option value="daily">Daily</option>
+								<option value="weekly">Weekly</option>
+								<option value="monthly">Monthly</option>
+								<option value="custom">Custom</option>
+							</select>
+						</div>
+						{taskData.recurrence_type === "custom" && (
+							<div className="mb-4">
+								<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+									Custom Interval (Days)
+								</label>
+								<input
+									type="number"
+									name="recurrence_custom_interval"
+									value={taskData.recurrence_custom_interval || ""}
+									onChange={handleInputChange}
+									placeholder="Enter number of days"
+									className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+								/>
+							</div>
+						)}
 						<div className="flex justify-end space-x-2">
 							<button
 								type="button"
