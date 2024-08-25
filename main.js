@@ -21,9 +21,23 @@ async function isDev() {
 }
 
 async function createMainWindow() {
-	win = new BrowserWindow({
+	const store = await initStore();
+
+	// Get the saved window state or default to initial values
+	const savedWindowState = store.get("windowState", {
 		width: 1280,
 		height: 720,
+		x: undefined,
+		y: undefined,
+		isMaximized: false,
+		isFullScreen: false,
+	});
+
+	win = new BrowserWindow({
+		width: savedWindowState.width,
+		height: savedWindowState.height,
+		x: savedWindowState.x,
+		y: savedWindowState.y,
 		frame: false,
 		icon: path.join(__dirname, "assets", "logo.ico"),
 		webPreferences: {
@@ -33,6 +47,14 @@ async function createMainWindow() {
 		},
 		show: false, // Initially hide the window
 	});
+
+	if (savedWindowState.isMaximized) {
+		win.maximize();
+	}
+
+	if (savedWindowState.isFullScreen) {
+		win.setFullScreen(true);
+	}
 
 	remoteMain.enable(win.webContents);
 
@@ -47,6 +69,19 @@ async function createMainWindow() {
 
 	win.once("ready-to-show", () => {
 		win.show();
+	});
+
+	// Store window size, position, and state when it's about to be closed
+	win.on("close", () => {
+		const windowState = {
+			width: win.getBounds().width,
+			height: win.getBounds().height,
+			x: win.getBounds().x,
+			y: win.getBounds().y,
+			isMaximized: win.isMaximized(),
+			isFullScreen: win.isFullScreen(),
+		};
+		store.set("windowState", windowState);
 	});
 }
 
