@@ -1,6 +1,6 @@
 {
 	"name": "swifttasks",
-	"version": "1.5.2",
+	"version": "1.5.3",
 	"private": true,
 	"homepage": "./",
 	"main": "main.js",
@@ -19,6 +19,7 @@
 		"autoprefixer": "^10.4.20",
 		"date-fns": "^3.6.0",
 		"electron-is-dev": "^3.0.1",
+		"electron-store": "^10.0.0",
 		"electron-updater": "^6.2.1",
 		"postcss": "^8.4.41",
 		"react": "^18.3.1",

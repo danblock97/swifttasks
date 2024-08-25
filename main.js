@@ -8,6 +8,12 @@ remoteMain.initialize();
 let win;
 let updateWin;
 
+// Function to dynamically import and initialize electron-store
+async function initStore() {
+	const Store = (await import("electron-store")).default;
+	return new Store();
+}
+
 async function createMainWindow() {
 	win = new BrowserWindow({
 		width: 1280,
@@ -32,6 +38,10 @@ async function createMainWindow() {
 }
 
 async function createUpdateWindow() {
+	if (updateWin) {
+		return; // Prevent creating multiple update windows
+	}
+
 	updateWin = new BrowserWindow({
 		width: 400,
 		height: 500,
@@ -54,19 +64,39 @@ async function createUpdateWindow() {
 	updateWin.show(); // Show the update window immediately
 }
 
-function setupAutoUpdater() {
-	autoUpdater.on("update-available", () => {
-		if (win) {
-			win.webContents.send("update_available"); // Notify the renderer process
+function setupAutoUpdater(store) {
+	// Normal update checking process
+	autoUpdater.on("checking-for-update", () => {
+		if (updateWin) {
+			updateWin.webContents.send("update-status", "Checking for updates");
 		}
-		createUpdateWindow(); // Show the update window when an update is available
+		console.log("Checking for updates...");
+	});
+
+	autoUpdater.on("update-available", () => {
+		if (updateWin) {
+			updateWin.webContents.send("update-status", "Update found, restarting");
+		}
+		console.log("Update available, downloading...");
+		if (win) {
+			win.hide(); // Hide the main window if an update is available
+		}
+		createUpdateWindow(); // Only create the update window if not already created
+	});
+
+	autoUpdater.on("update-not-available", () => {
+		console.log("No update available, showing main window.");
+		if (updateWin) {
+			updateWin.close(); // Close the update window if no update is available
+		}
+		createMainWindow(); // Open the main window
 	});
 
 	autoUpdater.on("update-downloaded", () => {
-		if (win) {
-			win.webContents.send("update_downloaded"); // Notify the renderer process
+		if (updateWin) {
+			updateWin.webContents.send("update-status", "Update found, restarting");
 		}
-		// After the update is downloaded, quit and install the update
+		console.log("Update downloaded, installing...");
 		autoUpdater.quitAndInstall();
 	});
 
@@ -75,15 +105,15 @@ function setupAutoUpdater() {
 		if (updateWin) {
 			updateWin.close(); // Close the update window if there's an error
 		}
+		createMainWindow(); // Open the main window even if there's an error
 	});
 
-	autoUpdater.checkForUpdates(); // Check for updates immediately
+	autoUpdater.checkForUpdatesAndNotify(); // Check for updates immediately
 }
 
-app.on("ready", () => {
-	createMainWindow().then(() => {
-		setupAutoUpdater();
-	});
+app.on("ready", async () => {
+	const store = await initStore();
+	setupAutoUpdater(store); // Start checking for updates
 });
 
 app.on("window-all-closed", () => {
@@ -92,11 +122,11 @@ app.on("window-all-closed", () => {
 	}
 });
 
-app.on("activate", () => {
+app.on("activate", async () => {
+	const store = await initStore();
 	if (BrowserWindow.getAllWindows().length === 0) {
-		createMainWindow().then(() => {
-			setupAutoUpdater();
-		});
+		createUpdateWindow(); // Show the update window if reactivated
+		setupAutoUpdater(store); // Ensure the updater is set up
 	}
 });
 

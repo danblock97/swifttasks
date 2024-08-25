@@ -12,7 +12,6 @@ const TaskDetail = ({ task, fetchTasks }) => {
 	const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
 	const [subtasks, setSubtasks] = useState([]);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-	const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
 
 	const fetchSubtasks = useCallback(async () => {
 		const { data, error } = await supabase
@@ -110,32 +109,22 @@ const TaskDetail = ({ task, fetchTasks }) => {
 			console.error("Error deleting task or subtasks", error);
 			toast.error("Error deleting task or subtasks");
 		} finally {
-			setIsDeleteModalOpen(false);
-			setIsWarningModalOpen(false); // Close the warning modal
+			setIsDeleteModalOpen(false); // Close the modal after deletion
 		}
 	};
 
 	const confirmDeleteTask = () => {
-		if (subtasks.length > 0) {
-			setIsDeleteModalOpen(true);
-		} else {
-			handleDeleteTask();
-		}
+		setIsDeleteModalOpen(true);
 	};
 
-	const handleWarningModalClose = () => {
-		setIsWarningModalOpen(false);
-	};
-
-	const showWarningModal = () => {
-		setIsWarningModalOpen(true);
+	const handleDeleteModalClose = () => {
+		setIsDeleteModalOpen(false);
 	};
 
 	return (
 		<div className="flex flex-col flex-1 bg-white dark:bg-gray-900">
 			<div className="p-6 flex flex-col md:flex-row text-gray-300 flex-1">
 				<div className="flex flex-row space-x-4 flex-1">
-					{/* Priority line */}
 					<div
 						className={`w-2 ${
 							task.priority === "low"
@@ -145,7 +134,6 @@ const TaskDetail = ({ task, fetchTasks }) => {
 								: "bg-red-500"
 						}`}
 					></div>
-					{/* Task detail */}
 					<div className="flex-1 flex flex-col overflow-hidden">
 						<h3 className="text-xl font-bold mb-2 text-gray-800 dark:text-gray-300">
 							{task.title}
@@ -154,13 +142,11 @@ const TaskDetail = ({ task, fetchTasks }) => {
 							{task.description}
 						</p>
 
-						{/* Due Date */}
 						<p className="text-gray-800 dark:text-gray-300 mb-2">
 							<span className="font-semibold">Due Date:</span>{" "}
 							<span className="font-medium">{task.due_date}</span>
 						</p>
 
-						{/* Priority */}
 						<p className="text-gray-800 dark:text-gray-300 mb-2">
 							<span className="font-semibold">Priority:</span>
 							<span
@@ -176,13 +162,11 @@ const TaskDetail = ({ task, fetchTasks }) => {
 							</span>
 						</p>
 
-						{/* Status */}
 						<p className="text-gray-800 dark:text-gray-300 mb-2">
 							<span className="font-semibold">Status:</span>{" "}
 							<span className="font-medium">{formatStatus(task.status)}</span>
 						</p>
 
-						{/* Categories */}
 						<p className="text-gray-800 dark:text-gray-300 mb-2">
 							<span className="font-semibold">Categories:</span>{" "}
 							{task.categories && task.categories.length > 0
@@ -198,7 +182,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 								Edit
 							</button>
 							<button
-								onClick={showWarningModal}
+								onClick={confirmDeleteTask}
 								className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
 							>
 								Delete
@@ -249,7 +233,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 			/>
 			{isDeleteModalOpen && (
 				<div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
-					<div className="bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md">
+					<div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md">
 						<h2 className="text-xl font-bold mb-4">Delete Task</h2>
 						<p>
 							Deleting this task will also remove all associated subtasks. Are
@@ -257,39 +241,13 @@ const TaskDetail = ({ task, fetchTasks }) => {
 						</p>
 						<div className="flex justify-end space-x-2 mt-4">
 							<button
-								onClick={() => setIsDeleteModalOpen(false)}
+								onClick={handleDeleteModalClose}
 								className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
 							>
 								Cancel
 							</button>
 							<button
 								onClick={handleDeleteTask}
-								className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-							>
-								Delete
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{isWarningModalOpen && (
-				<div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
-					<div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md">
-						<h2 className="text-xl font-bold mb-4">Warning</h2>
-						<p>
-							Are you sure you want to delete this task? This action cannot be
-							undone.
-						</p>
-						<div className="flex justify-end space-x-2 mt-4">
-							<button
-								onClick={handleWarningModalClose}
-								className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
-							>
-								Cancel
-							</button>
-							<button
-								onClick={confirmDeleteTask}
 								className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
 							>
 								Delete

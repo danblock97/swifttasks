@@ -74,7 +74,18 @@ const SubtaskModal = ({
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		const user = await supabase.auth.getUser();
+
+		// Fetch the authenticated user
+		const {
+			data: { user },
+			error: authError,
+		} = await supabase.auth.getUser();
+		if (authError) {
+			console.error("Error fetching user:", authError);
+			toast.error("Error fetching user");
+			return;
+		}
+
 		if (!user) {
 			toast.error("User not authenticated");
 			return;
@@ -87,7 +98,7 @@ const SubtaskModal = ({
 			priority: subtaskData.priority,
 			status: reverseFormatStatus(subtaskData.status), // Convert back to storage value
 			parent_task_id: parentTaskId,
-			user_id: user.id,
+			user_id: user.id, // Correctly attach user_id
 			categories: subtaskData.categories,
 		};
 

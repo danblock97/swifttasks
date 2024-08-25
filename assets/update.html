@@ -31,7 +31,17 @@
 	<body>
 		<div class="loader">
 			<img src="./logo.jpg" alt="App Logo" />
-			<p>Updating, please wait...</p>
+			<p id="status-message">Checking for updates...</p>
 		</div>
+
+		<script>
+			const { ipcRenderer } = require("electron");
+
+			ipcRenderer.on("update-status", (event, message) => {
+				const statusMessage = document.getElementById("status-message");
+				// Update the text with static dots
+				statusMessage.textContent = `${message}`;
+			});
+		</script>
 	</body>
 </html>
