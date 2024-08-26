@@ -81,8 +81,11 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 		let newDueDate = taskData.due_date;
 		let newStatus = taskData.status;
 
-		// Check if the task is being marked as complete
-		if (reverseFormatStatus(taskData.status) === "done") {
+		// Only reset the status to "To Do" if the task is recurring
+		if (
+			reverseFormatStatus(taskData.status) === "done" &&
+			taskData.recurrence_type !== "none"
+		) {
 			const currentDate = new Date(taskData.due_date);
 
 			if (taskData.recurrence_type === "daily") {
@@ -103,27 +106,26 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 			// Convert new date to YYYY-MM-DD format
 			newDueDate = currentDate.toISOString().split("T")[0];
 
-			// Reset the status to "To Do"
+			// Reset the status to "To Do" only for recurring tasks
 			newStatus = "To Do";
 		}
 
+		// Update or insert the task with the new due date and status
 		if (task) {
-			// Edit existing task
 			({ error } = await supabase
 				.from("tasks")
 				.update({
 					title: taskData.title,
 					description: taskData.description,
-					due_date: newDueDate, // Update with new due date
+					due_date: newDueDate,
 					priority: taskData.priority,
-					status: reverseFormatStatus(newStatus), // Reset status to "To Do"
+					status: reverseFormatStatus(newStatus),
 					categories: taskData.categories,
 					recurrence_type: taskData.recurrence_type,
 					recurrence_custom_interval: taskData.recurrence_custom_interval,
 				})
 				.eq("id", task.id));
 		} else {
-			// Create new task
 			const {
 				data: { user },
 			} = await supabase.auth.getUser();
@@ -135,8 +137,8 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 			({ error } = await supabase.from("tasks").insert([
 				{
 					...taskData,
-					due_date: newDueDate, // Set initial due date
-					status: reverseFormatStatus(newStatus), // Reset status to "To Do"
+					due_date: newDueDate,
+					status: reverseFormatStatus(newStatus),
 					user_id: user.id,
 				},
 			]));

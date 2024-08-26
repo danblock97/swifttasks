@@ -83,8 +83,11 @@ const SubtaskModal = ({
 		let newDueDate = subtaskData.due_date;
 		let newStatus = subtaskData.status;
 
-		// Check if the subtask is being marked as complete
-		if (reverseFormatStatus(subtaskData.status) === "done") {
+		// Only reset the status to "To Do" if the subtask is recurring
+		if (
+			reverseFormatStatus(subtaskData.status) === "done" &&
+			subtaskData.recurrence_type !== "none"
+		) {
 			const currentDate = new Date(subtaskData.due_date);
 
 			if (subtaskData.recurrence_type === "daily") {
@@ -105,7 +108,7 @@ const SubtaskModal = ({
 			// Convert new date to YYYY-MM-DD format
 			newDueDate = currentDate.toISOString().split("T")[0];
 
-			// Reset the status to "To Do"
+			// Reset the status to "To Do" only for recurring subtasks
 			newStatus = "To Do";
 		}
 
@@ -127,9 +130,9 @@ const SubtaskModal = ({
 		const subtaskPayload = {
 			title: subtaskData.title,
 			description: subtaskData.description,
-			due_date: newDueDate, // Update with new due date
+			due_date: newDueDate,
 			priority: subtaskData.priority,
-			status: reverseFormatStatus(newStatus), // Reset status to "To Do"
+			status: reverseFormatStatus(newStatus),
 			parent_task_id: parentTaskId,
 			user_id: user.id,
 			categories: subtaskData.categories,
@@ -139,13 +142,11 @@ const SubtaskModal = ({
 
 		let error;
 		if (subtask) {
-			// Update existing subtask
 			({ error } = await supabase
 				.from("subtasks")
 				.update(subtaskPayload)
 				.eq("id", subtask.id));
 		} else {
-			// Create new subtask
 			({ error } = await supabase.from("subtasks").insert([subtaskPayload]));
 		}
 
