@@ -178,7 +178,7 @@ const Navbar = ({ onOpenTaskModal }) => {
 
 				{/* Main Navbar */}
 				<nav
-					className={`shadow-lg flex justify-between items-center sticky top-0 z-40 ${
+					className={`shadow-lg flex h-14 justify-between items-center sticky top-0 z-40 ${
 						isElectron ? "bg-indigo-500" : "bg-indigo-500"
 					} `}
 					style={{ WebkitAppRegion: isElectron ? "drag" : "no-drag" }}
@@ -245,34 +245,36 @@ const Navbar = ({ onOpenTaskModal }) => {
 						className="flex items-center space-x-4 ml-auto mr-3"
 						style={{ WebkitAppRegion: "no-drag" }}
 					>
-						<div className="relative w-full max-w-xs md:max-w-md lg:max-w-lg">
-							<div className="flex items-center bg-white dark:bg-gray-700 rounded-lg shadow focus-within:ring-2 focus-within:ring-blue-500 transition">
-								<input
-									type="text"
-									value={searchTerm}
-									onChange={handleSearch}
-									placeholder="Search tasks..."
-									className="w-full py-2 pl-4 rounded-lg focus:outline-none bg-transparent text-gray-800 dark:text-gray-300"
-								/>
-								<MdSearch
-									className="absolute right-2 text-gray-400 dark:text-gray-500"
-									size={24}
-								/>
+						{session && (
+							<div className="relative w-full max-w-xs md:max-w-md lg:max-w-lg">
+								<div className="flex items-center bg-white dark:bg-gray-700 rounded-lg shadow focus-within:ring-2 focus-within:ring-blue-500 transition">
+									<input
+										type="text"
+										value={searchTerm}
+										onChange={handleSearch}
+										placeholder="Search tasks..."
+										className="w-full py-2 pl-4 rounded-lg focus:outline-none bg-transparent text-gray-800 dark:text-gray-300"
+									/>
+									<MdSearch
+										className="absolute right-2 text-gray-400 dark:text-gray-500"
+										size={24}
+									/>
+								</div>
+								{searchResults.length > 0 && (
+									<ul className="absolute bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg mt-2 w-full z-10 max-h-60 overflow-y-auto">
+										{searchResults.map((result) => (
+											<li
+												key={result.id}
+												onClick={() => handleSearchClick(result.id)}
+												className="px-4 py-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-300"
+											>
+												{result.title}
+											</li>
+										))}
+									</ul>
+								)}
 							</div>
-							{searchResults.length > 0 && (
-								<ul className="absolute bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg mt-2 w-full z-10 max-h-60 overflow-y-auto">
-									{searchResults.map((result) => (
-										<li
-											key={result.id}
-											onClick={() => handleSearchClick(result.id)}
-											className="px-4 py-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-300"
-										>
-											{result.title}
-										</li>
-									))}
-								</ul>
-							)}
-						</div>
+						)}
 
 						{/* Dark Mode Toggle */}
 						<Switch
