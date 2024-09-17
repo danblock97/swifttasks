@@ -5,6 +5,16 @@ import CategoryInput from "./CategoryInput";
 import "react-toastify/dist/ReactToastify.css";
 import Loading from "./Loading";
 
+let remote;
+const isElectron =
+	typeof window !== "undefined" &&
+	window.process &&
+	window.process.type === "renderer";
+
+if (isElectron) {
+	remote = window.require("@electron/remote");
+}
+
 const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 	const [taskData, setTaskData] = useState({
 		title: "",
@@ -13,10 +23,11 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 		priority: "low",
 		status: "To Do",
 		categories: [],
-		recurrence_type: "none", // New state for recurrence type
-		recurrence_custom_interval: null, // New state for custom recurrence interval
+		recurrence_type: "none",
+		recurrence_custom_interval: null,
 	});
 	const [isLoading, setIsLoading] = useState(false);
+	const [modalHeight, setModalHeight] = useState("100%");
 
 	useEffect(() => {
 		if (task) {
@@ -27,8 +38,8 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 				priority: task.priority,
 				status: task.status ? formatStatus(task.status) : "To Do",
 				categories: task.categories || [],
-				recurrence_type: task.recurrence_type || "none", // Set recurrence type
-				recurrence_custom_interval: task.recurrence_custom_interval || null, // Set custom interval
+				recurrence_type: task.recurrence_type || "none",
+				recurrence_custom_interval: task.recurrence_custom_interval || null,
 			});
 		} else {
 			setTaskData({
@@ -38,8 +49,8 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 				priority: "low",
 				status: "To Do",
 				categories: [],
-				recurrence_type: "none", // Default recurrence type
-				recurrence_custom_interval: null, // Default custom interval
+				recurrence_type: "none",
+				recurrence_custom_interval: null,
 			});
 		}
 	}, [task]);
@@ -81,7 +92,7 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 		let newDueDate = taskData.due_date;
 		let newStatus = taskData.status;
 
-		// Only reset the status to "To Do" if the task is recurring
+		// Handle recurrence logic
 		if (
 			reverseFormatStatus(taskData.status) === "done" &&
 			taskData.recurrence_type !== "none"
@@ -103,14 +114,11 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 				);
 			}
 
-			// Convert new date to YYYY-MM-DD format
 			newDueDate = currentDate.toISOString().split("T")[0];
-
-			// Reset the status to "To Do" only for recurring tasks
 			newStatus = "To Do";
 		}
 
-		// Update or insert the task with the new due date and status
+		// Update or insert the task
 		if (task) {
 			({ error } = await supabase
 				.from("tasks")
@@ -157,145 +165,187 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 		}
 	};
 
+	// Prevent background scrolling when modal is open
+	useEffect(() => {
+		if (isOpen) {
+			const originalStyle = window.getComputedStyle(document.body).overflow;
+			document.body.style.overflow = "hidden";
+
+			if (isElectron && remote) {
+				const currentWindow = remote.getCurrentWindow();
+				const { height } = currentWindow.getBounds();
+				setModalHeight(`${height}px`);
+				const handleResize = () => {
+					const { height } = currentWindow.getBounds();
+					setModalHeight(`${height}px`);
+				};
+				currentWindow.on("resize", handleResize);
+
+				return () => {
+					currentWindow.removeListener("resize", handleResize);
+					document.body.style.overflow = originalStyle;
+				};
+			}
+
+			return () => {
+				document.body.style.overflow = originalStyle;
+			};
+		}
+	}, [isOpen]);
+
 	if (!isOpen) return null;
 
 	return (
 		<>
 			{isLoading && <Loading />}
-			<div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
-				<div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md">
-					<h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-300">
-						{task ? "Edit Task" : "Create New Task"}
-					</h2>
-					<form onSubmit={handleSubmit} className="mb-4">
-						<div className="mb-4">
-							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
-								Title
-							</label>
-							<input
-								type="text"
-								name="title"
-								value={taskData.title}
-								onChange={handleInputChange}
-								placeholder="Title"
-								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
-								required
-							/>
-						</div>
-						<div className="mb-4">
-							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
-								Description
-							</label>
-							<textarea
-								name="description"
-								value={taskData.description}
-								onChange={handleInputChange}
-								placeholder="Description"
-								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
-							/>
-						</div>
-						<div className="mb-4">
-							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
-								Due Date
-							</label>
-							<input
-								type="date"
-								name="due_date"
-								value={taskData.due_date}
-								onChange={handleInputChange}
-								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
-							/>
-						</div>
-						<div className="mb-4">
-							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
-								Priority
-							</label>
-							<select
-								name="priority"
-								value={taskData.priority}
-								onChange={handleInputChange}
-								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
-							>
-								<option value="low">Low</option>
-								<option value="medium">Medium</option>
-								<option value="high">High</option>
-							</select>
-						</div>
-						<div className="mb-4">
-							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
-								Status
-							</label>
-							<select
-								name="status"
-								value={taskData.status}
-								onChange={handleInputChange}
-								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
-							>
-								<option value="To Do">To Do</option>
-								<option value="In Progress">In Progress</option>
-								<option value="Done">Done</option>
-							</select>
-						</div>
-						<div className="mb-4">
-							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
-								Categories
-							</label>
-							<CategoryInput
-								categories={taskData.categories}
-								setCategories={(categories) =>
-									setTaskData((prev) => ({ ...prev, categories }))
-								}
-							/>
-						</div>
-						{/* Recurrence Options */}
-						<div className="mb-4">
-							<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
-								Recurrence
-							</label>
-							<select
-								name="recurrence_type"
-								value={taskData.recurrence_type}
-								onChange={handleInputChange}
-								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
-							>
-								<option value="none">None</option>
-								<option value="daily">Daily</option>
-								<option value="weekly">Weekly</option>
-								<option value="monthly">Monthly</option>
-								<option value="custom">Custom</option>
-							</select>
-						</div>
-						{taskData.recurrence_type === "custom" && (
+			<div
+				className={`fixed left-0 right-0 top-[56px] bg-gray-800 bg-opacity-75 overflow-y-auto`}
+				style={{
+					height: isElectron ? modalHeight : "calc(100vh - 56px)",
+				}}
+			>
+				<div className="flex items-center justify-center min-h-full">
+					<div className="modal-content bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md md:max-w-lg lg:max-w-xl mx-4 my-8 overflow-y-auto max-h-[calc(100vh-3.5rem-4rem)]">
+						<h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-300">
+							{task ? "Edit Task" : "Create New Task"}
+						</h2>
+						<form onSubmit={handleSubmit} className="mb-4">
+							{/* Title Field */}
 							<div className="mb-4">
 								<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
-									Custom Interval (Days)
+									Title
 								</label>
 								<input
-									type="number"
-									name="recurrence_custom_interval"
-									value={taskData.recurrence_custom_interval || ""}
+									type="text"
+									name="title"
+									value={taskData.title}
 									onChange={handleInputChange}
-									placeholder="Enter number of days"
+									placeholder="Title"
+									className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+									required
+								/>
+							</div>
+							{/* Description Field */}
+							<div className="mb-4">
+								<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+									Description
+								</label>
+								<textarea
+									name="description"
+									value={taskData.description}
+									onChange={handleInputChange}
+									placeholder="Description"
 									className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
 								/>
 							</div>
-						)}
-						<div className="flex justify-end space-x-2">
-							<button
-								type="button"
-								onClick={onClose}
-								className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-800"
-							>
-								Cancel
-							</button>
-							<button
-								type="submit"
-								className="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700"
-							>
-								{task ? "Update" : "Create"}
-							</button>
-						</div>
-					</form>
+							{/* Due Date Field */}
+							<div className="mb-4">
+								<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+									Due Date
+								</label>
+								<input
+									type="date"
+									name="due_date"
+									value={taskData.due_date}
+									onChange={handleInputChange}
+									className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+								/>
+							</div>
+							{/* Priority Field */}
+							<div className="mb-4">
+								<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+									Priority
+								</label>
+								<select
+									name="priority"
+									value={taskData.priority}
+									onChange={handleInputChange}
+									className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+								>
+									<option value="low">Low</option>
+									<option value="medium">Medium</option>
+									<option value="high">High</option>
+								</select>
+							</div>
+							{/* Status Field */}
+							<div className="mb-4">
+								<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+									Status
+								</label>
+								<select
+									name="status"
+									value={taskData.status}
+									onChange={handleInputChange}
+									className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+								>
+									<option value="To Do">To Do</option>
+									<option value="In Progress">In Progress</option>
+									<option value="Done">Done</option>
+								</select>
+							</div>
+							{/* Categories Field */}
+							<div className="mb-4">
+								<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+									Categories
+								</label>
+								<CategoryInput
+									categories={taskData.categories}
+									setCategories={(categories) =>
+										setTaskData((prev) => ({ ...prev, categories }))
+									}
+								/>
+							</div>
+							{/* Recurrence Options */}
+							<div className="mb-4">
+								<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+									Recurrence
+								</label>
+								<select
+									name="recurrence_type"
+									value={taskData.recurrence_type}
+									onChange={handleInputChange}
+									className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+								>
+									<option value="none">None</option>
+									<option value="daily">Daily</option>
+									<option value="weekly">Weekly</option>
+									<option value="monthly">Monthly</option>
+									<option value="custom">Custom</option>
+								</select>
+							</div>
+							{taskData.recurrence_type === "custom" && (
+								<div className="mb-4">
+									<label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+										Custom Interval (Days)
+									</label>
+									<input
+										type="number"
+										name="recurrence_custom_interval"
+										value={taskData.recurrence_custom_interval || ""}
+										onChange={handleInputChange}
+										placeholder="Enter number of days"
+										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300"
+									/>
+								</div>
+							)}
+							{/* Buttons */}
+							<div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+								<button
+									type="button"
+									onClick={onClose}
+									className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-800"
+								>
+									Cancel
+								</button>
+								<button
+									type="submit"
+									className="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700"
+								>
+									{task ? "Update" : "Create"}
+								</button>
+							</div>
+						</form>
+					</div>
 				</div>
 			</div>
 		</>
