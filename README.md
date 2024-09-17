@@ -1,12 +1,17 @@
-# SwiftTasks v1.6.1 - Release Notes
+# SwiftTasks v1.7.0 - Release Notes
+
+## 🚀 New Features
+
+- **Activity Log**: We have now implemented an activity log so you can see what changes you made to your tasks and when!
 
 ## 🐛 Bug Fixes
 
-- **Status Resetting**: Fixed an issue causing the status to reset to 'To Do' when moving to 'Done' this is now only intended for recurring tasks
+- **NavBar**: Fixed an issue where the search bar was showing inside the navbar when not authenticated
+- **Creating Task**: Fixed an issue where the create task modal was underlapping with the Navbar.
 
 ## 🔗 Useful Links
 
-- **[Download Our Desktop App!](https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v1.6.1/SwiftTasks-1.6.1.exe)**
+- **[Download Our Desktop App!](https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v1.7.0/SwiftTasks-1.7.0.exe)**
 
 - **[Visit our Website!](https://swifttasks.co.uk)**
 
