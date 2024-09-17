@@ -5,6 +5,7 @@ import TaskModal from "./TaskModal";
 import { toast } from "react-toastify";
 import { formatStatus } from "../utils";
 import SubtaskModal from "./SubtaskModal";
+import ActivityLog from "./ActivityLog";
 
 const TaskDetail = ({ task, fetchTasks }) => {
 	const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -45,7 +46,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 
 	const handleCloseSubtaskModal = () => {
 		setIsSubtaskModalOpen(false);
-		fetchSubtasks(); // Fetch subtasks when the modal closes
+		fetchSubtasks();
 	};
 
 	const handleQuickCreateSubtask = async (e) => {
@@ -65,14 +66,37 @@ const TaskDetail = ({ task, fetchTasks }) => {
 					user_id: user.id,
 				};
 
-				const { error } = await supabase.from("subtasks").insert([subtaskData]);
+				const { data, error } = await supabase
+					.from("subtasks")
+					.insert([subtaskData])
+					.select("*")
+					.single();
 
 				if (error) {
 					console.error("Error creating subtask:", error);
 					toast.error("Error creating subtask");
 				} else {
+					const newSubtask = data;
+
+					// Insert activity log
+					const { error: logError } = await supabase
+						.from("activity_logs")
+						.insert([
+							{
+								entity_type: "subtask",
+								entity_id: newSubtask.id,
+								user_id: user.id,
+								user_email: user.email,
+								action: "created",
+							},
+						]);
+
+					if (logError) {
+						console.error("Error inserting activity log:", logError);
+					}
+
 					setNewSubtaskTitle("");
-					fetchSubtasks(); // Fetch subtasks after creating a new one
+					fetchSubtasks();
 					toast.success("Subtask created successfully");
 				}
 			} catch (error) {
@@ -84,6 +108,16 @@ const TaskDetail = ({ task, fetchTasks }) => {
 
 	const handleDeleteTask = async () => {
 		try {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+
+			if (!user) {
+				console.error("User not authenticated");
+				toast.error("User not authenticated");
+				return;
+			}
+
 			const { error: subtaskError } = await supabase
 				.from("subtasks")
 				.delete()
@@ -102,6 +136,23 @@ const TaskDetail = ({ task, fetchTasks }) => {
 					taskError
 				);
 			} else {
+				// Record activity log for task deletion
+				const { error: logError } = await supabase
+					.from("activity_logs")
+					.insert([
+						{
+							entity_type: "task",
+							entity_id: task.id,
+							user_id: user.id,
+							user_email: user.email,
+							action: "deleted",
+						},
+					]);
+
+				if (logError) {
+					console.error("Error inserting activity log:", logError);
+				}
+
 				toast.success("Task and subtasks deleted successfully");
 				fetchTasks();
 			}
@@ -109,7 +160,7 @@ const TaskDetail = ({ task, fetchTasks }) => {
 			console.error("Error deleting task or subtasks", error);
 			toast.error("Error deleting task or subtasks");
 		} finally {
-			setIsDeleteModalOpen(false); // Close the modal after deletion
+			setIsDeleteModalOpen(false);
 		}
 	};
 
@@ -215,6 +266,8 @@ const TaskDetail = ({ task, fetchTasks }) => {
 								/>
 							</div>
 						</div>
+						{/* Include Activity Log */}
+						<ActivityLog entityType="task" entityId={task.id} />
 					</div>
 				</div>
 			</div>
