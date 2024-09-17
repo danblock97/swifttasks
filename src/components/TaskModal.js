@@ -1,3 +1,4 @@
+// TaskModal.js
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { toast } from "react-toastify";
@@ -110,7 +111,7 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 				taskData.recurrence_custom_interval
 			) {
 				currentDate.setDate(
-					currentDate.getDate() + taskData.recurrence_custom_interval
+					currentDate.getDate() + parseInt(taskData.recurrence_custom_interval)
 				);
 			}
 
@@ -118,8 +119,35 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 			newStatus = "To Do";
 		}
 
-		// Update or insert the task
+		const {
+			data: { user },
+			error: userError,
+		} = await supabase.auth.getUser();
+		if (userError || !user) {
+			toast.error("User not authenticated");
+			return;
+		}
+
+		// Variables to hold old task data for activity log
+		let oldTaskData = {};
+
 		if (task) {
+			// Fetch old task data
+			const { data: oldTask, error: fetchError } = await supabase
+				.from("tasks")
+				.select("*")
+				.eq("id", task.id)
+				.single();
+
+			if (fetchError) {
+				console.error("Error fetching old task data:", fetchError);
+				toast.error("Error fetching old task data");
+				return;
+			}
+
+			oldTaskData = oldTask;
+
+			// Update the task
 			({ error } = await supabase
 				.from("tasks")
 				.update({
@@ -134,28 +162,136 @@ const TaskModal = ({ isOpen, onClose, fetchTasks, task }) => {
 				})
 				.eq("id", task.id));
 		} else {
-			const {
-				data: { user },
-			} = await supabase.auth.getUser();
-			if (!user) {
-				toast.error("User not authenticated");
-				return;
-			}
+			// Create new task
+			const { data: newTask, error: insertError } = await supabase
+				.from("tasks")
+				.insert([
+					{
+						...taskData,
+						due_date: newDueDate,
+						status: reverseFormatStatus(newStatus),
+						user_id: user.id,
+					},
+				])
+				.select("*")
+				.single();
 
-			({ error } = await supabase.from("tasks").insert([
-				{
-					...taskData,
-					due_date: newDueDate,
-					status: reverseFormatStatus(newStatus),
-					user_id: user.id,
-				},
-			]));
+			error = insertError;
+
+			if (!error) {
+				// Insert activity log for task creation
+				const { error: logError } = await supabase
+					.from("activity_logs")
+					.insert([
+						{
+							entity_type: "task",
+							entity_id: newTask.id,
+							user_id: user.id,
+							user_email: user.email,
+							action: "created",
+						},
+					]);
+
+				if (logError) {
+					console.error("Error inserting activity log:", logError);
+				}
+			}
 		}
 
 		if (error) {
 			console.error("Error saving task:", error);
 			toast.error("Error saving task");
 		} else {
+			if (task) {
+				// Record changes in activity_logs
+				const changes = [];
+
+				if (oldTaskData.title !== taskData.title) {
+					changes.push({
+						field_name: "title",
+						old_value: oldTaskData.title,
+						new_value: taskData.title,
+					});
+				}
+				if (oldTaskData.description !== taskData.description) {
+					changes.push({
+						field_name: "description",
+						old_value: oldTaskData.description,
+						new_value: taskData.description,
+					});
+				}
+				if (oldTaskData.due_date !== newDueDate) {
+					changes.push({
+						field_name: "due_date",
+						old_value: oldTaskData.due_date,
+						new_value: newDueDate,
+					});
+				}
+				if (oldTaskData.priority !== taskData.priority) {
+					changes.push({
+						field_name: "priority",
+						old_value: oldTaskData.priority,
+						new_value: taskData.priority,
+					});
+				}
+				if (oldTaskData.status !== reverseFormatStatus(newStatus)) {
+					changes.push({
+						field_name: "status",
+						old_value: oldTaskData.status,
+						new_value: reverseFormatStatus(newStatus),
+					});
+				}
+				if (
+					JSON.stringify(oldTaskData.categories || []) !==
+					JSON.stringify(taskData.categories)
+				) {
+					changes.push({
+						field_name: "categories",
+						old_value: (oldTaskData.categories || []).join(", "),
+						new_value: taskData.categories.join(", "),
+					});
+				}
+				if (oldTaskData.recurrence_type !== taskData.recurrence_type) {
+					changes.push({
+						field_name: "recurrence_type",
+						old_value: oldTaskData.recurrence_type,
+						new_value: taskData.recurrence_type,
+					});
+				}
+				if (
+					oldTaskData.recurrence_custom_interval !==
+					taskData.recurrence_custom_interval
+				) {
+					changes.push({
+						field_name: "recurrence_custom_interval",
+						old_value: oldTaskData.recurrence_custom_interval,
+						new_value: taskData.recurrence_custom_interval,
+					});
+				}
+
+				// Insert activity logs
+				for (const change of changes) {
+					const { error: logError } = await supabase
+						.from("activity_logs")
+						.insert([
+							{
+								entity_type: "task",
+								entity_id: task.id,
+								user_id: user.id,
+								user_email: user.email,
+								action: "updated",
+								field_name: change.field_name,
+								old_value: change.old_value,
+								new_value: change.new_value,
+							},
+						]);
+
+					if (logError) {
+						console.error("Error inserting activity log:", logError);
+					}
+				}
+			}
+
 			toast.success(`Task ${task ? "updated" : "created"} successfully`);
 			onClose();
 			setIsLoading(true);

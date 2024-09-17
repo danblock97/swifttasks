@@ -1,9 +1,9 @@
-// SubtaskList.js
 import React, { useState } from "react";
 import SubtaskModal from "./SubtaskModal";
 import { toast } from "react-toastify";
 import { supabase } from "../lib/supabaseClient";
 import { formatStatus } from "../utils";
+import ActivityLog from "./ActivityLog";
 
 const SubtaskList = ({
 	taskId,
@@ -79,7 +79,7 @@ const SubtaskList = ({
 								></div>
 							</div>
 							{expandedSubtaskId === subtask.id && (
-								<div className="mt-2 flex justify-between items-start text-gray-800 dark:text-gray-300">
+								<div className="mt-2 flex flex-col text-gray-800 dark:text-gray-300">
 									<div className="flex-1">
 										<p className="mb-1">{subtask.description}</p>
 										<div className="text-sm text-gray-500 dark:text-gray-400">
@@ -94,7 +94,7 @@ const SubtaskList = ({
 											</p>
 										</div>
 									</div>
-									<div className="flex ml-4">
+									<div className="flex mt-2">
 										<button
 											onClick={(e) => {
 												e.stopPropagation();
@@ -114,6 +114,7 @@ const SubtaskList = ({
 											Delete
 										</button>
 									</div>
+									<ActivityLog entityType="subtask" entityId={subtask.id} />
 								</div>
 							)}
 						</div>

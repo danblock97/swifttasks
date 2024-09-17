@@ -8,22 +8,103 @@ const Subtask = ({ subtask, fetchSubtasks }) => {
 	const [isEditing, setIsEditing] = useState(false);
 
 	const updateSubtask = async () => {
-		const { error } = await supabase
-			.from("subtasks")
-			.update({ title, status })
-			.eq("id", subtask.id);
+		try {
+			const { data: oldSubtaskData, error: fetchError } = await supabase
+				.from("subtasks")
+				.select("*")
+				.eq("id", subtask.id)
+				.single();
 
-		if (error) {
+			if (fetchError) {
+				console.error("Error fetching old subtask data:", fetchError);
+				toast.error("Error fetching old subtask data");
+				return;
+			}
+
+			const oldSubtask = oldSubtaskData;
+
+			// Update the subtask
+			const { error } = await supabase
+				.from("subtasks")
+				.update({ title, status })
+				.eq("id", subtask.id);
+
+			if (error) {
+				console.error("Error updating subtask:", error);
+				toast.error("Error updating subtask");
+			} else {
+				// Record changes in activity_logs
+				const {
+					data: { user },
+				} = await supabase.auth.getUser();
+
+				if (!user) {
+					console.error("User not authenticated");
+					toast.error("User not authenticated");
+					return;
+				}
+
+				const changes = [];
+
+				if (oldSubtask.title !== title) {
+					changes.push({
+						field_name: "title",
+						old_value: oldSubtask.title,
+						new_value: title,
+					});
+				}
+
+				if (oldSubtask.status !== status) {
+					changes.push({
+						field_name: "status",
+						old_value: oldSubtask.status,
+						new_value: status,
+					});
+				}
+
+				// Insert activity logs
+				for (const change of changes) {
+					const { error: logError } = await supabase
+						.from("activity_logs")
+						.insert([
+							{
+								entity_type: "subtask",
+								entity_id: subtask.id,
+								user_id: user.id,
+								user_email: user.email,
+								action: "updated",
+								field_name: change.field_name,
+								old_value: change.old_value,
+								new_value: change.new_value,
+							},
+						]);
+
+					if (logError) {
+						console.error("Error inserting activity log:", logError);
+					}
+				}
+
+				fetchSubtasks();
+				toast.success("Subtask updated successfully");
+				setIsEditing(false);
+			}
+		} catch (error) {
 			console.error("Error updating subtask:", error);
 			toast.error("Error updating subtask");
-		} else {
-			fetchSubtasks();
-			toast.success("Subtask updated successfully");
-			setIsEditing(false);
 		}
 	};
 
 	const deleteSubtask = async () => {
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+
+		if (!user) {
+			console.error("User not authenticated");
+			toast.error("User not authenticated");
+			return;
+		}
+
 		const { error } = await supabase
 			.from("subtasks")
 			.delete()
@@ -33,6 +114,21 @@ const Subtask = ({ subtask, fetchSubtasks }) => {
 			console.error("Error deleting subtask:", error);
 			toast.error("Error deleting subtask");
 		} else {
+			// Record activity log
+			const { error: logError } = await supabase.from("activity_logs").insert([
+				{
+					entity_type: "subtask",
+					entity_id: subtask.id,
+					user_id: user.id,
+					user_email: user.email,
+					action: "deleted",
+				},
+			]);
+
+			if (logError) {
+				console.error("Error inserting activity log:", logError);
+			}
+
 			fetchSubtasks();
 			toast.success("Subtask deleted successfully");
 		}
@@ -63,8 +159,8 @@ const Subtask = ({ subtask, fetchSubtasks }) => {
 							onChange={(e) => setStatus(e.target.value)}
 							className="w-full px-2 py-1 mb-2 border rounded"
 						>
-							<option value="todo">To Do</option>
-							<option value="in-progress">In Progress</option>
+							<option value="to_do">To Do</option>
+							<option value="in_progress">In Progress</option>
 							<option value="done">Done</option>
 						</select>
 						<div className="flex justify-end space-x-2">
