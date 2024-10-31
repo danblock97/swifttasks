@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
-	const version = "1.7.0";
+	const version = "1.7.1";
 
 	return (
 		<footer className="bg-indigo-500 text-white py-6">
