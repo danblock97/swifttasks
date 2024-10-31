@@ -79,7 +79,7 @@ const Homepage = () => {
 						</button>
 						{!isElectron && (
 							<a
-								href="https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v1.7.0/SwiftTasks-1.7.0.exe"
+								href="https://github.com/danblock97/swifttasks/releases/download/SwiftTasks_v1.7.1/SwiftTasks-1.7.1.exe"
 								className="inline-block px-6 py-3 bg-gray-700 dark:bg-gray-800 text-white font-semibold rounded-full hover:bg-gray-600 dark:hover:bg-gray-700 transition"
 							>
 								Download for Windows
