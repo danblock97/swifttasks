@@ -28,17 +28,14 @@ export function SiteFooter() {
                         <ul className="space-y-3">
                             <li><Link href="/#features" className="text-slate-600 hover:text-blue-600 text-sm">Features</Link></li>
                             <li><Link href="/pricing" className="text-slate-600 hover:text-blue-600 text-sm">Pricing</Link></li>
-                            <li><a href="#" className="text-slate-600 hover:text-blue-600 text-sm">Integrations</a></li>
-                            <li><a href="#" className="text-slate-600 hover:text-blue-600 text-sm">Changelog</a></li>
                         </ul>
                     </div>
 
                     <div>
                         <h3 className="font-semibold text-slate-800 mb-4">Company</h3>
                         <ul className="space-y-3">
-                            <li><Link href="/#about" className="text-slate-600 hover:text-blue-600 text-sm">About</Link></li>
-                            <li><a href="#" className="text-slate-600 hover:text-blue-600 text-sm">Blog</a></li>
-                            <li><a href="#" className="text-slate-600 hover:text-blue-600 text-sm">Careers</a></li>
+                            <li><Link href="/about" className="text-slate-600 hover:text-blue-600 text-sm">About</Link></li>
+                            <li><a href="https://diversediaries.com" className="text-slate-600 hover:text-blue-600 text-sm">Blog</a></li>
                             <li><a href="#" className="text-slate-600 hover:text-blue-600 text-sm">Contact</a></li>
                         </ul>
                     </div>

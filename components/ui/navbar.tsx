@@ -11,9 +11,9 @@ export function SiteNavbar() {
                     </Link>
                 </div>
                 <nav className="hidden md:flex items-center space-x-8">
-                    <Link href="/#features" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Features</Link>
+                    <Link href="/features" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Features</Link>
                     <Link href="/pricing" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Pricing</Link>
-                    <Link href="/#about" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">About</Link>
+                    <Link href="/about" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">About</Link>
                     <Link href="/login" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
                         Log in
                     </Link>
