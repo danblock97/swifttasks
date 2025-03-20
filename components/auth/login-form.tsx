@@ -1,19 +1,34 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { Checkbox } from "@/components/ui/checkbox";
+import { getCookie, setCookie, removeCookie, COOKIE_KEYS, getRememberMe } from "@/lib/cookies";
 
 export function LoginForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
     const supabase = createClientComponentClient();
+
+    // Load remembered email if available
+    useEffect(() => {
+        const rememberedEmail = getCookie("remembered_email");
+        const wasRemembered = getRememberMe();
+
+        if (rememberedEmail && wasRemembered) {
+            setEmail(rememberedEmail);
+            setRememberMe(true);
+        }
+    }, []);
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -27,6 +42,15 @@ export function LoginForm() {
 
             if (error) {
                 throw error;
+            }
+
+            // Handle remember me functionality
+            if (rememberMe) {
+                setCookie("remembered_email", email);
+                setCookie(COOKIE_KEYS.REMEMBER_ME, "true");
+            } else {
+                removeCookie("remembered_email");
+                removeCookie(COOKIE_KEYS.REMEMBER_ME);
             }
 
             toast({
@@ -86,6 +110,25 @@ export function LoginForm() {
                             required
                         />
                     </div>
+
+                    <div className="flex items-center space-x-2 py-2">
+                        <Checkbox
+                            id="remember"
+                            checked={rememberMe}
+                            onCheckedChange={(checked) => {
+                                if (typeof checked === 'boolean') {
+                                    setRememberMe(checked);
+                                }
+                            }}
+                        />
+                        <label
+                            htmlFor="remember"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                            Remember me
+                        </label>
+                    </div>
+
                     <Button type="submit" disabled={isLoading}>
                         {isLoading && (
                             <svg
@@ -110,5 +153,3 @@ export function LoginForm() {
         </div>
     );
 }
-
-import Link from "next/link";
