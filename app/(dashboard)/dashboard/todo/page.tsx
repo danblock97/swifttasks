@@ -23,14 +23,11 @@ export default async function TodoPage() {
         .eq("id", session.user.id)
         .single();
 
-    // Get user's todo list
     const { data: todoList } = await supabase
         .from("todo_lists")
         .select("*")
         .eq("owner_id", session.user.id)
         .single();
-
-    // If user doesn't have a todo list yet, create one
     let todoListId = todoList?.id;
 
     if (!todoList) {
@@ -52,7 +49,6 @@ export default async function TodoPage() {
         }
     }
 
-    // Get todo items
     const { data: todoItems } = await supabase
         .from("todo_items")
         .select("*")
