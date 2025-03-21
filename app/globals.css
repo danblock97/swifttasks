@@ -161,6 +161,20 @@
   .dark .bg-secondary.dark\:bg-slate-900\/50 {
     background-color: rgba(15, 23, 42, 0.5); /* dark slate with opacity */
   }
+
+  /* Improve text contrast in light mode for common slate text colors */
+  .text-slate-500 {
+    color: #64748b; /* Slightly darker than default */
+  }
+
+  .text-slate-600 {
+    color: #475569; /* Darker than default for better readability */
+  }
+
+  /* Ensure description and muted text is readable in light mode */
+  .text-muted-foreground {
+    color: hsl(215.4 16.3% 36.9%); /* Darker than the default --muted-foreground */
+  }
 }
 
 /* Explicit fixes for common components */

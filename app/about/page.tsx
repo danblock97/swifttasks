@@ -7,7 +7,7 @@ export default function AboutPage() {
     return (
         <main className="flex-1">
             {/* Hero Section */}
-            <section className="py-20 md:py-28 bg-gradient-to-b from-white to-blue-50">
+            <section className="py-20 md:py-28 bg-gradient-to-b from-background to-secondary">
                 <div className="container px-4 sm:px-6 max-w-6xl mx-auto">
                     <div className="text-center">
                         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
@@ -25,7 +25,7 @@ export default function AboutPage() {
             </section>
 
             {/* My Story Section */}
-            <section className="py-16 md:py-24 bg-white">
+            <section className="py-16 md:py-24 bg-background">
                 <div className="container px-4 sm:px-6 max-w-6xl mx-auto">
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
@@ -56,7 +56,7 @@ export default function AboutPage() {
                             <div className="absolute -z-10 w-full h-full rounded-3xl bg-gradient-to-br from-blue-50 via-white to-teal-50 transform rotate-3"></div>
 
                             {/* Development journey visualization */}
-                            <div className="bg-white rounded-xl shadow-lg p-8 relative">
+                            <div className="bg-card hover:shadow-md transition-all border-2 border-indigo-100 dark:border-indigo-900 hover:border-indigo-200 dark:hover:border-indigo-800 rounded-xl shadow-lg p-8 relative">
                                 <div className="mb-8 relative">
                                     <div className="aspect-video bg-gradient-to-br from-blue-500 to-teal-400 rounded-lg flex items-center justify-center text-white">
                                         <div className="text-center">
@@ -106,7 +106,7 @@ export default function AboutPage() {
             </section>
 
             {/* Project Philosophy Section */}
-            <section className="py-20 bg-gradient-to-r from-blue-50 to-teal-50">
+            <section className="py-20 bg-gradient-to-r from-background to-secondary">
                 <div className="container px-4 sm:px-6 max-w-6xl mx-auto">
                     <div className="text-center mb-16">
                         <div className="inline-block px-3 py-1 rounded-full bg-teal-100 text-teal-700 font-medium text-sm mb-6">
@@ -168,7 +168,7 @@ export default function AboutPage() {
             </section>
 
             {/* Tech Stack Section */}
-            <section className="py-20 bg-white">
+            <section className="py-20 bg-background">
                 <div className="container px-4 sm:px-6 max-w-6xl mx-auto">
                     <div className="text-center mb-16">
                         <div className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 font-medium text-sm mb-6">
@@ -237,7 +237,7 @@ export default function AboutPage() {
             </section>
 
             {/* Current Status & Roadmap Section */}
-            <section className="py-20 bg-gradient-to-b from-white to-blue-50">
+            <section className="py-20 bg-gradient-to-b from-background to-secondary">
                 <div className="container px-4 sm:px-6 max-w-6xl mx-auto">
                     <div className="text-center mb-16">
                         <div className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium text-sm mb-6">
@@ -250,7 +250,7 @@ export default function AboutPage() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-12">
-                        <div className="bg-white rounded-lg p-6 border shadow-sm">
+                        <div className="bg-card hover:shadow-md transition-all border-blue-100 dark:border-blue-900 hover:border-blue-200 dark:hover:border-blue-800 rounded-lg p-6 border shadow-sm">
                             <div className="mb-6">
                                 <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
                                     <Code className="h-5 w-5 text-blue-700" />
@@ -316,7 +316,7 @@ export default function AboutPage() {
                             </ul>
                         </div>
 
-                        <div className="bg-white rounded-lg p-6 border shadow-sm">
+                        <div className="bg-card hover:shadow-md transition-all border-blue-100 dark:border-blue-900 hover:border-blue-200 dark:hover:border-blue-800 rounded-lg p-6 border shadow-sm">
                             <div className="mb-6">
                                 <div className="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center mb-4">
                                     <Target className="h-5 w-5 text-indigo-700" />
@@ -386,11 +386,11 @@ export default function AboutPage() {
             </section>
 
             {/* About the Developer Section */}
-            <section className="py-20 bg-gradient-to-r from-blue-50 via-white to-teal-50">
+            <section className="py-20 bg-gradient-to-r from-background to-secondary">
                 <div className="container px-4 sm:px-6 max-w-6xl mx-auto">
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div className="relative order-2 md:order-1">
-                            <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">
+                            <div className="bg-card hover:shadow-md transition-all border-2 border-indigo-100 dark:border-indigo-900 hover:border-indigo-200 dark:hover:border-indigo-800 rounded-2xl shadow-xl p-8">
                                 <div className="flex justify-center mb-8">
                                     <div className="h-24 w-24 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center">
                                         <Code className="h-12 w-12 text-white" />
@@ -462,7 +462,7 @@ export default function AboutPage() {
             </section>
 
             {/* CTA Section */}
-            <section className="py-20 md:py-28 bg-white">
+            <section className="py-20 md:py-28 bg-background">
                 <div className="container px-4 sm:px-6 max-w-5xl mx-auto">
                     <div className="bg-gradient-to-r from-blue-500 to-teal-500 rounded-2xl shadow-xl p-8 md:p-12 relative overflow-hidden text-white">
                         {/* Decorative elements */}
