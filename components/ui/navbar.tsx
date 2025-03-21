@@ -11,7 +11,7 @@ export function SiteNavbar() {
                         <div className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500">SwiftTasks</div>
                     </Link>
                 </div>
-                <nav className="hidden md:flex items-center space-x-8">
+                <nav className="hidden md:flex items-center space-x-6">
                     <Link href="/features" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">Features</Link>
                     <Link href="/pricing" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">Pricing</Link>
                     <Link href="/about" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">About</Link>

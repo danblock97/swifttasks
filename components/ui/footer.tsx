@@ -2,12 +2,12 @@
 
 export function SiteFooter() {
     return (
-        <footer className="border-t bg-slate-50">
+        <footer className="border-t bg-slate-50 dark:bg-background">
             <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div className="col-span-1 md:col-span-2">
                         <div className="font-bold text-2xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 mb-4">SwiftTasks</div>
-                        <p className="text-slate-600 max-w-md">
+                        <p className="text-slate-600 dark:text-slate-300 max-w-md">
                             SwiftTasks helps you organize personal and team tasks with intuitive tools for todos, kanban boards, and documentation.
                         </p>
                         <div className="flex space-x-4 mt-6">
@@ -24,31 +24,31 @@ export function SiteFooter() {
                     </div>
 
                     <div>
-                        <h3 className="font-semibold text-slate-800 mb-4">Product</h3>
+                        <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Product</h3>
                         <ul className="space-y-3">
-                            <li><Link href="/#features" className="text-slate-600 hover:text-blue-600 text-sm">Features</Link></li>
-                            <li><Link href="/pricing" className="text-slate-600 hover:text-blue-600 text-sm">Pricing</Link></li>
+                            <li><Link href="/#features" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm">Features</Link></li>
+                            <li><Link href="/pricing" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm">Pricing</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h3 className="font-semibold text-slate-800 mb-4">Company</h3>
+                        <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">Company</h3>
                         <ul className="space-y-3">
-                            <li><Link href="/about" className="text-slate-600 hover:text-blue-600 text-sm">About</Link></li>
-                            <li><a href="https://diversediaries.com" className="text-slate-600 hover:text-blue-600 text-sm">Blog</a></li>
-                            <li><a href="#" className="text-slate-600 hover:text-blue-600 text-sm">Contact</a></li>
+                            <li><Link href="/about" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm">About</Link></li>
+                            <li><a href="https://diversediaries.com" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm">Blog</a></li>
+                            <li><a href="#" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm">Contact</a></li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="border-t border-slate-200 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center">
-                    <div className="text-sm text-slate-500">
+                <div className="border-t border-slate-200 dark:border-slate-700 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center">
+                    <div className="text-sm text-slate-500 dark:text-slate-400">
                         © {new Date().getFullYear()} SwiftTasks. All rights reserved.
                     </div>
                     <div className="flex space-x-6 mt-4 md:mt-0">
-                        <a href="#" className="text-sm text-slate-500 hover:text-blue-600">Privacy Policy</a>
-                        <a href="#" className="text-sm text-slate-500 hover:text-blue-600">Terms of Service</a>
-                        <a href="#" className="text-sm text-slate-500 hover:text-blue-600">Cookie Policy</a>
+                        <a href="#" className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">Privacy Policy</a>
+                        <a href="#" className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">Terms of Service</a>
+                        <a href="#" className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">Cookie Policy</a>
                     </div>
                 </div>
             </div>

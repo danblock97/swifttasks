@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @layer base {
-  :root {
+  :root,
+  [data-theme="light"] {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -33,7 +34,8 @@
     --radius: 0.5rem;
   }
 
-  .dark {
+  .dark,
+  [data-theme="dark"] {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
@@ -69,6 +71,43 @@
     border-color: hsl(var(--border));
   }
   body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  /* Dark mode specific overrides for sections that aren't picking up the theme */
+  .dark section,
+  [data-theme="dark"] section {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  /* This ensures all gradient sections respect the theme */
+  .dark .bg-gradient-to-b,
+  .dark .bg-gradient-to-r,
+  [data-theme="dark"] .bg-gradient-to-b,
+  [data-theme="dark"] .bg-gradient-to-r {
+    --tw-gradient-from: var(--background);
+    --tw-gradient-to: color-mix(in srgb, hsl(var(--background)) 80%, hsl(var(--primary)) 20%);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
+  }
+
+  /* Fix cards in dark mode */
+  .dark .bg-white,
+  [data-theme="dark"] .bg-white {
+    background-color: hsl(var(--card));
+  }
+
+  /* Ensure the hero and feature sections properly respect theme */
+  .dark .py-20,
+  .dark .py-24,
+  .dark .py-28,
+  .dark .py-32,
+  [data-theme="dark"] .py-20,
+  [data-theme="dark"] .py-24,
+  [data-theme="dark"] .py-28,
+  [data-theme="dark"] .py-32 {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
