@@ -9,7 +9,6 @@ import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/lib/supabase/database.types";
-import { generateUUID } from "@/lib/utils";
 import { User, Mail, Lock, Building, UserPlus, Users, ArrowRight, CheckCircle2 } from "lucide-react";
 
 type AccountType = "single" | "team";
@@ -37,63 +36,25 @@ export function RegisterForm({
         setIsLoading(true);
 
         try {
-            // 1. Register the user
+            // Include user profile data in the signup metadata
+            // This data will be accessible in Supabase Auth hooks and can be used
+            // to create the profile records after email verification
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
                     emailRedirectTo: `${window.location.origin}/auth/callback`,
+                    data: {
+                        display_name: name,
+                        account_type: accountType,
+                        team_name: accountType === "team" ? teamName : null,
+                        is_team_owner: accountType === "team",
+                    },
                 },
             });
 
             if (authError) throw authError;
             if (!authData.user) throw new Error("User registration failed");
-
-            const userId = authData.user.id;
-
-            // 2. Create user profile
-            if (accountType === "single") {
-                // Create a single user profile
-                const { error: profileError } = await supabase
-                    .from("users")
-                    .insert({
-                        id: userId,
-                        email,
-                        display_name: name,
-                        account_type: "single",
-                        is_team_owner: false,
-                    });
-
-                if (profileError) throw profileError;
-            } else {
-                // Create a team
-                const teamId = generateUUID();
-
-                // Create team
-                const { error: teamError } = await supabase
-                    .from("teams")
-                    .insert({
-                        id: teamId,
-                        name: teamName,
-                        owner_id: userId,
-                    });
-
-                if (teamError) throw teamError;
-
-                // Create team owner profile
-                const { error: profileError } = await supabase
-                    .from("users")
-                    .insert({
-                        id: userId,
-                        email,
-                        display_name: name,
-                        account_type: "team_member",
-                        team_id: teamId,
-                        is_team_owner: true,
-                    });
-
-                if (profileError) throw profileError;
-            }
 
             toast({
                 title: "Registration successful",
@@ -101,8 +62,9 @@ export function RegisterForm({
             });
 
             // Redirect to verification page
-            router.push("/auth/verify");
+            router.push("/verify");
         } catch (error: any) {
+            console.error("Registration error:", error);
             toast({
                 title: "Error",
                 description: error.message || "Registration failed. Please try again.",
@@ -165,8 +127,8 @@ export function RegisterForm({
                                     <User className="h-7 w-7" />
                                 </div>
                                 <span className={`text-sm font-medium ${accountType === "single" ? "text-blue-700 dark:text-blue-400" : ""}`}>
-                                    Solo User
-                                </span>
+                  Solo User
+                </span>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
                                     Personal productivity
                                 </p>
@@ -205,8 +167,8 @@ export function RegisterForm({
                                     <Users className="h-7 w-7" />
                                 </div>
                                 <span className={`text-sm font-medium ${accountType === "team" ? "text-teal-700 dark:text-teal-400" : ""}`}>
-                                    Team
-                                </span>
+                  Team
+                </span>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
                                     Collaborate together
                                 </p>
