@@ -91,7 +91,7 @@ export default function Home() {
         </section>
 
         {/* Features section */}
-        <section className="py-20 bg-secondary dark:bg-slate-900/50">
+        <section className="py-20 bg-background dark:bg-background">
           <div className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-4">All-in-one task solution</h2>
             <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-16">Everything you need to manage tasks efficiently, all in one integrated platform.</p>

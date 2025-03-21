@@ -99,6 +99,47 @@
     background-color: hsl(var(--card));
   }
 
+  /* Ensure bg-slate-50 respects the theme */
+  .dark .bg-slate-50,
+  [data-theme="dark"] .bg-slate-50 {
+    background-color: hsl(var(--background));
+  }
+
+  /* Fix feature cards */
+  .dark .bg-card,
+  [data-theme="dark"] .bg-card {
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+  }
+
+  /* Fix colored text in dark mode */
+  .dark .text-blue-700,
+  [data-theme="dark"] .text-blue-700,
+  .dark .text-indigo-700,
+  [data-theme="dark"] .text-indigo-700,
+  .dark .text-teal-700,
+  [data-theme="dark"] .text-teal-700,
+  .dark .text-purple-700,
+  [data-theme="dark"] .text-purple-700 {
+    color: hsl(224 76% 65%);
+  }
+
+  /* Fix specific colored backgrounds */
+  .dark .bg-blue-50,
+  [data-theme="dark"] .bg-blue-50 {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+
+  .dark .bg-indigo-50,
+  [data-theme="dark"] .bg-indigo-50 {
+    background-color: rgba(99, 102, 241, 0.1);
+  }
+
+  .dark .bg-teal-50,
+  [data-theme="dark"] .bg-teal-50 {
+    background-color: rgba(20, 184, 166, 0.1);
+  }
+
   /* Ensure the hero and feature sections properly respect theme */
   .dark .py-20,
   .dark .py-24,
@@ -111,4 +152,27 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
+
+  /* Additional fixes for "All-in-one task solution" section in light mode */
+  .bg-secondary.dark\:bg-slate-900\/50 {
+    background-color: hsl(var(--secondary));
+  }
+
+  .dark .bg-secondary.dark\:bg-slate-900\/50 {
+    background-color: rgba(15, 23, 42, 0.5); /* dark slate with opacity */
+  }
+}
+
+/* Explicit fixes for common components */
+.dark .cookie-consent-banner,
+[data-theme="dark"] .cookie-consent-banner {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
+}
+
+.dark .site-footer,
+[data-theme="dark"] .site-footer {
+  background-color: hsl(var(--background));
+  border-color: hsl(var(--border));
 }
