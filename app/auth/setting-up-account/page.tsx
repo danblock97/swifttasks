@@ -3,82 +3,101 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client'; // Adjust import as needed
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 export default function SettingUpAccountPage() {
     const [count, setCount] = useState(0);
     const [isChecking, setIsChecking] = useState(true);
+    const [isRedirecting, setIsRedirecting] = useState(false);
     const [debugInfo, setDebugInfo] = useState<string[]>([]);
     const router = useRouter();
-    const supabase = createClientComponentClient();
+    const clientSupabase = createClientComponentClient();
+    const serviceSupabase = createClient();
     const { toast } = useToast();
 
     // Add debug information
     const addDebug = (message: string) => {
-        setDebugInfo(prev => [...prev, message]);
+        setDebugInfo(prev => [...prev, `[${new Date().toISOString()}] ${message}`]);
+    };
+
+    const checkProfile = async () => {
+        if (!isChecking || isRedirecting) return;
+
+        try {
+            addDebug(`Checking profile (attempt ${count + 1})...`);
+
+            // Get the authenticated user
+            const { data: { user }, error: userError } = await clientSupabase.auth.getUser();
+
+            if (userError) {
+                addDebug(`Auth error: ${userError.message}`);
+                return;
+            }
+
+            if (!user) {
+                addDebug('No authenticated user found');
+                router.push('/login');
+                return;
+            }
+
+            addDebug(`User found: ${user.id.substring(0, 8)}...`);
+
+            // Use service role to check profile
+            const { data: profile, error: profileError } = await serviceSupabase
+                .from('users')
+                .select('id, email, display_name, account_type')
+                .eq('id', user.id)
+                .single();
+
+            if (profileError) {
+                if (profileError.code === 'PGRST116') {
+                    addDebug('Profile not found in database');
+                } else {
+                    addDebug(`Profile query error: ${profileError.message}`);
+                }
+                return;
+            }
+
+            // Profile exists, redirect to dashboard
+            if (profile) {
+                addDebug('Profile found, redirecting to dashboard...');
+                redirectToDashboard();
+            }
+        } catch (error: any) {
+            addDebug(`Unexpected error: ${error.message || 'Unknown error'}`);
+            console.error('Error checking profile:', error);
+        }
+    };
+
+    // Redirect with delay to avoid race conditions
+    const redirectToDashboard = () => {
+        if (isRedirecting) return;
+
+        setIsRedirecting(true);
+        setIsChecking(false);
+
+        toast({
+            title: "Account setup complete",
+            description: "Redirecting to your dashboard..."
+        });
+
+        // Add a small delay to ensure toast is shown and state is updated
+        setTimeout(() => {
+            window.location.href = '/dashboard';
+        }, 1500);
+    };
+
+    // Manual redirect button handler
+    const manualRedirect = async () => {
+        addDebug('Manual redirect requested');
+        redirectToDashboard();
     };
 
     useEffect(() => {
         // Clear any existing intervals when component mounts
         const intervalIds: NodeJS.Timeout[] = [];
-
-        // Function to check if the profile exists
-        const checkProfile = async () => {
-            if (!isChecking) return;
-
-            try {
-                setIsChecking(true);
-                addDebug(`Checking profile (attempt ${count + 1})...`);
-
-                // Get the authenticated user
-                const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-                if (userError) {
-                    addDebug(`Auth error: ${userError.message}`);
-                    return;
-                }
-
-                if (!user) {
-                    addDebug('No authenticated user found');
-                    router.push('/login');
-                    return;
-                }
-
-                addDebug(`User found: ${user.id.substring(0, 8)}...`);
-
-                // Check for the user profile with explicit count
-                const { data: profile, error: profileError, count: profileCount } = await supabase
-                    .from('users')
-                    .select('id', { count: 'exact' })
-                    .eq('id', user.id);
-
-                if (profileError) {
-                    addDebug(`Profile query error: ${profileError.message}`);
-                    return;
-                }
-
-                // Log the response for debugging
-                addDebug(`Profile check result: ${profileCount || 0} profiles found`);
-
-                // If profile exists, redirect to dashboard
-                if (profileCount && profileCount > 0) {
-                    addDebug('Profile found, redirecting to dashboard...');
-                    setIsChecking(false);
-
-                    // Show success toast
-                    toast({
-                        title: "Account setup complete",
-                        description: "Redirecting to your dashboard..."
-                    });
-
-                    // Hard navigation to avoid any caching issues
-                    window.location.href = '/dashboard';
-                }
-            } catch (error: any) {
-                addDebug(`Unexpected error: ${error.message || 'Unknown error'}`);
-                console.error('Error checking profile:', error);
-            }
-        };
 
         // Check immediately
         checkProfile();
@@ -95,12 +114,7 @@ export default function SettingUpAccountPage() {
         return () => {
             intervalIds.forEach(id => clearInterval(id));
         };
-    }, []);
-
-    const manualRedirect = () => {
-        // Force redirect to dashboard
-        window.location.href = '/dashboard';
-    };
+    }, [count]);
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center p-4">
@@ -113,32 +127,33 @@ export default function SettingUpAccountPage() {
                 </div>
 
                 <div className="flex justify-center my-8">
-                    <div className="animate-spin h-10 w-10 border-4 border-primary/20 rounded-full border-t-primary"></div>
+                    <div className={`h-10 w-10 border-4 border-primary/20 rounded-full border-t-primary ${isRedirecting ? '' : 'animate-spin'}`}></div>
                 </div>
 
-                <p className="text-sm text-muted-foreground">
-                    This should only take a few seconds.
-                    {count > 5 && (
+                <div className="text-sm text-muted-foreground">
+                    <p>This should only take a few seconds.</p>
+                    {count > 5 && !isRedirecting && (
                         <div className="mt-4 space-y-2">
                             <p>It's taking longer than expected.</p>
-                            <button
+                            <Button
                                 onClick={manualRedirect}
-                                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 w-full"
+                                className="w-full"
+                                disabled={isRedirecting}
                             >
-                                Go to Dashboard
-                            </button>
+                                {isRedirecting ? 'Redirecting...' : 'Go to Dashboard'}
+                            </Button>
                         </div>
                     )}
-                </p>
+                </div>
 
-                {/* Debug information - hidden by default */}
-                {count > 10 && (
+                {/* Debug information */}
+                {count > 5 && (
                     <div className="mt-8 text-left">
-                        <details className="text-xs">
+                        <details className="text-xs" open={count > 10}>
                             <summary className="cursor-pointer text-muted-foreground">Debug Information</summary>
-                            <div className="mt-2 p-2 bg-muted rounded-md overflow-auto max-h-40">
+                            <div className="mt-2 p-2 bg-muted rounded-md overflow-auto max-h-60 text-xs">
                                 {debugInfo.map((msg, i) => (
-                                    <div key={i} className="mb-1">{msg}</div>
+                                    <div key={i} className="mb-1 whitespace-normal break-words">{msg}</div>
                                 ))}
                             </div>
                         </details>
