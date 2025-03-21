@@ -1,4 +1,7 @@
-﻿import Link from "next/link";
+﻿// Updated SiteFooter component with legal links
+// Replace this in components/ui/footer.tsx
+
+import Link from "next/link";
 
 export function SiteFooter() {
     return (
@@ -36,7 +39,7 @@ export function SiteFooter() {
                         <ul className="space-y-3">
                             <li><Link href="/about" className="hover:text-blue-600 dark:hover:text-blue-400 text-sm">About</Link></li>
                             <li><a href="https://diversediaries.com" className="hover:text-blue-600 dark:hover:text-blue-400 text-sm">Blog</a></li>
-                            <li><a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 text-sm">Contact</a></li>
+                            <li><a href="mailto:contact@danblock.dev" className="hover:text-blue-600 dark:hover:text-blue-400 text-sm">Contact</a></li>
                         </ul>
                     </div>
                 </div>
@@ -45,10 +48,16 @@ export function SiteFooter() {
                     <div className="text-sm text-slate-500 dark:text-slate-400">
                         © {new Date().getFullYear()} SwiftTasks. All rights reserved.
                     </div>
-                    <div className="flex space-x-6 mt-4 md:mt-0">
-                        <a href="#" className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">Privacy Policy</a>
-                        <a href="#" className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">Terms of Service</a>
-                        <a href="#" className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">Cookie Policy</a>
+                    <div className="flex flex-wrap space-x-6 mt-4 md:mt-0">
+                        <Link href="/privacy" className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
+                            Privacy Policy
+                        </Link>
+                        <Link href="/terms" className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
+                            Terms of Service
+                        </Link>
+                        <Link href="/cookies" className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
+                            Cookie Policy
+                        </Link>
                     </div>
                 </div>
             </div>
