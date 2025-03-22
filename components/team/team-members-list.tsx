@@ -106,20 +106,39 @@ export function TeamMembersList({ members, pendingInvites, isTeamOwner, currentU
     };
 
     const confirmRemoveMember = async () => {
-        if (!selectedMember) return;
+        if (!selectedMember || isUpdating) return;
+
+        setIsUpdating(true);
 
         try {
-            // Update user to remove from team
-            const { error } = await supabase
+            // Get the team ID
+            const { data: userProfile } = await supabase
                 .from("users")
-                .update({
-                    account_type: "single",
-                    team_id: null,
-                    is_team_owner: false,
-                })
-                .eq("id", selectedMember.id);
+                .select("team_id")
+                .eq("id", currentUserId)
+                .single();
 
-            if (error) throw error;
+            if (!userProfile?.team_id) {
+                throw new Error("Team ID not found");
+            }
+
+            // Call the server-side API to handle member removal
+            const response = await fetch('/api/team/remove-member', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    memberId: selectedMember.id,
+                    teamId: userProfile.team_id
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to remove team member');
+            }
 
             toast({
                 title: "Member Removed",
@@ -132,9 +151,11 @@ export function TeamMembersList({ members, pendingInvites, isTeamOwner, currentU
             console.error("Error removing team member:", error);
             toast({
                 title: "Error",
-                description: "Failed to remove team member. Please try again.",
+                description: error.message || "Failed to remove team member. Please try again.",
                 variant: "destructive",
             });
+        } finally {
+            setIsUpdating(false);
         }
     };
 
