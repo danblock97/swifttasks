@@ -4,7 +4,6 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from "next/headers";
 import { UserNav } from "@/components/dashboard/user-nav";
-import { NotificationWrapper } from '@/components/notifications/notification-wrapper';
 
 export async function SiteNavbar() {
     const supabase = createServerComponentClient({ cookies });
@@ -48,10 +47,7 @@ export async function SiteNavbar() {
                     <ThemeToggle />
 
                     {session ? (
-                        <div className="flex items-center gap-2">
-                            <NotificationWrapper />
                             <UserNav user={userProfile} />
-                        </div>
                     ) : (
                         <>
                             <Link href="/login" className="text-sm font-medium text-foreground/80">

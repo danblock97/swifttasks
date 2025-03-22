@@ -11,6 +11,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationDropdown } from "@/components/notifications/notification-dropdown";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +55,9 @@ export function UserNav({ user }: UserNavProps) {
     };
 
     return (
+        <div className="flex items-center gap-2">
+            {/* Add NotificationDropdown here */}
+            <NotificationDropdown />
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -93,5 +97,6 @@ export function UserNav({ user }: UserNavProps) {
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+        </div>
     );
 }
