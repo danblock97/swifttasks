@@ -1,6 +1,4 @@
-﻿// FILE: components/notifications/notification-dropdown.tsx
-
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
@@ -119,11 +117,16 @@ export function NotificationDropdown() {
                 throw new Error("Invalid invitation data");
             }
 
+            setIsOpen(false); // Close dropdown immediately to prevent multiple submissions
+
             if (accept) {
-                // Log the invitation data for debugging
                 console.log("Processing invitation with data:", notification.data);
 
-                // Accept invitation
+                // Create a service client with higher privileges for the critical operations
+                // Note: You would need to use a server action or API endpoint in production
+                // This is a temporary workaround for demonstration
+
+                // Accept invitation by updating user in database
                 const { error: userUpdateError } = await supabase
                     .from("users")
                     .update({
@@ -133,39 +136,80 @@ export function NotificationDropdown() {
                     })
                     .eq("id", (await supabase.auth.getUser()).data.user?.id || "");
 
-                if (userUpdateError) throw userUpdateError;
-
-                console.log("User updated successfully to team member");
-
-                // Try to find the invitation using the code to get its ID
-                const { data: inviteData, error: findInviteError } = await supabase
-                    .from("team_invites")
-                    .select("id")
-                    .eq("invite_code", notification.data.invite_code)
-                    .maybeSingle();
-
-                if (findInviteError) {
-                    console.warn("Error finding invitation:", findInviteError);
-                    // This is not fatal, we'll continue without deleting
+                if (userUpdateError) {
+                    throw userUpdateError;
                 }
 
-                // Only try to delete if we found an invitation
-                if (inviteData?.id) {
-                    // Delete the invitation record by ID instead of code
+                // Wait for the update to complete
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Attempt to delete the invitation - make multiple attempts to handle race conditions
+                let inviteDeleteSuccess = false;
+                for (let attempt = 0; attempt < 3 && !inviteDeleteSuccess; attempt++) {
                     const { error: inviteDeleteError } = await supabase
                         .from("team_invites")
                         .delete()
-                        .eq("id", inviteData.id);
+                        .eq("invite_code", notification.data.invite_code);
 
-                    if (inviteDeleteError) {
-                        console.warn("Error deleting invitation by ID:", inviteDeleteError);
-                        // Not a fatal error, user is still added to the team
+                    if (!inviteDeleteError) {
+                        inviteDeleteSuccess = true;
+                        console.log("Successfully deleted team invite on attempt", attempt + 1);
                     } else {
-                        console.log("Invitation deleted successfully");
+                        console.warn("Error deleting invitation (attempt " + (attempt + 1) + "):", inviteDeleteError);
+                        // Wait before retrying
+                        await new Promise(resolve => setTimeout(resolve, 500));
                     }
-                } else {
-                    console.warn("Couldn't find invitation with code:", notification.data.invite_code);
-                    // This is not a fatal error, user is still added to the team
+                }
+
+                // Always make a separate API call to ensure the invite is deleted server-side
+                try {
+                    const response = await fetch('/api/team/delete-invite', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            inviteCode: notification.data.invite_code,
+                        }),
+                    });
+
+                    if (response.ok) {
+                        console.log("Successfully deleted invite via API");
+                    }
+                } catch (apiError) {
+                    console.error("Failed to delete invite via API:", apiError);
+                }
+
+                // Attempt to delete the notification
+                let notificationDeleteSuccess = false;
+                for (let attempt = 0; attempt < 3 && !notificationDeleteSuccess; attempt++) {
+                    try {
+                        const { error: notificationDeleteError } = await supabase
+                            .from("user_notifications")
+                            .delete()
+                            .eq("id", notification.id);
+
+                        if (!notificationDeleteError) {
+                            notificationDeleteSuccess = true;
+                            console.log("Successfully deleted notification on attempt", attempt + 1);
+
+                            // Only update state if we actually deleted the notification
+                            setNotifications(prev => prev.filter(n => n.id !== notification.id));
+                            setUnreadCount(prev => Math.max(0, prev - 1));
+                        } else {
+                            console.warn("Error deleting notification (attempt " + (attempt + 1) + "):", notificationDeleteError);
+                            // Wait before retrying
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                    } catch (deleteError) {
+                        console.error("Exception deleting notification (attempt " + (attempt + 1) + "):", deleteError);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+
+                // If we couldn't delete the notification, mark it as read instead
+                if (!notificationDeleteSuccess) {
+                    await markAsRead(notification.id);
                 }
 
                 toast({
@@ -173,25 +217,42 @@ export function NotificationDropdown() {
                     description: `You have joined ${notification.data.team_name}`,
                 });
 
-                // Mark notification as read
-                await markAsRead(notification.id);
-
-                // Refresh the page to update UI
-                router.refresh();
-
-                // Redirect to team dashboard
-                router.push("/dashboard/team?joined=true");
+                // Redirect to team dashboard with a slight delay to ensure operations complete
+                setTimeout(() => {
+                    router.push("/dashboard/team?joined=true");
+                    router.refresh();
+                }, 500);
             } else {
-                // Decline invitation - just mark as read
-                await markAsRead(notification.id);
+                // Decline invitation - delete the notification
+                try {
+                    const { error: notificationDeleteError } = await supabase
+                        .from("user_notifications")
+                        .delete()
+                        .eq("id", notification.id);
 
-                toast({
-                    title: "Invitation Declined",
-                    description: "You have declined the team invitation",
-                });
+                    if (notificationDeleteError) {
+                        throw notificationDeleteError;
+                    }
+
+                    // Update local state
+                    setNotifications(prev => prev.filter(n => n.id !== notification.id));
+                    setUnreadCount(prev => Math.max(0, prev - 1));
+
+                    toast({
+                        title: "Invitation Declined",
+                        description: "You have declined the team invitation",
+                    });
+                } catch (error) {
+                    console.error("Error deleting notification:", error);
+                    // Fall back to just marking as read
+                    await markAsRead(notification.id);
+
+                    toast({
+                        title: "Invitation Declined",
+                        description: "The invitation has been declined, but there was an issue updating notifications",
+                    });
+                }
             }
-
-            setIsOpen(false); // Close dropdown after action
         } catch (error: any) {
             console.error("Error handling invitation:", error);
             toast({
