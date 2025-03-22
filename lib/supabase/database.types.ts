@@ -289,6 +289,41 @@ export interface Database {
                     invite_code?: string
                 }
             }
+            user_notifications: {
+                Row: {
+                    id: string
+                    user_id: string
+                    type: string
+                    title: string
+                    content: string | null
+                    data: Json | null
+                    is_read: boolean
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    type: string
+                    title: string
+                    content?: string | null
+                    data?: Json | null
+                    is_read?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    type?: string
+                    title?: string
+                    content?: string | null
+                    data?: Json | null
+                    is_read?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
         }
     }
 }

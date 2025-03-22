@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { generateUUID } from "@/lib/utils";
-import { Mail, Send, Users, ArrowLeft } from "lucide-react";
+import { Mail, Send, Users, ArrowLeft, UserPlus, UserCheck } from "lucide-react";
 import Link from "next/link";
 
 interface InviteTeamMemberFormProps {
@@ -29,6 +29,7 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isExistingUser, setIsExistingUser] = useState(false);
 
     const router = useRouter();
     const supabase = createClientComponentClient();
@@ -69,6 +70,9 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
         setIsLoading(true);
 
         try {
+            // Try to check if user exists without using admin API (which might not be available)
+            // We'll determine this from the server side response instead
+
             // Generate invite code
             const inviteCode = generateUUID();
 
@@ -90,7 +94,6 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
             if (inviteRecordError) throw inviteRecordError;
 
             // Send the invitation email using our server API route
-            // This calls Supabase Auth Admin API with proper service role key
             const response = await fetch('/api/send-team-invite', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -106,6 +109,11 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
 
             if (!response.ok) {
                 throw new Error(result.error || 'Failed to send invitation email');
+            }
+
+            // Check if the server indicated this was an existing user
+            if (result.userExists || (result.message && result.message.includes('existing user'))) {
+                setIsExistingUser(true);
             }
 
             setIsSuccess(true);
@@ -129,6 +137,7 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
     const resetForm = () => {
         setEmail("");
         setIsSuccess(false);
+        setIsExistingUser(false);
     };
 
     return (
@@ -143,14 +152,27 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
                         </div>
                         <h2 className="text-xl font-bold">Invitation Sent!</h2>
                         <p className="text-muted-foreground">
-                            An invitation email has been sent to {email}. They'll need to accept the invitation to join your team.
+                            An invitation {isExistingUser ? "link" : "email"} has been sent to {email}. They'll need to accept the invitation to join your team.
                         </p>
 
-                        <div className="bg-muted p-4 rounded-md mt-6 text-sm text-left">
-                            <p>
-                                <strong>Note:</strong> The invitation will expire in 7 days. If the invitation expires or isn't received, you can send a new invitation from the team dashboard.
-                            </p>
-                        </div>
+                        {isExistingUser ? (
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md mt-4 text-sm text-left border border-blue-100 dark:border-blue-800">
+                                <div className="flex items-start">
+                                    <UserCheck className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                    <div className="ml-2">
+                                        <p className="text-blue-800 dark:text-blue-300">
+                                            <strong>Existing user detected:</strong> We've sent a special invitation link that will allow this user to join your team with their existing account.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-muted p-4 rounded-md mt-4 text-sm text-left">
+                                <p>
+                                    <strong>Note:</strong> The invitation will expire in 7 days. If the invitation expires or isn't received, you can send a new invitation from the team dashboard.
+                                </p>
+                            </div>
+                        )}
 
                         <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-center">
                             <Button variant="outline" onClick={resetForm}>
@@ -190,14 +212,26 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
                             </div>
                         </div>
 
-                        <div className="rounded-md bg-blue-50 dark:bg-blue-900/20 p-4 text-sm flex items-start gap-2 border border-blue-100 dark:border-blue-800">
-                            <Users className="h-5 w-5 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                            <div>
-                                <h4 className="font-medium text-blue-800 dark:text-blue-300">Team Collaboration Benefits</h4>
-                                <p className="mt-1 text-blue-700 dark:text-blue-400">
-                                    Team members can collaborate on projects, Kanban boards, and documentation spaces.
-                                    They'll have access to all team resources.
-                                </p>
+                        <div className="space-y-4">
+                            <div className="rounded-md bg-blue-50 dark:bg-blue-900/20 p-4 text-sm flex items-start gap-2 border border-blue-100 dark:border-blue-800">
+                                <Users className="h-5 w-5 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <h4 className="font-medium text-blue-800 dark:text-blue-300">Team Collaboration Benefits</h4>
+                                    <p className="mt-1 text-blue-700 dark:text-blue-400">
+                                        Team members can collaborate on projects, Kanban boards, and documentation spaces.
+                                        They'll have access to all team resources.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="rounded-md bg-purple-50 dark:bg-purple-900/20 p-4 text-sm flex items-start gap-2 border border-purple-100 dark:border-purple-800">
+                                <UserPlus className="h-5 w-5 text-purple-500 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <h4 className="font-medium text-purple-800 dark:text-purple-300">Inviting Existing Users</h4>
+                                    <p className="mt-1 text-purple-700 dark:text-purple-400">
+                                        You can invite users who already have an account. They'll receive a special link to join your team with their existing account.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </CardContent>

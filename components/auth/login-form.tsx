@@ -1,14 +1,17 @@
-﻿"use client";
+﻿// FILE: components/auth/login-form.tsx
+// MODIFIED to handle login with team invitations
+
+"use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, Lock, ArrowRight, UserCircle2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, UserCircle2, Users } from "lucide-react";
 import { getCookie, setCookie, removeCookie, COOKIE_KEYS, getRememberMe } from "@/lib/cookies";
 
 export function LoginForm() {
@@ -16,20 +19,37 @@ export function LoginForm() {
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [invitationInfo, setInvitationInfo] = useState<{code: string, email: string} | null>(null);
+
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { toast } = useToast();
     const supabase = createClientComponentClient();
+
+    // Check for invitation parameters
+    useEffect(() => {
+        const invitationCode = searchParams.get('invitation');
+        const invitationEmail = searchParams.get('email');
+
+        if (invitationCode && invitationEmail) {
+            setInvitationInfo({
+                code: invitationCode,
+                email: invitationEmail
+            });
+            setEmail(invitationEmail);
+        }
+    }, [searchParams]);
 
     // Load remembered email if available
     useEffect(() => {
         const rememberedEmail = getCookie("remembered_email");
         const wasRemembered = getRememberMe();
 
-        if (rememberedEmail && wasRemembered) {
+        if (rememberedEmail && wasRemembered && !invitationInfo) {
             setEmail(rememberedEmail);
             setRememberMe(true);
         }
-    }, []);
+    }, [invitationInfo]);
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -54,13 +74,24 @@ export function LoginForm() {
                 removeCookie(COOKIE_KEYS.REMEMBER_ME);
             }
 
-            toast({
-                title: "Logged in successfully",
-                description: "Redirecting to your dashboard...",
-            });
+            // Check if this login is part of accepting a team invitation
+            if (invitationInfo && invitationInfo.code) {
+                toast({
+                    title: "Logged in successfully",
+                    description: "Processing your team invitation...",
+                });
 
-            router.refresh();
-            router.push("/dashboard");
+                // Redirect to the invitation accept endpoint
+                router.push(`/api/team-invite/existing/${invitationInfo.code}`);
+            } else {
+                toast({
+                    title: "Logged in successfully",
+                    description: "Redirecting to your dashboard...",
+                });
+
+                router.refresh();
+                router.push("/dashboard");
+            }
         } catch (error: any) {
             toast({
                 title: "Error",
@@ -85,14 +116,37 @@ export function LoginForm() {
                 <div className="mb-8 text-center">
                     <div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 mb-4">
                         <div className="h-20 w-20 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600">
-                            <UserCircle2 className="h-10 w-10 text-white" />
+                            {invitationInfo ? (
+                                <Users className="h-10 w-10 text-white" />
+                            ) : (
+                                <UserCircle2 className="h-10 w-10 text-white" />
+                            )}
                         </div>
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        {invitationInfo ? "Sign in to join team" : "Welcome back"}
+                    </h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Sign in to continue your productive journey
+                        {invitationInfo
+                            ? "Sign in to your account to accept the team invitation"
+                            : "Sign in to continue your productive journey"}
                     </p>
                 </div>
+
+                {invitationInfo && (
+                    <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-md">
+                        <div className="flex items-start">
+                            <div className="flex-shrink-0 pt-0.5">
+                                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-blue-700 dark:text-blue-300">
+                                    You've been invited to join a team. Please sign in with your account to accept the invitation.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <form onSubmit={onSubmit} className="space-y-6">
                     <div className="space-y-4">
@@ -108,7 +162,7 @@ export function LoginForm() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    disabled={isLoading}
+                                    disabled={isLoading || (!!invitationInfo)}
                                 />
                             </div>
                         </div>
@@ -186,7 +240,7 @@ export function LoginForm() {
                             </div>
                         ) : (
                             <div className="flex items-center justify-center">
-                                Sign in
+                                {invitationInfo ? "Sign in & Join Team" : "Sign in"}
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </div>
                         )}
@@ -196,7 +250,13 @@ export function LoginForm() {
                 <div className="mt-6 text-center">
                     <p className="text-sm text-muted-foreground">
                         Don't have an account?{" "}
-                        <Link href="/register" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
+                        <Link
+                            href={invitationInfo
+                                ? `/register?email=${encodeURIComponent(invitationInfo.email)}&invite=${invitationInfo.code}`
+                                : "/register"
+                            }
+                            className="text-blue-600 dark:text-blue-400 font-medium hover:underline"
+                        >
                             Sign up
                         </Link>
                     </p>
