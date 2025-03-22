@@ -215,7 +215,7 @@ export function ProjectsList({ projects, isTeamMember, isTeamOwner }: ProjectsLi
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Link
-                                                    href={`/dashboard/projects/${project.id}/boards`}
+                                                    href={`/dashboard/projects/${project.id}`}
                                                     className="inline-flex items-center justify-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-secondary"
                                                 >
                                                     <Kanban className="mr-1 h-3 w-3" />
