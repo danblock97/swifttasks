@@ -358,61 +358,97 @@ export function KanbanBoard({
         setCreateColumnDialogOpen(false);
     };
 
+    const handleRefreshBoard = async () => {
+        // Fetch updated columns and items
+        const { data: updatedColumns } = await supabase
+            .from("board_columns")
+            .select(`
+              *,
+              board_items(*)
+            `)
+            .eq("board_id", boardId)
+            .order("order", { ascending: true });
+
+        if (updatedColumns) {
+            const formattedColumns = updatedColumns.map((column) => ({
+                id: column.id,
+                name: column.name,
+                order: column.order,
+                items: column.board_items.sort((a: { order: number }, b: { order: number }) => a.order - b.order)
+            }));
+
+            setColumns(formattedColumns);
+        }
+    };
+
     return (
-        <div className="h-full">
+        <div className="kanban-board-container w-full">
             <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="board" type="column" direction="horizontal">
-                    {(provided) => (
-                        <div
-                            className="flex gap-4 overflow-x-auto pb-4"
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                        >
-                            {columns.map((column, index) => (
-                                <Draggable
-                                    key={column.id}
-                                    draggableId={column.id}
-                                    index={index}
-                                    isDragDisabled={!canManageBoard || isUpdating}
+                <div className="flex w-full overflow-hidden flex-col">
+                    <div className="kanban-columns-container w-full overflow-x-auto pb-6">
+                        <Droppable droppableId="board" type="column" direction="horizontal">
+                            {(provided) => (
+                                <div
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                    className="kanban-columns-wrapper inline-flex space-x-4 min-w-full"
+                                    style={{
+                                        display: 'inline-flex',
+                                        flexDirection: 'row',
+                                        margin: '0 auto'
+                                    }}
                                 >
-                                    {(provided) => (
-                                        <div
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
+                                    {columns.map((column, index) => (
+                                        <Draggable
+                                            key={column.id}
+                                            draggableId={column.id}
+                                            index={index}
+                                            isDragDisabled={!canManageBoard || isUpdating}
                                         >
-                                            <KanbanColumn
-                                                column={column}
-                                                onAddItem={() => handleAddItem(column.id)}
-                                                onEditItem={handleEditItem}
-                                                onDeleteItem={handleDeleteItem}
-                                                canManageBoard={canManageBoard}
-                                                isUpdating={isUpdating}
-                                                dragHandleProps={provided.dragHandleProps}
-                                            />
+                                            {(provided) => (
+                                                <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    className="kanban-column-draggable w-80 flex-shrink-0"
+                                                >
+                                                    <KanbanColumn
+                                                        column={column}
+                                                        onAddItem={() => handleAddItem(column.id)}
+                                                        onEditItem={handleEditItem}
+                                                        onDeleteItem={handleDeleteItem}
+                                                        canManageBoard={canManageBoard}
+                                                        isUpdating={isUpdating}
+                                                        dragHandleProps={provided.dragHandleProps}
+                                                        boardId={boardId}
+                                                        onColumnUpdated={handleRefreshBoard}
+                                                    />
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    ))}
+
+                                    {provided.placeholder}
+
+                                    {canManageBoard && columns.length < 7 && (
+                                        <div className="w-80 flex-shrink-0">
+                                            <Button
+                                                variant="outline"
+                                                className="border-dashed w-full h-12 flex gap-1"
+                                                onClick={() => setCreateColumnDialogOpen(true)}
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                                Add Column
+                                            </Button>
                                         </div>
                                     )}
-                                </Draggable>
-                            ))}
-                            {provided.placeholder}
-
-                            {canManageBoard && columns.length < 7 && (
-                                <div className="flex-shrink-0 w-72 h-min">
-                                    <Button
-                                        variant="outline"
-                                        className="border-dashed w-full h-12 flex gap-1"
-                                        onClick={() => setCreateColumnDialogOpen(true)}
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        Add Column
-                                    </Button>
                                 </div>
                             )}
-                        </div>
-                    )}
-                </Droppable>
+                        </Droppable>
+                    </div>
+                </div>
             </DragDropContext>
 
-            {/* Create Item Dialog */}
+            {/* Dialog components remain the same */}
             {selectedColumnId && (
                 <CreateItemDialog
                     open={createDialogOpen}
@@ -425,7 +461,6 @@ export function KanbanBoard({
                 />
             )}
 
-            {/* Edit Item Dialog */}
             {selectedItem && (
                 <EditItemDialog
                     open={editDialogOpen}
@@ -438,7 +473,6 @@ export function KanbanBoard({
                 />
             )}
 
-            {/* Create Column Dialog */}
             <CreateColumnDialog
                 open={createColumnDialogOpen}
                 onOpenChange={setCreateColumnDialogOpen}

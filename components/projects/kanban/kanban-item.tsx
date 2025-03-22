@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit, Trash2, User } from "lucide-react";
 import { truncateText } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 interface BoardItem {
     id: string;
@@ -36,6 +38,37 @@ interface KanbanItemProps {
 
 export function KanbanItem({ item, onEdit, onDelete, canManageBoard }: KanbanItemProps) {
     const { title, description, assigned_to } = item;
+    const [assigneeInitials, setAssigneeInitials] = useState("");
+    const supabase = createClientComponentClient();
+
+    useEffect(() => {
+        const getAssigneeDetails = async () => {
+            if (!assigned_to) return;
+
+            const { data: user } = await supabase
+                .from('users')
+                .select('display_name, email')
+                .eq('id', assigned_to)
+                .single();
+
+            if (user) {
+                // Get initials from display_name or email
+                if (user.display_name) {
+                    const initials = user.display_name
+                        .split(" ")
+                        .map((n: string) => n[0])
+                        .join("")
+                        .toUpperCase()
+                        .substring(0, 2);
+                    setAssigneeInitials(initials);
+                } else if (user.email) {
+                    setAssigneeInitials(user.email.substring(0, 2).toUpperCase());
+                }
+            }
+        };
+
+        getAssigneeDetails();
+    }, [assigned_to, supabase]);
 
     return (
         <Card className="border shadow-sm">
@@ -49,7 +82,7 @@ export function KanbanItem({ item, onEdit, onDelete, canManageBoard }: KanbanIte
                                 <span className="sr-only">Actions</span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-36">
+                        <DropdownMenuContent align="end" className="w-36 bg-background border shadow-md">
                             <DropdownMenuItem onClick={onEdit}>
                                 <Edit className="mr-2 h-3.5 w-3.5" />
                                 Edit
@@ -83,7 +116,7 @@ export function KanbanItem({ item, onEdit, onDelete, canManageBoard }: KanbanIte
 
                     <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs">
-                            {assigned_to.substring(0, 2).toUpperCase()}
+                            {assigneeInitials || "?"}
                         </AvatarFallback>
                     </Avatar>
                 </CardFooter>

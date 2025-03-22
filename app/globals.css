@@ -354,3 +354,101 @@
   background-color: hsl(var(--background)) !important;
   border: 1px solid hsl(var(--border)) !important;
 }
+
+[data-radix-dialog-content],
+[role="dialog"] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2) !important;
+}
+
+/* Fix dropdown menu transparency */
+[data-radix-popper-content-wrapper] [role="menu"],
+[data-radix-popper-content-wrapper] [role="listbox"],
+[data-radix-dropdown-menu-content],
+[data-radix-select-content] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Ensure any popover or tooltip content has solid background */
+[data-radix-popover-content],
+[data-radix-tooltip-content] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+/* Add specific fix for dialog overlay to ensure it's not transparent */
+[data-radix-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.kanban-board-container {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.kanban-columns-container {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 16px;
+}
+
+.kanban-columns-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.kanban-columns-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kanban-columns-container::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 4px;
+}
+
+.kanban-columns-wrapper {
+  display: inline-flex;
+  min-width: max-content;
+  padding-bottom: 8px;
+}
+
+.kanban-column-draggable {
+  width: 320px;
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+
+/* Make scrollbar thinner and more subtle */
+* {
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 4px;
+}
+
+/* Remove any potential extra body/html scrolling */
+body, html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Ensure DashboardShell doesn't overflow */
+.dashboard-shell {
+  max-width: 100%;
+  overflow-x: hidden;
+}

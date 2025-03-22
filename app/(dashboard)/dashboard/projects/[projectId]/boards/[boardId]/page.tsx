@@ -101,19 +101,21 @@ export default async function BoardDetailPage({ params }: BoardDetailPageProps) 
                 <DashboardHeader
                     heading={board.name}
                     description={`${project.name} › Board`}
-                >
-                    {canManageBoard && (
-                        <Link href={`/dashboard/projects/${projectId}/boards/${boardId}/edit`}>
-                            <Button variant="outline" size="sm">
-                                <Edit className="mr-1 h-4 w-4" />
-                                Edit Board
-                            </Button>
-                        </Link>
-                    )}
-                </DashboardHeader>
+                />
             </div>
 
-            <div className="my-4">
+            {canManageBoard && (
+                <div className="flex justify-end mb-4">
+                    <Link href={`/dashboard/projects/${projectId}/boards/${boardId}/edit`}>
+                        <Button variant="outline" size="sm">
+                            <Edit className="mr-1 h-4 w-4" />
+                            Edit Board
+                        </Button>
+                    </Link>
+                </div>
+            )}
+
+            <div className="w-full overflow-hidden">
                 <KanbanBoard
                     columns={formattedColumns}
                     boardId={boardId}

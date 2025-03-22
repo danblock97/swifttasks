@@ -8,8 +8,8 @@ export function DashboardShell({
                                    ...props
                                }: DashboardShellProps) {
     return (
-        <div className={cn("flex min-h-screen flex-col space-y-6", className)} {...props}>
-            <div className="flex-1 space-y-4 pt-2">{children}</div>
+        <div className={cn("flex min-h-screen w-full flex-col space-y-6", className)} {...props}>
+            <div className="flex-1 space-y-4 pt-2 w-full">{children}</div>
         </div>
     );
 }
