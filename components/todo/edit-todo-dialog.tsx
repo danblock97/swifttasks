@@ -84,7 +84,7 @@ export function EditTodoDialog({
         const updatedTask = {
             ...task,
             content: content.trim(),
-            priority: priority as "low" | "medium" | "high" | null,
+            priority: priority === "none" ? null : priority as "low" | "medium" | "high" | null,
             due_date: formattedDueDate,
         };
 
@@ -150,7 +150,7 @@ export function EditTodoDialog({
                                     <SelectValue placeholder="Select priority" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">None</SelectItem>
+                                    <SelectItem value="none">None</SelectItem>
                                     <SelectItem value="low">Low</SelectItem>
                                     <SelectItem value="medium">Medium</SelectItem>
                                     <SelectItem value="high">High</SelectItem>

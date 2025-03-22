@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -100,6 +100,11 @@ export function TodoList({ todoItems }: TodoListProps) {
             router.refresh();
         }
     };
+
+    useEffect(() => {
+        // Update the tasks state when the todoItems prop changes
+        setTasks(todoItems);
+    }, [todoItems]);
 
     const handleEditTask = (task: TodoItem) => {
         setSelectedTask(task);
