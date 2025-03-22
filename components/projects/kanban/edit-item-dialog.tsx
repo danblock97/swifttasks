@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { CalendarIcon, Clock } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface BoardItem {
     id: string;
@@ -31,6 +40,10 @@ interface BoardItem {
     column_id: string;
     created_at: string;
     assigned_to: string | null;
+    priority: "low" | "medium" | "high" | null;
+    due_date: string | null;
+    estimated_hours: number | null;
+    labels: string[] | null;
 }
 
 interface Column {
@@ -65,10 +78,34 @@ export function EditItemDialog({
     const [assignedTo, setAssignedTo] = useState<string | undefined>(
         item.assigned_to || "unassigned"
     );
+    const [priority, setPriority] = useState<"low" | "medium" | "high" | undefined>(
+        item.priority || undefined
+    );
+    const [dueDate, setDueDate] = useState<Date | undefined>(
+        item.due_date ? new Date(item.due_date) : undefined
+    );
+    const [estimatedHours, setEstimatedHours] = useState<string>(
+        item.estimated_hours ? String(item.estimated_hours) : ""
+    );
+    const [labels, setLabels] = useState<string>(
+        item.labels ? item.labels.join(", ") : ""
+    );
     const [isLoading, setIsLoading] = useState(false);
 
     const supabase = createClientComponentClient();
     const { toast } = useToast();
+
+    // Update local state when item prop changes
+    useEffect(() => {
+        setTitle(item.title);
+        setDescription(item.description || "");
+        setColumnId(item.column_id);
+        setAssignedTo(item.assigned_to || "unassigned");
+        setPriority(item.priority || undefined);
+        setDueDate(item.due_date ? new Date(item.due_date) : undefined);
+        setEstimatedHours(item.estimated_hours ? String(item.estimated_hours) : "");
+        setLabels(item.labels ? item.labels.join(", ") : "");
+    }, [item]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -85,10 +122,19 @@ export function EditItemDialog({
         setIsLoading(true);
 
         try {
+            // Process labels if provided
+            const processedLabels = labels.trim()
+                ? labels.split(",").map(label => label.trim())
+                : null;
+
             const updatedData: Partial<BoardItem> = {
                 title: title.trim(),
                 description: description.trim() || null,
                 assigned_to: assignedTo === "unassigned" ? null : assignedTo || null,
+                priority: priority || null,
+                due_date: dueDate ? dueDate.toISOString() : null,
+                estimated_hours: estimatedHours ? parseFloat(estimatedHours) : null,
+                labels: processedLabels,
             };
 
             // If column changed, update column_id and recalculate order
@@ -141,28 +187,29 @@ export function EditItemDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px] bg-background border shadow-md">
+            <DialogContent className="sm:max-w-[500px] bg-background border shadow-md">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>Edit Task</DialogTitle>
                         <DialogDescription>
-                            Make changes to your task here.
+                            Update the details of your task.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="edit-title">Title</Label>
+                            <Label htmlFor="edit-title" className="font-medium">Title</Label>
                             <Input
                                 id="edit-title"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 disabled={isLoading}
                                 autoFocus
+                                required
                             />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="edit-description">Description</Label>
+                            <Label htmlFor="edit-description" className="font-medium">Description</Label>
                             <Textarea
                                 id="edit-description"
                                 value={description}
@@ -172,28 +219,48 @@ export function EditItemDialog({
                             />
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="edit-column">Status</Label>
-                            <Select
-                                value={columnId}
-                                onValueChange={setColumnId}
-                                disabled={isLoading}
-                            >
-                                <SelectTrigger id="edit-column">
-                                    <SelectValue placeholder="Select column" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {columns.map((column) => (
-                                        <SelectItem key={column.id} value={column.id}>
-                                            {column.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-priority" className="font-medium">Priority</Label>
+                                <Select
+                                    value={priority}
+                                    onValueChange={(value: "low" | "medium" | "high") => setPriority(value)}
+                                    disabled={isLoading}
+                                >
+                                    <SelectTrigger id="edit-priority">
+                                        <SelectValue placeholder="Select priority" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="low">Low</SelectItem>
+                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="high">High</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-column" className="font-medium">Column</Label>
+                                <Select
+                                    value={columnId}
+                                    onValueChange={setColumnId}
+                                    disabled={isLoading}
+                                >
+                                    <SelectTrigger id="edit-column">
+                                        <SelectValue placeholder="Select column" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {columns.map((column) => (
+                                            <SelectItem key={column.id} value={column.id}>
+                                                {column.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="edit-assigned-to">Assign To</Label>
+                            <Label htmlFor="edit-assigned-to" className="font-medium">Assign To</Label>
                             <Select
                                 value={assignedTo}
                                 onValueChange={setAssignedTo}
@@ -212,6 +279,64 @@ export function EditItemDialog({
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-due-date" className="font-medium">Due Date</Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            disabled={isLoading}
+                                            className={cn(
+                                                "justify-start text-left font-normal",
+                                                !dueDate && "text-muted-foreground"
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {dueDate ? format(dueDate, "PPP") : "No due date"}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                            mode="single"
+                                            selected={dueDate}
+                                            onSelect={setDueDate}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-estimated-hours" className="font-medium">Estimated Hours</Label>
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        id="edit-estimated-hours"
+                                        type="number"
+                                        step="0.5"
+                                        min="0"
+                                        value={estimatedHours}
+                                        onChange={(e) => setEstimatedHours(e.target.value)}
+                                        placeholder="Hours"
+                                        disabled={isLoading}
+                                    />
+                                    <Clock className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-labels" className="font-medium">Labels</Label>
+                            <Input
+                                id="edit-labels"
+                                value={labels}
+                                onChange={(e) => setLabels(e.target.value)}
+                                placeholder="Enter labels separated by commas (e.g., frontend, bug, feature)"
+                                disabled={isLoading}
+                            />
+                            <p className="text-xs text-muted-foreground">Separate multiple labels with commas</p>
                         </div>
                     </div>
                     <DialogFooter>

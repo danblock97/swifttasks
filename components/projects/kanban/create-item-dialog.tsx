@@ -23,6 +23,15 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { generateUUID } from "@/lib/utils";
+import { CalendarIcon, Clock } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface BoardItem {
     id: string;
@@ -32,6 +41,10 @@ interface BoardItem {
     column_id: string;
     created_at: string;
     assigned_to: string | null;
+    priority: "low" | "medium" | "high" | null;
+    due_date: string | null;
+    estimated_hours: number | null;
+    labels: string[] | null;
 }
 
 interface CreateItemDialogProps {
@@ -56,6 +69,10 @@ export function CreateItemDialog({
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [assignedTo, setAssignedTo] = useState<string | undefined>(undefined);
+    const [priority, setPriority] = useState<"low" | "medium" | "high" | undefined>(undefined);
+    const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+    const [estimatedHours, setEstimatedHours] = useState<string>("");
+    const [labels, setLabels] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
 
     const supabase = createClientComponentClient();
@@ -87,6 +104,11 @@ export function CreateItemDialog({
             // Generate item ID
             const itemId = generateUUID();
 
+            // Process labels if provided
+            const processedLabels = labels.trim()
+                ? labels.split(",").map(label => label.trim())
+                : null;
+
             // Create new item
             const { error } = await supabase
                 .from("board_items")
@@ -97,6 +119,10 @@ export function CreateItemDialog({
                     order: newItemOrder,
                     column_id: columnId,
                     assigned_to: assignedTo || null,
+                    priority: priority || null,
+                    due_date: dueDate ? dueDate.toISOString() : null,
+                    estimated_hours: estimatedHours ? parseFloat(estimatedHours) : null,
+                    labels: processedLabels,
                 });
 
             if (error) throw error;
@@ -121,6 +147,10 @@ export function CreateItemDialog({
             setTitle("");
             setDescription("");
             setAssignedTo(undefined);
+            setPriority(undefined);
+            setDueDate(undefined);
+            setEstimatedHours("");
+            setLabels("");
         } catch (error: any) {
             console.error("Error creating item:", error);
             toast({
@@ -135,17 +165,17 @@ export function CreateItemDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px] bg-background border shadow-md">
+            <DialogContent className="sm:max-w-[500px] bg-background border shadow-md">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>Create New Task</DialogTitle>
                         <DialogDescription>
-                            Add a new task to your kanban board.
+                            Add a new task to your kanban board with detailed information.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="title">Title</Label>
+                            <Label htmlFor="title" className="font-medium">Title</Label>
                             <Input
                                 id="title"
                                 value={title}
@@ -153,11 +183,12 @@ export function CreateItemDialog({
                                 placeholder="Enter task title"
                                 disabled={isLoading}
                                 autoFocus
+                                required
                             />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="description" className="font-medium">Description</Label>
                             <Textarea
                                 id="description"
                                 value={description}
@@ -169,7 +200,83 @@ export function CreateItemDialog({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="assigned-to">Assign To</Label>
+                            <Label htmlFor="priority" className="font-medium">Priority</Label>
+                            <Select
+                                value={priority}
+                                onValueChange={(value: "low" | "medium" | "high") => setPriority(value)}
+                                disabled={isLoading}
+                            >
+                                <SelectTrigger id="priority">
+                                    <SelectValue placeholder="Select priority" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="low">Low</SelectItem>
+                                    <SelectItem value="medium">Medium</SelectItem>
+                                    <SelectItem value="high">High</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="due-date" className="font-medium">Due Date</Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            disabled={isLoading}
+                                            className={cn(
+                                                "justify-start text-left font-normal",
+                                                !dueDate && "text-muted-foreground"
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {dueDate ? format(dueDate, "PPP") : "Select a date"}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                            mode="single"
+                                            selected={dueDate}
+                                            onSelect={setDueDate}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="estimated-hours" className="font-medium">Estimated Hours</Label>
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        id="estimated-hours"
+                                        type="number"
+                                        step="0.5"
+                                        min="0"
+                                        value={estimatedHours}
+                                        onChange={(e) => setEstimatedHours(e.target.value)}
+                                        placeholder="Hours"
+                                        disabled={isLoading}
+                                    />
+                                    <Clock className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="labels" className="font-medium">Labels</Label>
+                            <Input
+                                id="labels"
+                                value={labels}
+                                onChange={(e) => setLabels(e.target.value)}
+                                placeholder="Enter labels separated by commas (e.g., frontend, bug, feature)"
+                                disabled={isLoading}
+                            />
+                            <p className="text-xs text-muted-foreground">Separate multiple labels with commas</p>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="assigned-to" className="font-medium">Assign To</Label>
                             <Select
                                 value={assignedTo}
                                 onValueChange={setAssignedTo}
@@ -189,6 +296,7 @@ export function CreateItemDialog({
                             </Select>
                         </div>
                     </div>
+
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
                             Cancel
