@@ -38,6 +38,7 @@ import {
     MoreVertical,
     ExternalLink,
     Plus,
+    Users,
 } from "lucide-react";
 import { formatDate, truncateText } from "@/lib/utils";
 
@@ -55,9 +56,10 @@ interface DocPagesProps {
     pages: DocPage[];
     spaceId: string;
     canManageDocSpace: boolean;
+    isTeamSpace?: boolean;
 }
 
-export function DocPages({ pages, spaceId, canManageDocSpace }: DocPagesProps) {
+export function DocPages({ pages, spaceId, canManageDocSpace, isTeamSpace = false }: DocPagesProps) {
     const [docPages, setDocPages] = useState<DocPage[]>(pages);
     const [selectedPage, setSelectedPage] = useState<DocPage | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -139,6 +141,10 @@ export function DocPages({ pages, spaceId, canManageDocSpace }: DocPagesProps) {
         return truncateText(cleanContent, 150);
     };
 
+    // Define page limit based on space type
+    const pageLimit = isTeamSpace ? 10 : 5;
+    const hasReachedPageLimit = docPages.length >= pageLimit;
+
     return (
         <div className="grid gap-6">
             {docPages.length === 0 ? (
@@ -219,7 +225,7 @@ export function DocPages({ pages, spaceId, canManageDocSpace }: DocPagesProps) {
                         </Card>
                     ))}
 
-                    {canManageDocSpace && (
+                    {canManageDocSpace && !hasReachedPageLimit && (
                         <Card className="border-dashed hover:shadow-sm transition-shadow">
                             <CardContent className="flex h-24 items-center justify-center">
                                 <Link href={`/dashboard/docs/${spaceId}/pages/create`}>
@@ -228,6 +234,28 @@ export function DocPages({ pages, spaceId, canManageDocSpace }: DocPagesProps) {
                                         Add New Page
                                     </Button>
                                 </Link>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Show upgrade message for solo users who have reached page limit */}
+                    {canManageDocSpace && hasReachedPageLimit && !isTeamSpace && (
+                        <Card className="border-dashed border-blue-200 dark:border-blue-800 hover:shadow-sm transition-shadow">
+                            <CardContent className="flex h-24 items-center justify-center">
+                                <div className="text-center">
+                                    <div className="flex items-center justify-center gap-2 mb-2">
+                                        <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                        <span className="font-medium text-blue-600 dark:text-blue-400">Page Limit Reached</span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mb-2">
+                                        Team accounts can create up to 10 pages per space
+                                    </p>
+                                    <Link href="/dashboard/settings">
+                                        <Button variant="outline" size="sm" className="text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800">
+                                            Upgrade Account
+                                        </Button>
+                                    </Link>
+                                </div>
                             </CardContent>
                         </Card>
                     )}

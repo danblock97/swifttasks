@@ -58,11 +58,19 @@ export default async function CreateDocPage({ params }: CreateDocPageProps) {
         redirect(`/dashboard/docs/${spaceId}`);
     }
 
-    // Get count of existing pages to determine order
+    // Get count of existing pages to determine order and check limits
     const { count } = await supabase
         .from("doc_pages")
         .select("*", { count: "exact", head: true })
         .eq("space_id", spaceId);
+
+    // Define page limits: Solo = 5 pages, Team = 10 pages
+    const pageLimit = isTeamSpace ? 10 : 5;
+
+    // If space has reached page limit, redirect back to space
+    if ((count || 0) >= pageLimit) {
+        redirect(`/dashboard/docs/${spaceId}`);
+    }
 
     return (
         <DashboardShell>
@@ -75,6 +83,8 @@ export default async function CreateDocPage({ params }: CreateDocPageProps) {
                 spaceId={spaceId}
                 spaceName={docSpace.name}
                 pageOrder={count || 0}
+                pageLimit={pageLimit}
+                currentPages={count || 0}
             />
         </DashboardShell>
     );

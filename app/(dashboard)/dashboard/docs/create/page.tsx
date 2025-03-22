@@ -30,6 +30,29 @@ export default async function CreateDocSpacePage() {
         redirect("/dashboard/docs");
     }
 
+    // Check if user has reached their documentation space limit
+    let query = supabase
+        .from("doc_spaces")
+        .select("*", { count: "exact" });
+
+    // Personal spaces
+    query = query.or(`owner_id.eq.${session.user.id}`);
+
+    // Team spaces (if the user is part of a team)
+    if (profile?.team_id) {
+        query = query.or(`team_id.eq.${profile.team_id}`);
+    }
+
+    const { count } = await query;
+
+    // Team = 2 spaces, Solo = 1 space
+    const spaceLimit = isTeamMember ? 2 : 1;
+
+    // If user has reached their space limit, redirect to docs page
+    if ((count || 0) >= spaceLimit) {
+        redirect("/dashboard/docs");
+    }
+
     return (
         <DashboardShell>
             <DashboardHeader

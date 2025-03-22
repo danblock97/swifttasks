@@ -31,19 +31,28 @@ export default async function DocsPage() {
         .from("doc_spaces")
         .select("*");
 
-// Personal spaces
+    // Personal spaces
     query = query.or(`owner_id.eq.${session.user.id}`);
 
-// Team spaces (if the user is part of a team)
+    // Team spaces (if the user is part of a team)
     if (profile?.team_id) {
         query = query.or(`team_id.eq.${profile.team_id}`);
     }
 
-// Execute the query and order the results
+    // Execute the query and order the results
     const { data: docSpaces } = await query.order("created_at", { ascending: false });
 
     const isTeamOwner = profile?.account_type === "team_member" && profile?.is_team_owner;
+    const isTeamMember = profile?.account_type === "team_member";
     const canCreateDocSpace = !profile?.account_type || profile?.account_type === "single" || isTeamOwner;
+
+    // Check if user has reached their documentation space limit
+    const isTeamSpace = isTeamMember;
+    const spaceLimit = isTeamSpace ? 2 : 1; // Team = 2 spaces, Solo = 1 space
+    const hasReachedSpaceLimit = (docSpaces?.length || 0) >= spaceLimit;
+
+    // User can create a space if they haven't reached their limit and have permission
+    const canCreateMoreSpaces = canCreateDocSpace && !hasReachedSpaceLimit;
 
     return (
         <DashboardShell>
@@ -51,7 +60,7 @@ export default async function DocsPage() {
                 heading="Documentation"
                 description="Create, manage, and share documentation for your projects."
             >
-                {canCreateDocSpace && (
+                {canCreateMoreSpaces && (
                     <Link href="/dashboard/docs/create">
                         <Button size="sm" className="ml-auto">
                             <Plus className="mr-1 h-4 w-4" />
@@ -64,8 +73,10 @@ export default async function DocsPage() {
             {Array.isArray(docSpaces) && docSpaces.length > 0 ? (
                 <DocSpaces
                     spaces={docSpaces}
-                    isTeamMember={profile?.account_type === "team_member"}
+                    isTeamMember={isTeamMember}
                     isTeamOwner={isTeamOwner}
+                    hasReachedSpaceLimit={hasReachedSpaceLimit}
+                    isTeamSpace={isTeamSpace}
                 />
             ) : (
                 <Card>

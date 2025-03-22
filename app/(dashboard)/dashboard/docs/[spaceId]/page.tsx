@@ -66,6 +66,10 @@ export default async function DocSpacePage({ params }: DocSpacePageProps) {
     const isTeamOwner = profile?.account_type === "team_member" && profile?.is_team_owner;
     const canManageDocSpace = isSpaceOwner || isTeamOwner;
 
+    // Check if user has reached page limit
+    const pageLimit = isTeamSpace ? 10 : 5; // Team = 10 pages, Solo = 5 pages
+    const hasReachedPageLimit = (docPages?.length || 0) >= pageLimit;
+
     return (
         <DashboardShell>
             <div className="flex items-start gap-2">
@@ -88,12 +92,14 @@ export default async function DocSpacePage({ params }: DocSpacePageProps) {
                                 </Button>
                             </Link>
 
-                            <Link href={`/dashboard/docs/${spaceId}/pages/create`}>
-                                <Button size="sm">
-                                    <Plus className="mr-1 h-4 w-4" />
-                                    New Page
-                                </Button>
-                            </Link>
+                            {!hasReachedPageLimit && (
+                                <Link href={`/dashboard/docs/${spaceId}/pages/create`}>
+                                    <Button size="sm">
+                                        <Plus className="mr-1 h-4 w-4" />
+                                        New Page
+                                    </Button>
+                                </Link>
+                            )}
                         </div>
                     )}
                 </DashboardHeader>
@@ -112,6 +118,11 @@ export default async function DocSpacePage({ params }: DocSpacePageProps) {
                             <span>Team Documentation</span>
                         </Badge>
                     )}
+
+                    <Badge variant="outline" className="flex items-center gap-1">
+                        <FileText className="h-3 w-3" />
+                        <span>{docPages?.length || 0} / {pageLimit} pages</span>
+                    </Badge>
                 </div>
 
                 <div className="mt-2">
@@ -127,6 +138,7 @@ export default async function DocSpacePage({ params }: DocSpacePageProps) {
                         pages={docPages || []}
                         spaceId={spaceId}
                         canManageDocSpace={canManageDocSpace}
+                        isTeamSpace={isTeamSpace}
                     />
                 </div>
             </div>

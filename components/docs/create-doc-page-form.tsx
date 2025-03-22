@@ -18,15 +18,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { generateUUID } from "@/lib/utils";
 import { DocContent } from "@/components/docs/doc-content";
-import { ImageIcon } from "lucide-react";
+import { ImageIcon, InfoIcon } from "lucide-react";
 
 interface CreateDocPageFormProps {
     spaceId: string;
     spaceName: string;
     pageOrder: number;
+    pageLimit: number;
+    currentPages: number;
 }
 
-export function CreateDocPageForm({ spaceId, spaceName, pageOrder }: CreateDocPageFormProps) {
+export function CreateDocPageForm({
+                                      spaceId,
+                                      spaceName,
+                                      pageOrder,
+                                      pageLimit,
+                                      currentPages
+                                  }: CreateDocPageFormProps) {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [activeTab, setActiveTab] = useState("edit");
@@ -37,6 +45,9 @@ export function CreateDocPageForm({ spaceId, spaceName, pageOrder }: CreateDocPa
     const router = useRouter();
     const supabase = createClientComponentClient();
     const { toast } = useToast();
+
+    // Calculate remaining pages
+    const remainingPages = pageLimit - currentPages;
 
     const handleImageUpload = () => {
         fileInputRef.current?.click();
@@ -163,6 +174,14 @@ export function CreateDocPageForm({ spaceId, spaceName, pageOrder }: CreateDocPa
                     <CardTitle>New Documentation Page</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                    {/* Show page limit information */}
+                    <div className="bg-blue-50 text-blue-800 dark:bg-blue-950/30 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50 rounded-md p-3 flex items-start">
+                        <InfoIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 mr-2 mt-0.5" />
+                        <div>
+                            You are creating page {currentPages + 1} of {pageLimit}. {remainingPages > 1 ? `${remainingPages} pages remaining.` : `${remainingPages} page remaining.`}
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
                         <Label htmlFor="title">Page Title</Label>
                         <Input

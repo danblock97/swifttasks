@@ -55,9 +55,11 @@ interface DocSpacesProps {
     spaces: DocSpace[];
     isTeamMember: boolean;
     isTeamOwner: boolean;
+    hasReachedSpaceLimit: boolean;
+    isTeamSpace: boolean;
 }
 
-export function DocSpaces({ spaces, isTeamMember, isTeamOwner }: DocSpacesProps) {
+export function DocSpaces({ spaces, isTeamMember, isTeamOwner, hasReachedSpaceLimit, isTeamSpace }: DocSpacesProps) {
     const [docSpaces, setDocSpaces] = useState<DocSpace[]>(spaces);
     const [selectedSpace, setSelectedSpace] = useState<DocSpace | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -212,7 +214,8 @@ export function DocSpaces({ spaces, isTeamMember, isTeamOwner }: DocSpacesProps)
                     </Card>
                 ))}
 
-                {canManageDocSpace(docSpaces[0] || { id: '', name: '', created_at: '', owner_id: '', team_id: null }) && (
+                {/* Show "Create a new space" card if user can create more spaces */}
+                {!hasReachedSpaceLimit && canManageDocSpace(docSpaces[0] || { id: '', name: '', created_at: '', owner_id: '', team_id: null }) && (
                     <Card className="flex flex-col h-full border-dashed">
                         <CardContent className="flex h-full flex-col items-center justify-center p-6">
                             <div className="mb-4 rounded-full bg-primary/10 p-3">
@@ -224,6 +227,26 @@ export function DocSpaces({ spaces, isTeamMember, isTeamOwner }: DocSpacesProps)
                             </p>
                             <Link href="/dashboard/docs/create" className="mt-4 w-full">
                                 <Button variant="outline" className="w-full">Create Documentation Space</Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Show upgrade message for solo users who have reached their limit */}
+                {hasReachedSpaceLimit && !isTeamSpace && (
+                    <Card className="flex flex-col h-full border-dashed border-blue-200 dark:border-blue-800">
+                        <CardContent className="flex h-full flex-col items-center justify-center p-6">
+                            <div className="mb-4 rounded-full bg-blue-100 dark:bg-blue-900/40 p-3">
+                                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <h3 className="text-center font-medium">Upgrade to Team</h3>
+                            <p className="mt-2 text-center text-sm text-muted-foreground">
+                                Team accounts can create up to 2 documentation spaces
+                            </p>
+                            <Link href="/dashboard/settings" className="mt-4 w-full">
+                                <Button variant="outline" className="w-full text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800">
+                                    Upgrade Account
+                                </Button>
                             </Link>
                         </CardContent>
                     </Card>
