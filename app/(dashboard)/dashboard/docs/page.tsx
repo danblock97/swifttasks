@@ -27,12 +27,20 @@ export default async function DocsPage() {
         .eq("id", session.user.id)
         .single();
 
-    // Get documentation spaces (either personal or team)
-    const { data: docSpaces } = await supabase
+    let query = supabase
         .from("doc_spaces")
-        .select("*")
-        .or(`owner_id.eq.${session.user.id},team_id.eq.${profile?.team_id || 'null'}`)
-        .order("created_at", { ascending: false });
+        .select("*");
+
+// Personal spaces
+    query = query.or(`owner_id.eq.${session.user.id}`);
+
+// Team spaces (if the user is part of a team)
+    if (profile?.team_id) {
+        query = query.or(`team_id.eq.${profile.team_id}`);
+    }
+
+// Execute the query and order the results
+    const { data: docSpaces } = await query.order("created_at", { ascending: false });
 
     const isTeamOwner = profile?.account_type === "team_member" && profile?.is_team_owner;
     const canCreateDocSpace = !profile?.account_type || profile?.account_type === "single" || isTeamOwner;
@@ -53,7 +61,7 @@ export default async function DocsPage() {
                 )}
             </DashboardHeader>
 
-            {docSpaces && docSpaces.length > 0 ? (
+            {Array.isArray(docSpaces) && docSpaces.length > 0 ? (
                 <DocSpaces
                     spaces={docSpaces}
                     isTeamMember={profile?.account_type === "team_member"}

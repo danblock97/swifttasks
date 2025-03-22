@@ -265,7 +265,15 @@ export function KanbanBoard({
     };
 
     const handleEditItem = (item: BoardItem) => {
-        setSelectedItem(item);
+        // Ensure the item has all required BoardItem properties
+        const completeItem: BoardItem = {
+            ...item,
+            priority: item.priority || 'medium',
+            due_date: item.due_date || null,
+            estimated_hours: item.estimated_hours || null,
+            labels: item.labels || []
+        };
+        setSelectedItem(completeItem);
         setEditDialogOpen(true);
     };
 
