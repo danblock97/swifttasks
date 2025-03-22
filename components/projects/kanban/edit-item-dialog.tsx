@@ -63,7 +63,7 @@ export function EditItemDialog({
     const [description, setDescription] = useState(item.description || "");
     const [columnId, setColumnId] = useState(item.column_id);
     const [assignedTo, setAssignedTo] = useState<string | undefined>(
-        item.assigned_to || undefined
+        item.assigned_to || "unassigned"
     );
     const [isLoading, setIsLoading] = useState(false);
 
@@ -88,7 +88,7 @@ export function EditItemDialog({
             const updatedData: Partial<BoardItem> = {
                 title: title.trim(),
                 description: description.trim() || null,
-                assigned_to: assignedTo || null,
+                assigned_to: assignedTo === "unassigned" ? null : assignedTo || null,
             };
 
             // If column changed, update column_id and recalculate order
@@ -203,7 +203,7 @@ export function EditItemDialog({
                                     <SelectValue placeholder="Select a person" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">Unassigned</SelectItem>
+                                    <SelectItem value="unassigned">Unassigned</SelectItem>
                                     <SelectItem value={currentUserId}>Me</SelectItem>
                                     {teamMembers.map((member: any) => (
                                         <SelectItem key={member.id} value={member.id}>
