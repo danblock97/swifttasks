@@ -384,61 +384,60 @@
   background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
-.kanban-board-container {
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-}
-
 .kanban-columns-container {
-  width: 100%;
-  overflow-x: auto;
+  /* Hide default scrollbar for WebKit browsers */
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  /* Track */
+  &::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+    border-radius: 4px;
+  }
+
+  /* Handle */
+  &::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+  }
+
+  /* Handle on hover */
+  &::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* For Firefox */
+  scrollbar-width: auto;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) hsl(var(--background));
+}
+
+/* Styling for column vertical scrollbars */
+[class*="droppable"] {
+  /* Hide default scrollbar for WebKit browsers */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  /* Track */
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Handle */
+  &::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 3px;
+  }
+
+  /* Handle on hover */
+  &::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.4);
+  }
+
+  /* For Firefox */
   scrollbar-width: thin;
-  padding-bottom: 16px;
-}
-
-.kanban-columns-container::-webkit-scrollbar {
-  height: 8px;
-}
-
-.kanban-columns-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.kanban-columns-container::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.3);
-  border-radius: 4px;
-}
-
-.kanban-columns-wrapper {
-  display: inline-flex;
-  min-width: max-content;
-  padding-bottom: 8px;
-}
-
-.kanban-column-draggable {
-  width: 320px;
-  flex-shrink: 0;
-  margin-right: 16px;
-}
-
-/* Make scrollbar thinner and more subtle */
-* {
-  scrollbar-width: thin;
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.3);
-  border-radius: 4px;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
 }
 
 /* Remove any potential extra body/html scrolling */
