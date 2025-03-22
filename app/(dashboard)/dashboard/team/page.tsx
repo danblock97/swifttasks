@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Users, Mail, UserPlus, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
+import { createClient } from '@supabase/supabase-js';
 
 export default async function TeamDashboardPage() {
     const supabase = createServerComponentClient({ cookies });
@@ -66,8 +67,14 @@ export default async function TeamDashboardPage() {
     const teamId = profile.team_id;
     const teamName = profile.teams?.name || "Your Team";
 
-    // Get all team members
-    const { data: teamMembers } = await supabase
+    // Create a service role client to bypass RLS
+    const serviceRoleClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+    );
+
+    // Get all team members using service role client to bypass RLS
+    const { data: teamMembers } = await serviceRoleClient
         .from("users")
         .select("id, email, display_name, created_at, is_team_owner")
         .eq("team_id", teamId)
@@ -75,7 +82,7 @@ export default async function TeamDashboardPage() {
         .order("created_at", { ascending: true });
 
     // Get pending invitations
-    const { data: pendingInvites } = await supabase
+    const { data: pendingInvites } = await serviceRoleClient
         .from("team_invites")
         .select("*")
         .eq("team_id", teamId)

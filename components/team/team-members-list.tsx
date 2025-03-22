@@ -67,6 +67,7 @@ export function TeamMembersList({ members, pendingInvites, isTeamOwner, currentU
     const [isRevokeDialogOpen, setIsRevokeDialogOpen] = useState(false);
     const [isTransferOwnershipDialogOpen, setIsTransferOwnershipDialogOpen] = useState(false);
     const [isResendInviteDialogOpen, setIsResendInviteDialogOpen] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     const supabase = createClientComponentClient();
     const router = useRouter();
@@ -151,29 +152,40 @@ export function TeamMembersList({ members, pendingInvites, isTeamOwner, currentU
     };
 
     const confirmTransferOwnership = async () => {
-        if (!selectedMember) return;
+        if (!selectedMember || isUpdating) return;
+
+        setIsUpdating(true);
 
         try {
-            // Begin a transaction to transfer ownership
-            const { data: { session } } = await supabase.auth.getSession();
-
-            if (!session) throw new Error("Not authenticated");
-
-            // 1. Remove owner status from current owner
-            const { error: removeOwnerError } = await supabase
+            // Get the team ID
+            const { data: userProfile } = await supabase
                 .from("users")
-                .update({ is_team_owner: false })
-                .eq("id", currentUserId);
+                .select("team_id")
+                .eq("id", currentUserId)
+                .single();
 
-            if (removeOwnerError) throw removeOwnerError;
+            if (!userProfile?.team_id) {
+                throw new Error("Team ID not found");
+            }
 
-            // 2. Make selected member the new owner
-            const { error: newOwnerError } = await supabase
-                .from("users")
-                .update({ is_team_owner: true })
-                .eq("id", selectedMember.id);
+            // Call the server-side API to handle ownership transfer
+            const response = await fetch('/api/team/transfer-ownership', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    currentUserId,
+                    newOwnerId: selectedMember.id,
+                    teamId: userProfile.team_id
+                }),
+            });
 
-            if (newOwnerError) throw newOwnerError;
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to transfer ownership');
+            }
 
             toast({
                 title: "Ownership Transferred",
@@ -186,9 +198,11 @@ export function TeamMembersList({ members, pendingInvites, isTeamOwner, currentU
             console.error("Error transferring ownership:", error);
             toast({
                 title: "Error",
-                description: "Failed to transfer team ownership. Please try again.",
+                description: error.message || "Failed to transfer team ownership. Please try again.",
                 variant: "destructive",
             });
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -464,13 +478,41 @@ export function TeamMembersList({ members, pendingInvites, isTeamOwner, currentU
                             type="button"
                             variant="default"
                             onClick={confirmTransferOwnership}
+                            disabled={isUpdating}
                         >
-                            Transfer Ownership
+                            {isUpdating ? (
+                                <>
+                                    <svg
+                                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                    </svg>
+                                    Transferring...
+                                </>
+                            ) : (
+                                "Transfer Ownership"
+                            )}
                         </Button>
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => setIsTransferOwnershipDialogOpen(false)}
+                            disabled={isUpdating}
                         >
                             Cancel
                         </Button>
