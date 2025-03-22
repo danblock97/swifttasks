@@ -39,7 +39,8 @@ import {
     Edit,
     Trash2,
     ExternalLink,
-    Layout
+    Layout,
+    Users
 } from "lucide-react";
 
 interface Board {
@@ -53,12 +54,14 @@ interface ProjectKanbanBoardsProps {
     boards: Board[];
     projectId: string;
     canManageProject: boolean;
+    isTeamProject?: boolean; // Added this prop to determine feature limits
 }
 
 export function ProjectKanbanBoards({
                                         boards,
                                         projectId,
-                                        canManageProject
+                                        canManageProject,
+                                        isTeamProject = false
                                     }: ProjectKanbanBoardsProps) {
     const [boardsList, setBoardsList] = useState<Board[]>(boards);
     const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
@@ -210,21 +213,64 @@ export function ProjectKanbanBoards({
                         </Card>
                     ))}
 
-                    {canManageProject && boardsList.length < 2 && (
-                        <Card className="flex flex-col border-dashed">
-                            <CardContent className="flex h-full flex-col items-center justify-center p-6">
-                                <div className="mb-4 rounded-full bg-primary/10 p-3">
-                                    <Plus className="h-6 w-6 text-primary" />
-                                </div>
-                                <h3 className="text-center font-medium">Create a new board</h3>
-                                <p className="mt-2 text-center text-sm text-muted-foreground">
-                                    Add another kanban board to organize different aspects of your project
-                                </p>
-                                <Link href={`/dashboard/projects/${projectId}/boards/create`} className="mt-4 w-full">
-                                    <Button variant="outline" className="w-full">Create Board</Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
+                    {canManageProject && (
+                        <>
+                            {/* Show create board option only if no boards exist */}
+                            {boardsList.length === 0 && (
+                                <Card className="flex flex-col border-dashed">
+                                    <CardContent className="flex h-full flex-col items-center justify-center p-6">
+                                        <div className="mb-4 rounded-full bg-primary/10 p-3">
+                                            <Plus className="h-6 w-6 text-primary" />
+                                        </div>
+                                        <h3 className="text-center font-medium">Create a new board</h3>
+                                        <p className="mt-2 text-center text-sm text-muted-foreground">
+                                            Add a kanban board to organize your tasks
+                                        </p>
+                                        <Link href={`/dashboard/projects/${projectId}/boards/create`} className="mt-4 w-full">
+                                            <Button variant="outline" className="w-full">Create Board</Button>
+                                        </Link>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* For team projects, allow creating up to 2 boards */}
+                            {isTeamProject && boardsList.length >= 1 && boardsList.length < 2 && (
+                                <Card className="flex flex-col border-dashed">
+                                    <CardContent className="flex h-full flex-col items-center justify-center p-6">
+                                        <div className="mb-4 rounded-full bg-primary/10 p-3">
+                                            <Plus className="h-6 w-6 text-primary" />
+                                        </div>
+                                        <h3 className="text-center font-medium">Create a second board</h3>
+                                        <p className="mt-2 text-center text-sm text-muted-foreground">
+                                            Add another kanban board to organize different aspects of your project
+                                        </p>
+                                        <Link href={`/dashboard/projects/${projectId}/boards/create`} className="mt-4 w-full">
+                                            <Button variant="outline" className="w-full">Create Board</Button>
+                                        </Link>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* For solo users with 1 board already, show upgrade message */}
+                            {!isTeamProject && boardsList.length >= 1 && (
+                                <Card className="flex flex-col border-dashed border-blue-200 dark:border-blue-800">
+                                    <CardContent className="flex h-full flex-col items-center justify-center p-6">
+                                        <div className="mb-4 rounded-full bg-blue-100 dark:bg-blue-900/40 p-3">
+                                            <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                                        </div>
+                                        <h3 className="text-center font-medium">Upgrade to Team</h3>
+                                        <p className="mt-2 text-center text-sm text-muted-foreground">
+                                            Team accounts can create multiple boards per project
+                                        </p>
+                                        <Link href="/dashboard/settings" className="mt-4 w-full">
+                                            <Button variant="outline" className="w-full text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800">
+                                                Upgrade Account
+                                            </Button>
+                                        </Link>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </>
                     )}
                 </div>
             )}

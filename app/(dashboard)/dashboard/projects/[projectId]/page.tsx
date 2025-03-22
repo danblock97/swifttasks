@@ -132,6 +132,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                         boards={boards || []}
                         projectId={projectId}
                         canManageProject={canManageProject}
+                        isTeamProject={isTeamProject}
                     />
                 </div>
             </div>

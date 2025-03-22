@@ -36,9 +36,8 @@ export default async function DashboardPage() {
     const { data: projects } = await supabase
         .from("projects")
         .select("*")
-        .or(`owner_id.eq.${session.user.id},team_id.eq.${profile?.team_id || 'null'}`)
-        .order("created_at", { ascending: false })
-        .limit(4);
+        .filter('owner_id', 'eq', session.user.id)
+        .order("created_at", { ascending: false });
 
     return (
         <DashboardShell>

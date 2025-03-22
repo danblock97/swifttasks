@@ -29,7 +29,7 @@ export default async function ProjectsPage() {
     const { data: projects } = await supabase
         .from("projects")
         .select("*")
-        .or(`owner_id.eq.${session.user.id},team_id.eq.${profile?.team_id || 'null'}`)
+        .filter('owner_id', 'eq', session.user.id)
         .order("created_at", { ascending: false });
 
     const isTeamOwner = profile?.account_type === "team_member" && profile?.is_team_owner;

@@ -12,6 +12,7 @@ import { useUserPreferences } from "@/hooks/use-preferences";
 import { removeCookie, COOKIE_KEYS } from "@/lib/cookies";
 import { useTheme } from "@/components/theme/theme-provider";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
+import { AccountTypeSwitcher } from "@/components/dashboard/account-type-switcher";
 
 export default function SettingsPage() {
     const { toast } = useToast();
@@ -246,6 +247,9 @@ export default function SettingsPage() {
                         </Button>
                     </CardFooter>
                 </Card>
+
+                {/* Account Type Switcher */}
+                <AccountTypeSwitcher user={preferences} />
 
                 <Card>
                     <CardHeader>
