@@ -190,3 +190,167 @@
   background-color: hsl(var(--background));
   border-color: hsl(var(--border));
 }
+
+/* ======= NEW ADDITIONS FOR SWITCH AND DROPDOWN COMPONENTS ======= */
+
+/* ======= SWITCH COMPONENT STYLING ======= */
+/* Base switch styling */
+[data-state="checked"].switch-root,
+[data-state="checked"].ui-switch {
+  background-color: hsl(var(--primary)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+[data-state="unchecked"].switch-root,
+[data-state="unchecked"].ui-switch {
+  background-color: transparent !important;
+  border: 2px solid hsl(var(--border)) !important;
+}
+
+/* Switch thumb (the moving circle) styling */
+[data-radix-switch-thumb] {
+  background-color: white !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.dark [data-radix-switch-thumb] {
+  background-color: #e2e8f0 !important;
+  border-color: #94a3b8 !important;
+}
+
+[data-state="unchecked"] [data-radix-switch-thumb] {
+  transform: translateX(0) !important;
+}
+
+[data-state="checked"] [data-radix-switch-thumb] {
+  transform: translateX(20px) !important;
+}
+
+/* Specific styling for our custom implementation */
+.switch-base {
+  height: 24px !important;
+  width: 44px !important;
+  background-color: transparent !important;
+  border: 2px solid hsl(var(--border)) !important;
+  border-radius: 999px !important;
+  position: relative !important;
+  transition: all 150ms ease !important;
+}
+
+.switch-base[data-state="checked"] {
+  background-color: hsl(var(--primary)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+.switch-thumb {
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+  background-color: white !important;
+  border-radius: 999px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  transition: transform 150ms ease !important;
+  transform: translateX(0) !important;
+  will-change: transform !important;
+}
+
+.switch-base[data-state="checked"] .switch-thumb {
+  transform: translateX(20px) !important;
+}
+
+/* Direct styling for the component selector we're using in the Settings page */
+#notifications + button {
+  border: 2px solid hsl(var(--border)) !important;
+}
+
+#notifications[data-state="checked"] + button {
+  background-color: hsl(var(--primary)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+#notifications + button .thumb-element {
+  background-color: white !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.dark #notifications + button .thumb-element {
+  background-color: #e2e8f0 !important;
+  border-color: #94a3b8 !important;
+}
+
+/* ======= SELECT & DROPDOWN STYLING ======= */
+/* Fix for dropdown menus */
+[data-radix-popper-content-wrapper] {
+  z-index: 999 !important;
+}
+
+/* Ensure select content has proper background */
+.radix-select-content,
+[role="listbox"] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Make SelectContent more visible */
+[data-radix-select-viewport] {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Fix for glass effect on dropdowns */
+.SelectContent {
+  overflow: hidden;
+  background-color: hsl(var(--background)) !important;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2);
+}
+
+/* Improve dropdown item contrast */
+[role="option"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+[role="option"]:hover,
+[role="option"]:focus,
+[role="option"][data-highlighted] {
+  background-color: hsl(var(--primary) / 0.1) !important;
+  color: hsl(var(--primary)) !important;
+}
+
+/* Apply styles to specific select elements in our settings page */
+#theme + .SelectTrigger,
+#default-view + .SelectTrigger,
+#sort-order + .SelectTrigger {
+  border: 1px solid hsl(var(--border)) !important;
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Make sure the dropdown content is properly styled */
+.SelectContent {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+/* Specific selectors for Radix components */
+[data-radix-select-content] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Final attempt to force background on all selects */
+[role="presentation"] > [role="listbox"] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Make sure dialog and popover content has proper background */
+.DialogContent,
+.PopoverContent {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}

@@ -1,21 +1,17 @@
 ﻿"use client";
 
 import { useState, useEffect } from 'react';
-import { setUserPreferences, getUserPreferences, COOKIE_KEYS } from '@/lib/cookies';
+import { setUserPreferences, getUserPreferences } from '@/lib/cookies';
 
 interface UserPreferences {
-    sidebarCollapsed: boolean;
     defaultView: 'list' | 'kanban' | 'calendar';
     notificationsEnabled: boolean;
-    colorScheme: string;
     tasksSortOrder: 'due_date' | 'priority' | 'created_at';
 }
 
 const defaultPreferences: UserPreferences = {
-    sidebarCollapsed: false,
     defaultView: 'list',
     notificationsEnabled: true,
-    colorScheme: 'blue',
     tasksSortOrder: 'due_date',
 };
 
@@ -36,8 +32,19 @@ export const useUserPreferences = () => {
     useEffect(() => {
         if (isLoaded) {
             setUserPreferences(preferences);
+
+            // Apply the preferences where needed
+            applyPreferences(preferences);
         }
     }, [preferences, isLoaded]);
+
+    // Apply specific preferences that need immediate effect
+    const applyPreferences = (prefs: UserPreferences) => {
+        // For default view and sort order, these are usually applied when viewing
+        // tasks or projects, not here in the settings
+
+        // For notifications, we handle this in the settings page directly
+    };
 
     const updatePreference = <K extends keyof UserPreferences>(
         key: K,
