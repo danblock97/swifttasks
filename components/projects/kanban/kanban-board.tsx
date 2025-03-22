@@ -21,6 +21,10 @@ interface BoardItem {
     column_id: string;
     created_at: string;
     assigned_to: string | null;
+    priority: "low" | "medium" | "high" | null;
+    due_date: string | null;
+    estimated_hours: number | null;
+    labels: string[] | null;
 }
 
 interface Column {
