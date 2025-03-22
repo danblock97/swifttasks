@@ -10,6 +10,7 @@ import { KanbanColumn } from "./kanban-column";
 import { KanbanItem } from "./kanban-item";
 import { CreateItemDialog } from "./create-item-dialog";
 import { EditItemDialog } from "./edit-item-dialog";
+import { CreateColumnDialog } from "./create-column-dialog";
 import { Plus } from "lucide-react";
 
 interface BoardItem {
@@ -47,6 +48,7 @@ export function KanbanBoard({
     const [columns, setColumns] = useState<Column[]>(initialColumns);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [createColumnDialogOpen, setCreateColumnDialogOpen] = useState(false);
     const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
     const [selectedItem, setSelectedItem] = useState<BoardItem | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -346,6 +348,16 @@ export function KanbanBoard({
         setSelectedItem(null);
     };
 
+    const handleColumnCreated = (newColumn: any) => {
+        // Add the new column with an empty items array
+        setColumns([...columns, {
+            ...newColumn,
+            items: []
+        }]);
+
+        setCreateColumnDialogOpen(false);
+    };
+
     return (
         <div className="h-full">
             <DragDropContext onDragEnd={onDragEnd}>
@@ -383,18 +395,12 @@ export function KanbanBoard({
                             ))}
                             {provided.placeholder}
 
-                            {canManageBoard && columns.length < 6 && (
+                            {canManageBoard && columns.length < 7 && (
                                 <div className="flex-shrink-0 w-72 h-min">
                                     <Button
                                         variant="outline"
                                         className="border-dashed w-full h-12 flex gap-1"
-                                        onClick={() => {
-                                            // Create new column logic would go here
-                                            toast({
-                                                title: "Column creation",
-                                                description: "Adding new columns is not implemented in this demo",
-                                            });
-                                        }}
+                                        onClick={() => setCreateColumnDialogOpen(true)}
                                     >
                                         <Plus className="h-4 w-4" />
                                         Add Column
@@ -431,6 +437,15 @@ export function KanbanBoard({
                     currentUserId={currentUserId}
                 />
             )}
+
+            {/* Create Column Dialog */}
+            <CreateColumnDialog
+                open={createColumnDialogOpen}
+                onOpenChange={setCreateColumnDialogOpen}
+                boardId={boardId}
+                onColumnCreated={handleColumnCreated}
+                currentColumnsCount={columns.length}
+            />
         </div>
     );
 }
