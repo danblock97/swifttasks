@@ -1,7 +1,7 @@
 ﻿"use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/lib/supabase/database.types";
-import { User, Mail, Lock, Building, UserPlus, Users, ArrowRight, CheckCircle2 } from "lucide-react";
+import { User, Mail, Lock, Building, UserPlus, Users, ArrowRight, CheckCircle2, UsersRound, UserCheck } from "lucide-react";
 
 type AccountType = "single" | "team";
 
@@ -18,7 +18,11 @@ export function RegisterForm({
                              }: {
     initialAccountType: string;
 }) {
-    const [email, setEmail] = useState("");
+    const searchParams = useSearchParams();
+    const inviteCode = searchParams.get('invite');
+    const inviteEmail = searchParams.get('email');
+
+    const [email, setEmail] = useState(inviteEmail || "");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
     const [teamName, setTeamName] = useState("");
@@ -26,16 +30,73 @@ export function RegisterForm({
         initialAccountType === "team" ? "team" : "single"
     );
     const [isLoading, setIsLoading] = useState(false);
+    const [isInvitation, setIsInvitation] = useState(false);
+    const [invitationDetails, setInvitationDetails] = useState<any>(null);
 
     const router = useRouter();
     const { toast } = useToast();
     const supabase = createClientComponentClient<Database>();
+
+    // Check if this is a team invitation
+    useEffect(() => {
+        if (inviteCode && inviteEmail) {
+            setIsInvitation(true);
+            checkInvitation();
+        }
+    }, [inviteCode, inviteEmail]);
+
+    // Fetch invitation details
+    const checkInvitation = async () => {
+        if (!inviteCode) return;
+
+        try {
+            // Get invitation details
+            const { data: invite, error } = await supabase
+                .from('team_invites')
+                .select('*, teams(name)')
+                .eq('invite_code', inviteCode)
+                .gte('expires_at', new Date().toISOString())
+                .single();
+
+            if (error || !invite) {
+                toast({
+                    title: "Invalid Invitation",
+                    description: "This invitation is invalid or has expired.",
+                    variant: "destructive",
+                });
+                setIsInvitation(false);
+                return;
+            }
+
+            // Set invitation details
+            setInvitationDetails(invite);
+        } catch (error) {
+            console.error("Error checking invitation:", error);
+            setIsInvitation(false);
+        }
+    };
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
         setIsLoading(true);
 
         try {
+            // For team invitations, we'll use the invite metadata
+            // For regular signups, we'll use the form data
+            const metadata = isInvitation
+                ? {
+                    display_name: name,
+                    account_type: "team_member",
+                    is_team_owner: false,
+                    invite_code: inviteCode
+                }
+                : {
+                    display_name: name,
+                    account_type: accountType,
+                    team_name: accountType === "team" ? teamName : null,
+                    is_team_owner: accountType === "team",
+                };
+
             // Include user profile data in the signup metadata
             // This data will be accessible in Supabase Auth hooks and can be used
             // to create the profile records after email verification
@@ -44,12 +105,7 @@ export function RegisterForm({
                 password,
                 options: {
                     emailRedirectTo: `${window.location.origin}/auth/callback`,
-                    data: {
-                        display_name: name,
-                        account_type: accountType,
-                        team_name: accountType === "team" ? teamName : null,
-                        is_team_owner: accountType === "team",
-                    },
+                    data: metadata,
                 },
             });
 
@@ -75,6 +131,157 @@ export function RegisterForm({
         }
     }
 
+    // Special UI for team invitations
+    if (isInvitation && invitationDetails) {
+        return (
+            <div className="max-w-md mx-auto relative">
+                {/* Decorative elements */}
+                <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-blue-400/20 via-teal-300/20 to-indigo-400/20 rounded-full blur-xl"></div>
+                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-tr from-teal-400/20 via-blue-300/20 to-indigo-400/20 rounded-full blur-xl"></div>
+
+                <div className="relative bg-card border border-teal-100/60 dark:border-teal-800/60 rounded-xl overflow-hidden shadow-md px-6 py-8">
+                    {/* Top gradient bar */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-500 via-blue-500 to-indigo-500"></div>
+
+                    <div className="mb-6 text-center">
+                        <div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-teal-100 to-blue-100 dark:from-teal-900/40 dark:to-blue-900/40 mb-4">
+                            <div className="h-20 w-20 rounded-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-blue-600">
+                                <UsersRound className="h-10 w-10 text-white" />
+                            </div>
+                        </div>
+                        <h1 className="text-2xl font-bold tracking-tight">Join {invitationDetails.teams?.name}</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            You've been invited to join a team on SwiftTasks. Create an account to accept the invitation.
+                        </p>
+                    </div>
+
+                    <form onSubmit={onSubmit} className="space-y-6">
+                        <div className="rounded-md bg-teal-50 dark:bg-teal-900/20 p-4 text-sm border border-teal-100 dark:border-teal-800">
+                            <div className="flex items-start gap-2">
+                                <UserCheck className="h-5 w-5 text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-teal-800 dark:text-teal-300">
+                                        An invitation was sent to <strong>{inviteEmail}</strong> to join <strong>{invitationDetails.teams?.name}</strong>.
+                                        Complete your registration to join the team.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-blue-500 dark:text-blue-400">
+                                    <User className="h-5 w-5" />
+                                </div>
+                                <Input
+                                    type="text"
+                                    placeholder="Your name"
+                                    className="pl-10 border-blue-200/70 dark:border-blue-700/50 bg-blue-50/50 dark:bg-blue-900/20 focus:border-blue-400"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    required
+                                    disabled={isLoading}
+                                />
+                            </div>
+
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-teal-500 dark:text-teal-400">
+                                    <Mail className="h-5 w-5" />
+                                </div>
+                                <Input
+                                    type="email"
+                                    placeholder="Email address"
+                                    className="pl-10 border-teal-200/70 dark:border-teal-700/50 bg-teal-50/50 dark:bg-teal-900/20 focus:border-teal-400"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    disabled={true} // Email is fixed for invitations
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-indigo-500 dark:text-indigo-400">
+                                        <Lock className="h-5 w-5" />
+                                    </div>
+                                    <Input
+                                        type="password"
+                                        placeholder="Password"
+                                        className="pl-10 border-indigo-200/70 dark:border-indigo-700/50 bg-indigo-50/50 dark:bg-indigo-900/20 focus:border-indigo-400"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        minLength={8}
+                                        disabled={isLoading}
+                                    />
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Password must be at least 8 characters long
+                                </p>
+                            </div>
+                        </div>
+
+                        <Button
+                            type="submit"
+                            className="w-full h-12 font-medium text-white shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center">
+                                    <svg
+                                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                    </svg>
+                                    Creating account...
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center">
+                                    Join Team
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </div>
+                            )}
+                        </Button>
+                    </form>
+
+                    <div className="mt-6 text-center">
+                        <p className="text-sm text-muted-foreground">
+                            Already have an account?{" "}
+                            <Link href="/login" className="font-medium hover:underline text-teal-600 dark:text-teal-400">
+                                Sign in
+                            </Link>
+                        </p>
+                    </div>
+
+                    <div className="mt-5 pt-5 text-center border-t border-gray-200 dark:border-gray-700">
+                        <p className="text-xs text-muted-foreground">
+                            By signing up, you agree to our{" "}
+                            <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>{" "}
+                            and{" "}
+                            <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Regular registration form (unchanged)
     return (
         <div className="max-w-md mx-auto relative">
             {/* Decorative elements inspired by other pages */}

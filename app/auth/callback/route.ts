@@ -33,8 +33,37 @@ export async function GET(request: NextRequest) {
                     if (!existingUser) {
                         console.log("Creating user profile for:", user.id, metadata.account_type);
 
-                        // Create user record in database based on account type
-                        if (metadata.account_type === "team") {
+                        // Check if this is a team invitation
+                        if (metadata.invite_code) {
+                            // Get the invitation details
+                            const { data: invite } = await supabase
+                                .from("team_invites")
+                                .select("team_id, email")
+                                .eq("invite_code", metadata.invite_code)
+                                .single();
+
+                            if (invite && invite.email.toLowerCase() === user.email?.toLowerCase()) {
+                                // Create team member profile
+                                await supabase
+                                    .from("users")
+                                    .insert({
+                                        id: user.id,
+                                        email: user.email,
+                                        display_name: metadata.display_name || user.email?.split('@')[0],
+                                        account_type: "team_member",
+                                        team_id: invite.team_id,
+                                        is_team_owner: false,
+                                    });
+
+                                // Delete the invitation
+                                await supabase
+                                    .from("team_invites")
+                                    .delete()
+                                    .eq("invite_code", metadata.invite_code);
+                            }
+                        }
+                        // Regular account creation without invitation
+                        else if (metadata.account_type === "team") {
                             // Create team first
                             const teamId = generateUUID();
 
