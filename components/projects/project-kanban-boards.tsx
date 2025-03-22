@@ -42,6 +42,7 @@ import {
     Layout,
     Users
 } from "lucide-react";
+import { KanbanBoardPreview } from "./kanban/kanban-board-preview";
 
 interface Board {
     id: string;
@@ -195,9 +196,8 @@ export function ProjectKanbanBoards({
                                 </div>
                             </CardHeader>
                             <CardContent className="py-2">
-                                <div className="flex h-24 items-center justify-center rounded-md border-2 border-dashed border-primary/20">
-                                    <Layout className="h-8 w-8 text-primary/40" />
-                                </div>
+                                {/* Replace static content with dynamic board preview */}
+                                <KanbanBoardPreview boardId={board.id} />
                             </CardContent>
                             <CardFooter className="pt-2 mt-auto">
                                 <Link
