@@ -14,10 +14,9 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { generateUUID } from "@/lib/utils";
-import { Mail, Send, Users, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Mail, Send, Users, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 interface InviteTeamMemberFormProps {
@@ -28,7 +27,6 @@ interface InviteTeamMemberFormProps {
 
 export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: InviteTeamMemberFormProps) {
     const [email, setEmail] = useState("");
-    const [personalMessage, setPersonalMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
@@ -79,7 +77,7 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
             expiresAt.setDate(expiresAt.getDate() + 7);
 
             // Create a team invitation record
-            const { error } = await supabase
+            const { error: inviteRecordError } = await supabase
                 .from("team_invites")
                 .insert({
                     id: generateUUID(),
@@ -89,18 +87,26 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
                     invite_code: inviteCode,
                 });
 
-            if (error) throw error;
+            if (inviteRecordError) throw inviteRecordError;
 
-            // Trigger the email invitation
-            // In a real app, this would typically be handled by a server function
-            // or a separate API call to send the email with the invite code
-            // For this implementation, we'll assume there's a server function
-            // or webhook that handles this when a new row is added to team_invites
+            // Send the invitation email using our server API route
+            // This calls Supabase Auth Admin API with proper service role key
+            const response = await fetch('/api/send-team-invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email.toLowerCase(),
+                    teamName,
+                    inviteCode,
+                    teamId
+                })
+            });
 
-            // Here, we would call a function to send the email with invite link:
-            // Example: await sendTeamInviteEmail({
-            //   email, teamName, inviteCode, personalMessage
-            // });
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to send invitation email');
+            }
 
             setIsSuccess(true);
             toast({
@@ -122,7 +128,6 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
     // Reset form for sending another invitation
     const resetForm = () => {
         setEmail("");
-        setPersonalMessage("");
         setIsSuccess(false);
     };
 
@@ -183,21 +188,6 @@ export function InviteTeamMemberForm({ teamId, teamName, unavailableEmails }: In
                                     required
                                 />
                             </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="message">Personal Message (Optional)</Label>
-                            <Textarea
-                                id="message"
-                                placeholder="Hey! I'd like you to join my team on SwiftTasks..."
-                                value={personalMessage}
-                                onChange={(e) => setPersonalMessage(e.target.value)}
-                                className="min-h-[100px]"
-                                disabled={isLoading}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Include a personal message in the invitation email.
-                            </p>
                         </div>
 
                         <div className="rounded-md bg-blue-50 dark:bg-blue-900/20 p-4 text-sm flex items-start gap-2 border border-blue-100 dark:border-blue-800">

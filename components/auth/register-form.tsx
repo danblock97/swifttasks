@@ -50,18 +50,18 @@ export function RegisterForm({
         if (!inviteCode) return;
 
         try {
-            // Get invitation details
-            const { data: invite, error } = await supabase
-                .from('team_invites')
-                .select('*, teams(name)')
-                .eq('invite_code', inviteCode)
-                .gte('expires_at', new Date().toISOString())
-                .single();
+            console.log(`Checking invitation with code: ${inviteCode}`);
 
-            if (error || !invite) {
+            // Use our server API to validate the invitation instead of direct DB access
+            const response = await fetch(`/api/team-invite/validate?code=${inviteCode}`);
+            const result = await response.json();
+
+            console.log('Invitation validation result:', result);
+
+            if (!result.valid) {
                 toast({
                     title: "Invalid Invitation",
-                    description: "This invitation is invalid or has expired.",
+                    description: result.error || "This invitation is invalid or has expired.",
                     variant: "destructive",
                 });
                 setIsInvitation(false);
@@ -69,18 +69,34 @@ export function RegisterForm({
             }
 
             // Set invitation details
-            setInvitationDetails(invite);
+            setInvitationDetails({
+                email: result.invite.email,
+                teams: { name: result.invite.teamName },
+                team_id: result.invite.teamId,
+                invite_code: result.invite.inviteCode
+            });
         } catch (error) {
             console.error("Error checking invitation:", error);
+            toast({
+                title: "Error Validating Invitation",
+                description: "There was a problem validating your invitation. Please try again.",
+                variant: "destructive",
+            });
             setIsInvitation(false);
         }
     };
-
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
         setIsLoading(true);
 
         try {
+            // Check for access token in the URL (for team invites coming from email)
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const isTokenPresent = !!accessToken;
+
+            console.log(`[Register] Access token present: ${isTokenPresent}`);
+
             // For team invitations, we'll use the invite metadata
             // For regular signups, we'll use the form data
             const metadata = isInvitation
@@ -97,9 +113,69 @@ export function RegisterForm({
                     is_team_owner: accountType === "team",
                 };
 
-            // Include user profile data in the signup metadata
-            // This data will be accessible in Supabase Auth hooks and can be used
-            // to create the profile records after email verification
+            // If we have an access token from the team invite email,
+            // we need to use a different flow (the user is already verified)
+            if (isTokenPresent && isInvitation) {
+                console.log("[Register] Using token-based registration flow");
+
+                // Extract the session data
+                const expiresIn = hashParams.get('expires_in');
+                const refreshToken = hashParams.get('refresh_token');
+                const tokenType = hashParams.get('token_type');
+
+                if (!refreshToken) {
+                    throw new Error("Missing refresh token in invitation link");
+                }
+
+                // Set the session using the token from the URL
+                const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: refreshToken
+                });
+
+                if (sessionError) {
+                    console.error("[Register] Session error:", sessionError);
+                    throw sessionError;
+                }
+
+                console.log("[Register] Session established:", sessionData);
+
+                // Now create a user profile with the team info
+                if (sessionData.user) {
+                    // Call a server API to create the profile with team data
+                    const profileResponse = await fetch('/api/auth/create-profile', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: sessionData.user.id,
+                            email: sessionData.user.email,
+                            displayName: name,
+                            teamId: invitationDetails?.team_id,
+                            inviteCode
+                        })
+                    });
+
+                    if (!profileResponse.ok) {
+                        const error = await profileResponse.json();
+                        throw new Error(error.message || "Failed to create user profile");
+                    }
+                }
+
+                // Success, redirect to dashboard
+                toast({
+                    title: "Account created",
+                    description: "Your account has been set up successfully.",
+                });
+
+                router.push("/dashboard");
+                return;
+            }
+
+            // Standard registration flow for non-token cases
+            console.log("[Register] Using standard registration flow");
+            console.log("[Register] Signup with metadata:", metadata);
+
+            // Standard signup flow
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email,
                 password,
@@ -109,8 +185,38 @@ export function RegisterForm({
                 },
             });
 
-            if (authError) throw authError;
-            if (!authData.user) throw new Error("User registration failed");
+            if (authError) {
+                console.error("[Register] Auth error:", authError);
+                throw authError;
+            }
+
+            console.log("[Register] Auth result:", authData);
+
+            if (!authData.user) {
+                throw new Error("User registration failed");
+            }
+
+            if (authData.user && !authData.session) {
+                console.log("[Register] Email confirmation required, verification email should be sent");
+
+                // Force sending a verification email through our API
+                try {
+                    const verifyResponse = await fetch('/api/auth/verify-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+
+                    if (!verifyResponse.ok) {
+                        console.warn("[Register] Failed to send verification email through API");
+                    }
+                } catch (verifyError) {
+                    console.error("[Register] Error sending verification email:", verifyError);
+                }
+            }
+
+            // Save the email to localStorage for the verification page
+            localStorage.setItem('registered_email', email);
 
             toast({
                 title: "Registration successful",
@@ -120,7 +226,7 @@ export function RegisterForm({
             // Redirect to verification page
             router.push("/verify");
         } catch (error: any) {
-            console.error("Registration error:", error);
+            console.error("[Register] Registration error:", error);
             toast({
                 title: "Error",
                 description: error.message || "Registration failed. Please try again.",
