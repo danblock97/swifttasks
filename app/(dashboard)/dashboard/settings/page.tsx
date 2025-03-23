@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"; // Add this import
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,9 +20,50 @@ export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
     const { preferences, updatePreference, resetPreferences, isLoaded } = useUserPreferences();
     const [cookiesCleared, setCookiesCleared] = useState(false);
+    const [userProfile, setUserProfile] = useState(null);
+    const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+    // Supabase client
+    const supabase = createClientComponentClient();
 
     // Notifications permission state
     const [notificationPermission, setNotificationPermission] = useState<string>("default");
+
+    // Fetch user profile
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                setIsLoadingProfile(true);
+
+                // Get current user
+                const { data: { user } } = await supabase.auth.getUser();
+
+                if (!user) {
+                    setIsLoadingProfile(false);
+                    return;
+                }
+
+                // Get user profile with team data
+                const { data: profile, error } = await supabase
+                    .from("users")
+                    .select("*, teams(*)")
+                    .eq("id", user.id)
+                    .single();
+
+                if (error) {
+                    console.error("Error fetching user profile:", error);
+                } else {
+                    setUserProfile(profile);
+                }
+            } catch (error) {
+                console.error("Error in fetchUserProfile:", error);
+            } finally {
+                setIsLoadingProfile(false);
+            }
+        };
+
+        fetchUserProfile();
+    }, []);
 
     // Check notification permission on load
     useEffect(() => {
@@ -64,7 +106,7 @@ export default function SettingsPage() {
         updatePreference('notificationsEnabled', checked);
     };
 
-    if (!isLoaded) {
+    if (!isLoaded || isLoadingProfile) {
         return (
             <DashboardShell>
                 <DashboardHeader
@@ -248,8 +290,8 @@ export default function SettingsPage() {
                     </CardFooter>
                 </Card>
 
-                {/* Account Type Switcher */}
-                <AccountTypeSwitcher user={preferences} />
+                {/* Account Type Switcher - NOW USING ACTUAL USER PROFILE */}
+                {userProfile && <AccountTypeSwitcher user={userProfile} />}
 
                 <Card>
                     <CardHeader>

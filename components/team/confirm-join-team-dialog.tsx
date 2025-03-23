@@ -1,7 +1,6 @@
-﻿// components/team/confirm-join-team-dialog.tsx
-"use client";
+﻿"use client";
 
-import React from "react";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -9,9 +8,11 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogClose
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle, Check, X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+import { AlertTriangle } from "lucide-react";
 
 interface ContentCounts {
     projects: number;
@@ -36,102 +37,90 @@ export function ConfirmJoinTeamDialog({
                                           contentCounts,
                                           isLoading
                                       }: ConfirmJoinTeamDialogProps) {
+    const [understood, setUnderstood] = useState(false);
+
+    // Reset the checkbox when dialog opens
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            setUnderstood(false);
+            onClose();
+        }
+    };
+
     const hasContent = contentCounts.projects > 0 || contentCounts.spaces > 0;
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px]">
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogContent>
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        {hasContent && <AlertTriangle className="h-5 w-5 text-amber-500" />}
-                        Join {teamName}
-                    </DialogTitle>
+                    <DialogTitle>Join Team: {teamName}</DialogTitle>
                     <DialogDescription>
-                        {hasContent
-                            ? "Before joining this team, please review what will happen to your existing content."
-                            : `You're about to join ${teamName} as a team member.`}
+                        You're about to join a team. Please review the effects on your content.
                     </DialogDescription>
                 </DialogHeader>
 
                 {hasContent && (
-                    <div className="space-y-4 py-2">
-                        <div className="rounded-md border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/20">
-                            <div className="flex items-start">
-                                <AlertTriangle className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
-                                <div>
-                                    <h3 className="text-sm font-medium text-amber-800 dark:text-amber-300">
-                                        Content Migration Warning
-                                    </h3>
-                                    <div className="mt-2 text-sm text-amber-700 dark:text-amber-400">
-                                        <p className="mb-2">
-                                            When joining a team, the following will happen:
-                                        </p>
-                                        <ul className="list-inside list-disc space-y-1">
-                                            {contentCounts.projects > 0 && (
-                                                <li>
-                                                    <strong>{contentCounts.projects}</strong> personal {contentCounts.projects === 1 ? "project" : "projects"} will be deleted
-                                                </li>
-                                            )}
-                                            {contentCounts.spaces > 0 && (
-                                                <li>
-                                                    <strong>{contentCounts.spaces}</strong> documentation {contentCounts.spaces === 1 ? "space" : "spaces"} will be deleted
-                                                </li>
-                                            )}
-                                            {contentCounts.todoLists > 0 && (
-                                                <li>
-                                                    <strong>{contentCounts.todoLists}</strong> todo {contentCounts.todoLists === 1 ? "list" : "lists"} will be preserved
-                                                </li>
-                                            )}
-                                        </ul>
-                                    </div>
-                                </div>
+                    <div className="rounded-md bg-amber-50 dark:bg-amber-950/30 p-4 border border-amber-200 dark:border-amber-800/50 mb-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <AlertTriangle className="h-5 w-5 text-amber-500" />
                             </div>
-                        </div>
-
-                        <div className="rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-800/40 dark:bg-blue-900/20">
-                            <div className="flex items-start">
-                                <div>
-                                    <p className="text-sm text-blue-700 dark:text-blue-400">
-                                        This action cannot be undone. Projects and documentation spaces
-                                        are team-specific and cannot be transferred between personal
-                                        and team accounts.
-                                    </p>
+                            <div className="ml-3">
+                                <h3 className="text-sm font-medium text-amber-800 dark:text-amber-300">Content Migration Warning</h3>
+                                <div className="mt-2 text-sm text-amber-700 dark:text-amber-400">
+                                    <p>You have existing content that will be affected when joining this team:</p>
+                                    <ul className="list-disc list-inside mt-1 space-y-1">
+                                        {contentCounts.projects > 0 && (
+                                            <li>{contentCounts.projects} personal project(s) will be removed</li>
+                                        )}
+                                        {contentCounts.spaces > 0 && (
+                                            <li>{contentCounts.spaces} documentation space(s) will be removed</li>
+                                        )}
+                                        {contentCounts.todoLists > 0 && (
+                                            <li>Your todo list will be migrated to the team</li>
+                                        )}
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between sm:space-x-2">
-                    <Button variant="outline" onClick={onClose} disabled={isLoading}>
-                        <X className="mr-2 h-4 w-4" />
-                        Cancel
-                    </Button>
-                    <Button onClick={onConfirm} disabled={isLoading}>
-                        {isLoading ? (
-                            <>
-                                <svg
-                                    className="mr-2 h-4 w-4 animate-spin"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                                </svg>
-                                Processing...
-                            </>
-                        ) : (
-                            <>
-                                <Check className="mr-2 h-4 w-4" />
-                                {hasContent ? "Join Team & Migrate Content" : "Join Team"}
-                            </>
-                        )}
+                <div className="space-y-4 py-2">
+                    <h3 className="text-sm font-medium">By joining {teamName}:</h3>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                        <li>You'll become a team member with access to team projects and documentation</li>
+                        <li>Your account type will change from Solo to Team Member</li>
+                        <li>You'll be able to collaborate with other team members</li>
+                    </ul>
+
+                    {hasContent && (
+                        <div className="flex items-center space-x-2 pt-2">
+                            <Checkbox
+                                id="understand-content-loss"
+                                checked={understood}
+                                onCheckedChange={(checked) => setUnderstood(checked as boolean)}
+                            />
+                            <label
+                                htmlFor="understand-content-loss"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                                I understand that my personal projects and documentation spaces will be removed
+                            </label>
+                        </div>
+                    )}
+                </div>
+
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline" disabled={isLoading}>Cancel</Button>
+                    </DialogClose>
+                    <Button
+                        onClick={onConfirm}
+                        disabled={isLoading || (hasContent && !understood)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                    >
+                        {isLoading ? "Processing..." : "Join Team"}
                     </Button>
                 </DialogFooter>
             </DialogContent>
