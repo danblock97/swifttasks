@@ -34,6 +34,9 @@ export async function GET(request: NextRequest) {
             return NextResponse.redirect(new URL('/login?error=user_fetch_failed', request.url));
         }
 
+        console.log("[Auth Callback] Got user:", user.id, "Email:", user.email);
+        console.log("[Auth Callback] User metadata:", JSON.stringify(user.user_metadata));
+
         // Create a service role client for admin operations
         const serviceSupabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -52,13 +55,18 @@ export async function GET(request: NextRequest) {
             console.error("[Auth Callback] Error checking existing user:", existingUserError);
         }
 
+        console.log("[Auth Callback] Existing user check:", existingUser ? "Found" : "Not found");
+
         if (!existingUser) {
             const metadata = user.user_metadata || {};
+            console.log("[Auth Callback] Processing metadata for new user:", JSON.stringify(metadata));
 
             // Handle different account creation scenarios
             try {
                 // Check if this is a team invitation
                 if (metadata.invite_code) {
+                    console.log("[Auth Callback] Processing team invitation with code:", metadata.invite_code);
+
                     // Get the invitation details
                     const { data: invite, error: inviteError } = await serviceSupabase
                         .from("team_invites")
@@ -68,8 +76,10 @@ export async function GET(request: NextRequest) {
 
                     if (inviteError) {
                         console.error("[Auth Callback] Error fetching invitation:", inviteError);
+                        console.log("[Auth Callback] Falling back to creating a regular account");
+
                         // Fall back to creating a regular account
-                        await serviceSupabase
+                        const { error: insertError } = await serviceSupabase
                             .from("users")
                             .insert({
                                 id: user.id,
@@ -78,9 +88,16 @@ export async function GET(request: NextRequest) {
                                 account_type: "single",
                                 is_team_owner: false,
                             });
+
+                        if (insertError) {
+                            console.error("[Auth Callback] Error creating regular user:", insertError);
+                            throw insertError;
+                        }
                     } else if (invite && invite.email.toLowerCase() === user.email?.toLowerCase()) {
+                        console.log("[Auth Callback] Creating team member profile");
+
                         // Create team member profile
-                        await serviceSupabase
+                        const { error: insertError } = await serviceSupabase
                             .from("users")
                             .insert({
                                 id: user.id,
@@ -91,14 +108,21 @@ export async function GET(request: NextRequest) {
                                 is_team_owner: false,
                             });
 
+                        if (insertError) {
+                            console.error("[Auth Callback] Error creating team member:", insertError);
+                            throw insertError;
+                        }
+
                         // Delete the invitation
                         await serviceSupabase
                             .from("team_invites")
                             .delete()
                             .eq("invite_code", metadata.invite_code);
                     } else {
+                        console.log("[Auth Callback] Invalid invitation, creating regular account");
+
                         // Fall back to creating a regular account
-                        await serviceSupabase
+                        const { error: insertError } = await serviceSupabase
                             .from("users")
                             .insert({
                                 id: user.id,
@@ -107,14 +131,22 @@ export async function GET(request: NextRequest) {
                                 account_type: "single",
                                 is_team_owner: false,
                             });
+
+                        if (insertError) {
+                            console.error("[Auth Callback] Error creating regular user fallback:", insertError);
+                            throw insertError;
+                        }
                     }
                 }
                 // Handle team account creation
                 else if (metadata.account_type === "team") {
+                    console.log("[Auth Callback] Creating team account");
+
                     // Create team first
                     const teamId = generateUUID();
+                    console.log("[Auth Callback] Generated team ID:", teamId);
 
-                    await serviceSupabase
+                    const { error: teamError } = await serviceSupabase
                         .from("teams")
                         .insert({
                             id: teamId,
@@ -122,8 +154,13 @@ export async function GET(request: NextRequest) {
                             owner_id: user.id,
                         });
 
+                    if (teamError) {
+                        console.error("[Auth Callback] Error creating team:", teamError);
+                        throw teamError;
+                    }
+
                     // Create team owner profile
-                    await serviceSupabase
+                    const { error: insertError } = await serviceSupabase
                         .from("users")
                         .insert({
                             id: user.id,
@@ -133,9 +170,16 @@ export async function GET(request: NextRequest) {
                             team_id: teamId,
                             is_team_owner: true,
                         });
+
+                    if (insertError) {
+                        console.error("[Auth Callback] Error creating team owner:", insertError);
+                        throw insertError;
+                    }
                 } else {
                     // Default to single user account
-                    await serviceSupabase
+                    console.log("[Auth Callback] Creating single user account");
+
+                    const { error: insertError } = await serviceSupabase
                         .from("users")
                         .insert({
                             id: user.id,
@@ -144,18 +188,42 @@ export async function GET(request: NextRequest) {
                             account_type: "single",
                             is_team_owner: false,
                         });
+
+                    if (insertError) {
+                        console.error("[Auth Callback] Error creating single user:", insertError);
+                        throw insertError;
+                    }
                 }
 
                 console.log("[Auth Callback] User profile created successfully for:", user.id);
             } catch (error) {
                 console.error("[Auth Callback] Error creating user profile:", error);
+
+                // Try one more time with a simple insert
+                try {
+                    console.log("[Auth Callback] Attempting fallback user creation");
+                    const { error: fallbackError } = await serviceSupabase
+                        .from("users")
+                        .insert({
+                            id: user.id,
+                            email: user.email,
+                            display_name: user.email?.split('@')[0],
+                            account_type: "single",
+                            is_team_owner: false,
+                        });
+
+                    if (!fallbackError) {
+                        console.log("[Auth Callback] Fallback user creation successful");
+                    } else {
+                        console.error("[Auth Callback] Fallback creation failed:", fallbackError);
+                    }
+                } catch (fallbackError) {
+                    console.error("[Auth Callback] Fallback error:", fallbackError);
+                }
             }
         } else {
             console.log("[Auth Callback] User already exists:", existingUser.id);
         }
-
-        // Redirect to the setup page instead of dashboard
-        // This gives the database operations time to complete
         return NextResponse.redirect(new URL('/auth/setting-up-account', request.url));
     } catch (error) {
         console.error("[Auth Callback] Error in auth callback:", error);
