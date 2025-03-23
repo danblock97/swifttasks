@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { formatRelativeTime } from "@/lib/utils";
+import { ConfirmJoinTeamDialog } from "@/components/team/confirm-join-team-dialog";
 
 interface Notification {
     id: string;
@@ -20,6 +21,12 @@ interface Notification {
     user_id: string;
 }
 
+interface ContentCounts {
+    projects: number;
+    spaces: number;
+    todoLists: number;
+}
+
 interface NotificationsTableProps {
     notifications: Notification[];
 }
@@ -27,6 +34,10 @@ interface NotificationsTableProps {
 export function NotificationsTable({ notifications }: NotificationsTableProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [currentNotifications, setCurrentNotifications] = useState<Notification[]>(notifications);
+    const [isJoinTeamDialogOpen, setIsJoinTeamDialogOpen] = useState(false);
+    const [pendingTeamInvitation, setPendingTeamInvitation] = useState<Notification | null>(null);
+    const [contentCounts, setContentCounts] = useState<ContentCounts>({ projects: 0, spaces: 0, todoLists: 0 });
+
     const router = useRouter();
     const supabase = createClientComponentClient();
     const { toast } = useToast();
@@ -67,17 +78,21 @@ export function NotificationsTable({ notifications }: NotificationsTableProps) {
     const deleteNotification = async (id: string) => {
         try {
             setIsLoading(true);
+
+            // First update the local state immediately for better UX
+            setCurrentNotifications(prev => prev.filter(n => n.id !== id));
+
+            // Then attempt the server delete
             const { error } = await supabase
                 .from("user_notifications")
                 .delete()
                 .eq("id", id);
 
-            if (error) throw error;
-
-            // Update local state
-            setCurrentNotifications(prev =>
-                prev.filter(n => n.id !== id)
-            );
+            if (error) {
+                console.error("Database error deleting notification:", error);
+                // Even if there's an error, we keep the notification removed from the UI
+                // since the user has expressed intent to remove it
+            }
 
             toast({
                 title: "Success",
@@ -87,7 +102,7 @@ export function NotificationsTable({ notifications }: NotificationsTableProps) {
             console.error("Error deleting notification:", error);
             toast({
                 title: "Error",
-                description: "Failed to delete notification",
+                description: "There was an issue deleting the notification, but it has been removed from your view.",
                 variant: "destructive",
             });
         } finally {
@@ -95,66 +110,261 @@ export function NotificationsTable({ notifications }: NotificationsTableProps) {
         }
     };
 
-    // Handle team invitation acceptance
-    const handleTeamInvitation = async (notification: Notification, accept: boolean) => {
+    // Check user's content before joining team
+    const checkUserContent = async (): Promise<ContentCounts> => {
         try {
-            setIsLoading(true);
-            if (!notification.data?.team_id || !notification.data?.invite_code) {
-                throw new Error("Invalid invitation data");
-            }
+            // Get user ID
+            const userId = (await supabase.auth.getUser()).data.user?.id;
+            if (!userId) throw new Error("User not authenticated");
 
-            if (accept) {
-                // Accept invitation
-                const { error: userUpdateError } = await supabase
-                    .from("users")
-                    .update({
-                        account_type: "team_member",
-                        team_id: notification.data.team_id,
-                        is_team_owner: false,
-                    })
-                    .eq("id", (await supabase.auth.getUser()).data.user?.id || "");
+            // Count projects
+            const { count: projectsCount, error: projectsError } = await supabase
+                .from("projects")
+                .select("*", { count: "exact", head: true })
+                .eq("owner_id", userId)
+                .is("team_id", null);
 
-                if (userUpdateError) throw userUpdateError;
+            if (projectsError) throw projectsError;
 
-                // Delete the invitation record
-                const { error: inviteDeleteError } = await supabase
-                    .from("team_invites")
-                    .delete()
-                    .eq("invite_code", notification.data.invite_code);
+            // Count doc spaces
+            const { count: spacesCount, error: spacesError } = await supabase
+                .from("doc_spaces")
+                .select("*", { count: "exact", head: true })
+                .eq("owner_id", userId)
+                .is("team_id", null);
 
-                if (inviteDeleteError) {
-                    console.warn("Error deleting invitation:", inviteDeleteError);
+            if (spacesError) throw spacesError;
+
+            // Count todo lists
+            const { count: todoListsCount, error: todoListsError } = await supabase
+                .from("todo_lists")
+                .select("*", { count: "exact", head: true })
+                .eq("owner_id", userId);
+
+            if (todoListsError) throw todoListsError;
+
+            return {
+                projects: projectsCount || 0,
+                spaces: spacesCount || 0,
+                todoLists: todoListsCount || 0
+            };
+        } catch (error) {
+            console.error("Error checking user content:", error);
+            return { projects: 0, spaces: 0, todoLists: 0 };
+        }
+    };
+
+    // Delete user's personal projects and spaces
+    const deleteUserContent = async () => {
+        try {
+            const userId = (await supabase.auth.getUser()).data.user?.id;
+            if (!userId) throw new Error("User not authenticated");
+
+            // First, we need to manually delete boards and their dependencies
+            // Get all project IDs for the user's personal projects
+            const { data: projectsData } = await supabase
+                .from("projects")
+                .select("id")
+                .eq("owner_id", userId)
+                .is("team_id", null);
+
+            if (projectsData && projectsData.length > 0) {
+                const projectIds = projectsData.map(p => p.id);
+
+                // Get all board IDs for these projects
+                const { data: boardsData } = await supabase
+                    .from("boards")
+                    .select("id")
+                    .in("project_id", projectIds);
+
+                if (boardsData && boardsData.length > 0) {
+                    const boardIds = boardsData.map(b => b.id);
+
+                    // Delete board items first
+                    const { data: columnsData } = await supabase
+                        .from("board_columns")
+                        .select("id")
+                        .in("board_id", boardIds);
+
+                    if (columnsData && columnsData.length > 0) {
+                        const columnIds = columnsData.map(c => c.id);
+
+                        // Delete board items
+                        await supabase
+                            .from("board_items")
+                            .delete()
+                            .in("column_id", columnIds);
+                    }
+
+                    // Delete board columns
+                    await supabase
+                        .from("board_columns")
+                        .delete()
+                        .in("board_id", boardIds);
+
+                    // Delete boards
+                    await supabase
+                        .from("boards")
+                        .delete()
+                        .in("id", boardIds);
                 }
 
-                toast({
-                    title: "Invitation Accepted",
-                    description: `You have joined ${notification.data.team_name}`,
-                });
-
-                // Delete the notification
-                await deleteNotification(notification.id);
-
-                // Redirect to team dashboard
-                router.push("/dashboard/team?joined=true");
-                router.refresh();
-            } else {
-                // Decline invitation - just delete the notification
-                await deleteNotification(notification.id);
-
-                toast({
-                    title: "Invitation Declined",
-                    description: "You have declined the team invitation",
-                });
+                // Now delete the projects
+                await supabase
+                    .from("projects")
+                    .delete()
+                    .in("id", projectIds);
             }
-        } catch (error: any) {
-            console.error("Error handling invitation:", error);
+
+            // Delete doc spaces and their pages
+            const { data: spacesData } = await supabase
+                .from("doc_spaces")
+                .select("id")
+                .eq("owner_id", userId)
+                .is("team_id", null);
+
+            if (spacesData && spacesData.length > 0) {
+                const spaceIds = spacesData.map(s => s.id);
+
+                // Delete doc pages first
+                await supabase
+                    .from("doc_pages")
+                    .delete()
+                    .in("space_id", spaceIds);
+
+                // Delete doc spaces
+                await supabase
+                    .from("doc_spaces")
+                    .delete()
+                    .in("id", spaceIds);
+            }
+
+            console.log("Successfully deleted personal projects and spaces");
+        } catch (error) {
+            console.error("Error deleting user content:", error);
+            // We'll continue with team acceptance even if deletion fails
+            // but log the error and raise a toast to indicate partial success
+            toast({
+                title: "Partial Migration",
+                description: "Joined team successfully, but there was an issue migrating some content.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Handle team invitation (initial function)
+    const handleTeamInvitation = async (notification: Notification, accept: boolean) => {
+        if (!accept) {
+            // Decline invitation - just delete the notification
+            await deleteNotification(notification.id);
+            toast({
+                title: "Invitation Declined",
+                description: "You have declined the team invitation",
+            });
+            return;
+        }
+
+        // For accept, check user content first
+        try {
+            setPendingTeamInvitation(notification);
+
+            // Check user content
+            const counts = await checkUserContent();
+            setContentCounts(counts);
+
+            // Show confirmation dialog
+            setIsJoinTeamDialogOpen(true);
+        } catch (error) {
+            console.error("Error preparing team join:", error);
             toast({
                 title: "Error",
-                description: error.message || "Failed to process invitation",
+                description: "Failed to prepare team join process. Please try again.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Process team invitation after confirmation
+    const processTeamInvitation = async () => {
+        if (!pendingTeamInvitation) return;
+
+        try {
+            setIsLoading(true);
+
+            // First, delete the user's personal projects and spaces
+            await deleteUserContent();
+
+            // Now accept the team invitation by updating user record
+            const { error: userUpdateError } = await supabase
+                .from("users")
+                .update({
+                    account_type: "team_member",
+                    team_id: pendingTeamInvitation.data.team_id,
+                    is_team_owner: false,
+                })
+                .eq("id", (await supabase.auth.getUser()).data.user?.id || "");
+
+            if (userUpdateError) {
+                throw userUpdateError;
+            }
+
+            // Wait for the update to complete
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            try {
+                // Use a server-side API route to ensure proper deletion of related records
+                const response = await fetch('/api/team/delete-invite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        inviteCode: pendingTeamInvitation.data.invite_code,
+                    }),
+                });
+
+                if (!response.ok) {
+                    console.warn("Server-side invite deletion returned error:", await response.text());
+                }
+            } catch (deleteError) {
+                console.warn("Error using server API to delete invitation:", deleteError);
+            }
+
+            // Force update local state of notifications
+            setCurrentNotifications(prev =>
+                prev.filter(n => n.id !== pendingTeamInvitation.id)
+            );
+
+            // Also try to delete it from the database
+            try {
+                await supabase
+                    .from("user_notifications")
+                    .delete()
+                    .eq("id", pendingTeamInvitation.id);
+
+                console.log("Notification deleted successfully");
+            } catch (notifError) {
+                console.warn("Error deleting notification from database:", notifError);
+            }
+
+            toast({
+                title: "Team Joined Successfully",
+                description: `You have joined ${pendingTeamInvitation.data.team_name}`,
+            });
+
+            // Redirect to team dashboard with a full page reload to ensure freshness
+            window.location.href = "/dashboard/team?joined=true";
+        } catch (error: any) {
+            console.error("Error processing team invitation:", error);
+            toast({
+                title: "Error",
+                description: error.message || "Failed to join team. Please try again.",
                 variant: "destructive",
             });
         } finally {
             setIsLoading(false);
+            setIsJoinTeamDialogOpen(false);
+            setPendingTeamInvitation(null);
         }
     };
 
@@ -217,90 +427,107 @@ export function NotificationsTable({ notifications }: NotificationsTableProps) {
     }
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <Bell className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm font-medium">{currentNotifications.length} notifications</span>
+        <>
+            <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <Bell className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-sm font-medium">{currentNotifications.length} notifications</span>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={markAllAsRead}
+                        disabled={isLoading || !currentNotifications.some(n => !n.is_read)}
+                    >
+                        <Check className="h-4 w-4 mr-2" />
+                        Mark all as read
+                    </Button>
                 </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={markAllAsRead}
-                    disabled={isLoading || !currentNotifications.some(n => !n.is_read)}
-                >
-                    <Check className="h-4 w-4 mr-2" />
-                    Mark all as read
-                </Button>
-            </div>
 
-            <div className="grid gap-4">
-                {currentNotifications.map((notification) => (
-                    <Card key={notification.id} className={`p-4 border-l-4 ${notification.is_read ? "border-l-gray-200 dark:border-l-gray-700" : "border-l-blue-500"}`}>
-                        <div className="flex items-start gap-4">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                {getNotificationIcon(notification.type)}
-                            </div>
+                <div className="grid gap-4">
+                    {currentNotifications.map((notification) => (
+                        <Card key={notification.id} className={`p-4 border-l-4 ${notification.is_read ? "border-l-gray-200 dark:border-l-gray-700" : "border-l-blue-500"}`}>
+                            <div className="flex items-start gap-4">
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                    {getNotificationIcon(notification.type)}
+                                </div>
 
-                            <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h4 className="font-medium text-base">{notification.title}</h4>
-                                        <p className="text-muted-foreground mt-1">{notification.content}</p>
-                                        <div className="text-xs text-muted-foreground mt-2">
-                                            {formatRelativeTime(notification.created_at)}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h4 className="font-medium text-base">{notification.title}</h4>
+                                            <p className="text-muted-foreground mt-1">{notification.content}</p>
+                                            <div className="text-xs text-muted-foreground mt-2">
+                                                {formatRelativeTime(notification.created_at)}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        {!notification.is_read && (
+                                        <div className="flex gap-2">
+                                            {!notification.is_read && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => markAsRead(notification.id)}
+                                                    disabled={isLoading}
+                                                >
+                                                    <Check className="h-4 w-4" />
+                                                    <span className="sr-only">Mark as read</span>
+                                                </Button>
+                                            )}
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => markAsRead(notification.id)}
+                                                onClick={() => deleteNotification(notification.id)}
                                                 disabled={isLoading}
                                             >
-                                                <Check className="h-4 w-4" />
-                                                <span className="sr-only">Mark as read</span>
+                                                <X className="h-4 w-4" />
+                                                <span className="sr-only">Delete</span>
                                             </Button>
-                                        )}
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => deleteNotification(notification.id)}
-                                            disabled={isLoading}
-                                        >
-                                            <X className="h-4 w-4" />
-                                            <span className="sr-only">Delete</span>
-                                        </Button>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {notification.type === "team_invitation" && !notification.is_read && (
-                                    <div className="flex gap-2 mt-4">
-                                        <Button
-                                            size="sm"
-                                            onClick={() => handleTeamInvitation(notification, true)}
-                                            disabled={isLoading}
-                                        >
-                                            <Check className="h-4 w-4 mr-2" />
-                                            Accept Invitation
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleTeamInvitation(notification, false)}
-                                            disabled={isLoading}
-                                        >
-                                            <X className="h-4 w-4 mr-2" />
-                                            Decline
-                                        </Button>
-                                    </div>
-                                )}
+                                    {notification.type === "team_invitation" && !notification.is_read && (
+                                        <div className="flex gap-2 mt-4">
+                                            <Button
+                                                size="sm"
+                                                onClick={() => handleTeamInvitation(notification, true)}
+                                                disabled={isLoading}
+                                            >
+                                                <Check className="h-4 w-4 mr-2" />
+                                                Accept Invitation
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleTeamInvitation(notification, false)}
+                                                disabled={isLoading}
+                                            >
+                                                <X className="h-4 w-4 mr-2" />
+                                                Decline
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    </Card>
-                ))}
+                        </Card>
+                    ))}
+                </div>
             </div>
-        </div>
+
+            {/* Team Join Confirmation Dialog */}
+            {pendingTeamInvitation && (
+                <ConfirmJoinTeamDialog
+                    open={isJoinTeamDialogOpen}
+                    onClose={() => {
+                        setIsJoinTeamDialogOpen(false);
+                        setPendingTeamInvitation(null);
+                    }}
+                    onConfirm={processTeamInvitation}
+                    teamName={pendingTeamInvitation.data.team_name || "Team"}
+                    contentCounts={contentCounts}
+                    isLoading={isLoading}
+                />
+            )}
+        </>
     );
 }
