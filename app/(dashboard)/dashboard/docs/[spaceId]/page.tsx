@@ -92,26 +92,29 @@ export default async function DocSpacePage({ params }: DocSpacePageProps) {
                     heading={docSpace.name}
                     description={`Created on ${formatDate(docSpace.created_at)}`}
                 >
-                    <div className="flex gap-2">
-                        {canEditSpace && (
-                            <Link href={`/dashboard/docs/${spaceId}/edit`}>
-                                <Button variant="outline" size="sm">
-                                    <Edit className="mr-1 h-4 w-4" />
-                                    Edit
-                                </Button>
-                            </Link>
-                        )}
-
-                        {canManageDocPages && !hasReachedPageLimit && (
-                            <Link href={`/dashboard/docs/${spaceId}/pages/create`}>
-                                <Button size="sm">
-                                    <Plus className="mr-1 h-4 w-4" />
-                                    New Page
-                                </Button>
-                            </Link>
-                        )}
-                    </div>
+                    {/* Action buttons moved to DashboardHeader children for right alignment */}
                 </DashboardHeader>
+
+                {/* Action buttons container positioned to the right */}
+                <div className="ml-auto flex gap-2">
+                    {canEditSpace && (
+                        <Link href={`/dashboard/docs/${spaceId}/edit`}>
+                            <Button variant="outline" size="sm">
+                                <Edit className="mr-1 h-4 w-4" />
+                                Edit
+                            </Button>
+                        </Link>
+                    )}
+
+                    {canManageDocPages && !hasReachedPageLimit && (
+                        <Link href={`/dashboard/docs/${spaceId}/pages/create`}>
+                            <Button size="sm">
+                                <Plus className="mr-1 h-4 w-4" />
+                                New Page
+                            </Button>
+                        </Link>
+                    )}
+                </div>
             </div>
 
             <div className="grid gap-4">
