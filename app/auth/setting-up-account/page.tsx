@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@/lib/supabase/client'; // Adjust import as needed
+import { createServiceRoleClient } from '@/lib/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
@@ -14,7 +14,7 @@ export default function SettingUpAccountPage() {
     const [debugInfo, setDebugInfo] = useState<string[]>([]);
     const router = useRouter();
     const clientSupabase = createClientComponentClient();
-    const serviceSupabase = createClient();
+    const serviceSupabase = createServiceRoleClient();
     const { toast } = useToast();
 
     // Add debug information
