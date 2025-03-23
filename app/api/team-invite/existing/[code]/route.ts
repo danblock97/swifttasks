@@ -8,12 +8,15 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { code: string } }
+    { params }: { params: Promise<{ code: string }> }
 ) {
     try {
+        // Resolve the promise to get the actual parameters
+        const resolvedParams = await params;
+        const inviteCode = resolvedParams.code;
+
         console.log(`[Team Invite Existing] Processing invite URL: ${request.url}`);
 
-        const inviteCode = params.code;
         const url = new URL(request.url);
         const searchParams = Object.fromEntries(url.searchParams.entries());
 

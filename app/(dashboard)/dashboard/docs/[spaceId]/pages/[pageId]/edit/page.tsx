@@ -6,14 +6,17 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { EditDocPageForm } from "@/components/docs/edit-doc-page-form";
 
 interface EditDocPageProps {
-    params: {
+    params: Promise<{
         spaceId: string;
         pageId: string;
-    };
+    }>;
 }
 
 export default async function EditDocPage({ params }: EditDocPageProps) {
-    const { spaceId, pageId } = params;
+    // Resolve the promise to get the actual parameters
+    const resolvedParams = await params;
+    const { spaceId, pageId } = resolvedParams;
+
     const supabase = createServerComponentClient({ cookies });
 
     // Get user session

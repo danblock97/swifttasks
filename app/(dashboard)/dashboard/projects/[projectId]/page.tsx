@@ -11,13 +11,16 @@ import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
 interface ProjectDetailPageProps {
-    params: {
+    params: Promise<{
         projectId: string;
-    };
+    }>;
 }
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
-    const { projectId } = params;
+    // Resolve the promise to get the actual parameters
+    const resolvedParams = await params;
+    const { projectId } = resolvedParams;
+
     const supabase = createServerComponentClient({ cookies });
 
     // Get user session

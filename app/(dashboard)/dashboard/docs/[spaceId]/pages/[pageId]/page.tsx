@@ -16,14 +16,17 @@ import { formatDate } from "@/lib/utils";
 import { DocContent } from "@/components/docs/doc-content";
 
 interface DocPageViewProps {
-    params: {
+    params: Promise<{
         spaceId: string;
         pageId: string;
-    };
+    }>;
 }
 
 export default async function DocPageView({ params }: DocPageViewProps) {
-    const { spaceId, pageId } = params;
+    // Resolve the promise to get the actual parameters
+    const resolvedParams = await params;
+    const { spaceId, pageId } = resolvedParams;
+
     const supabase = createServerComponentClient({ cookies });
 
     // Get user session

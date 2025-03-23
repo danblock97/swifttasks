@@ -6,13 +6,16 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { EditProjectForm } from "@/components/projects/edit-project-form";
 
 interface EditProjectPageProps {
-    params: {
+    params: Promise<{
         projectId: string;
-    };
+    }>;
 }
 
 export default async function EditProjectPage({ params }: EditProjectPageProps) {
-    const { projectId } = params;
+    // Resolve the promise to get the actual parameters
+    const resolvedParams = await params;
+    const { projectId } = resolvedParams;
+
     const supabase = createServerComponentClient({ cookies });
 
     // Get user session

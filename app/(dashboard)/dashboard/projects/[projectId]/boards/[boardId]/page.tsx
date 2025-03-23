@@ -9,14 +9,17 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, Edit } from "lucide-react";
 
 interface BoardDetailPageProps {
-    params: {
+    params: Promise<{
         projectId: string;
         boardId: string;
-    };
+    }>;
 }
 
 export default async function BoardDetailPage({ params }: BoardDetailPageProps) {
-    const { projectId, boardId } = params;
+    // Resolve the promise to get the actual parameters
+    const resolvedParams = await params;
+    const { projectId, boardId } = resolvedParams;
+
     const supabase = createServerComponentClient({ cookies });
 
     // Get user session

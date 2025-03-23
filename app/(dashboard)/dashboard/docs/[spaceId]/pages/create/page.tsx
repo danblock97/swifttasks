@@ -6,13 +6,16 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { CreateDocPageForm } from "@/components/docs/create-doc-page-form";
 
 interface CreateDocPageProps {
-    params: {
+    params: Promise<{
         spaceId: string;
-    };
+    }>;
 }
 
 export default async function CreateDocPage({ params }: CreateDocPageProps) {
-    const { spaceId } = params;
+    // Resolve the promise to get the actual parameters
+    const resolvedParams = await params;
+    const { spaceId } = resolvedParams;
+
     const supabase = createServerComponentClient({ cookies });
 
     // Get user session

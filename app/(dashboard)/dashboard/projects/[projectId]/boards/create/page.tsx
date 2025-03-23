@@ -6,13 +6,16 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { CreateBoardForm } from "@/components/projects/kanban/create-board-form";
 
 interface CreateBoardPageProps {
-    params: {
+    params: Promise<{
         projectId: string;
-    };
+    }>;
 }
 
 export default async function CreateBoardPage({ params }: CreateBoardPageProps) {
-    const { projectId } = params;
+    // Resolve the promise to get the actual parameters
+    const resolvedParams = await params;
+    const { projectId } = resolvedParams;
+
     const supabase = createServerComponentClient({ cookies });
 
     // Get user session

@@ -11,13 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { DocPages } from "@/components/docs/doc-pages";
 
 interface DocSpacePageProps {
-    params: {
+    params: Promise<{
         spaceId: string;
-    };
+    }>;
 }
 
 export default async function DocSpacePage({ params }: DocSpacePageProps) {
-    const { spaceId } = params;
+    // Resolve the promise to get the actual parameters
+    const resolvedParams = await params;
+    const { spaceId } = resolvedParams;
+
     const supabase = createServerComponentClient({ cookies });
 
     // Get user session

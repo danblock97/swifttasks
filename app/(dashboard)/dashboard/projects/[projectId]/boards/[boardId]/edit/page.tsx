@@ -6,14 +6,17 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { EditBoardForm } from "@/components/projects/kanban/edit-board-form";
 
 interface EditBoardPageProps {
-    params: {
+    params: Promise<{
         projectId: string;
         boardId: string;
-    };
+    }>;
 }
 
 export default async function EditBoardPage({ params }: EditBoardPageProps) {
-    const { projectId, boardId } = params;
+    // Resolve the promise to get the actual parameters
+    const resolvedParams = await params;
+    const { projectId, boardId } = resolvedParams;
+
     const supabase = createServerComponentClient({ cookies });
 
     // Get user session
