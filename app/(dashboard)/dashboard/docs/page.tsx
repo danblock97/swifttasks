@@ -27,20 +27,38 @@ export default async function DocsPage() {
         .eq("id", session.user.id)
         .single();
 
-    let query = supabase
+    // Using a more explicit query structure to ensure we get all spaces
+    // First get the user's personal spaces
+    const { data: personalSpaces, error: personalError } = await supabase
         .from("doc_spaces")
-        .select("*");
+        .select("*")
+        .eq("owner_id", session.user.id);
 
-    // Personal spaces
-    query = query.or(`owner_id.eq.${session.user.id}`);
-
-    // Team spaces (if the user is part of a team)
+    // Then get team spaces if the user is part of a team
+    let teamSpaces = [];
     if (profile?.team_id) {
-        query = query.or(`team_id.eq.${profile.team_id}`);
+        const { data: teamDocSpaces, error: teamError } = await supabase
+            .from("doc_spaces")
+            .select("*")
+            .eq("team_id", profile.team_id);
+
+        if (!teamError && teamDocSpaces) {
+            teamSpaces = teamDocSpaces;
+        }
     }
 
-    // Execute the query and order the results
-    const { data: docSpaces } = await query.order("created_at", { ascending: false });
+    // Combine and deduplicate spaces (in case any appear in both queries)
+    const allSpaces = [...(personalSpaces || [])];
+    teamSpaces.forEach(teamSpace => {
+        if (!allSpaces.some(space => space.id === teamSpace.id)) {
+            allSpaces.push(teamSpace);
+        }
+    });
+
+    // Sort by creation date
+    const docSpaces = allSpaces.sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
     const isTeamOwner = profile?.account_type === "team_member" && profile?.is_team_owner;
     const isTeamMember = profile?.account_type === "team_member";
