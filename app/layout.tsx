@@ -6,6 +6,8 @@ import { SiteNavbar } from '@/components/ui/navbar';
 import { SiteFooter } from '@/components/ui/footer';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { CookieConsentBanner } from '@/components/cookie-consent';
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -33,6 +35,8 @@ export default function RootLayout({
             </div>
             <Toaster />
         </ThemeProvider>
+        <Analytics/>
+        <SpeedInsights/>
         </body>
         </html>
     );
