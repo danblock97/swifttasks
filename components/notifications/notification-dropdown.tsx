@@ -99,25 +99,96 @@ export function NotificationDropdown() {
     // Mark notification as read
     const markAsRead = async (id: string) => {
         try {
-            const { error } = await supabase
-                .from("user_notifications")
-                .update({ is_read: true })
-                .eq("id", id);
-
-            if (error) throw error;
-
-            // Update local state
+            // Update local state immediately
             setNotifications(prev =>
                 prev.map(n => n.id === id ? { ...n, is_read: true } : n)
             );
             setUnreadCount(prev => Math.max(0, prev - 1));
-        } catch (error: any) {
+
+            // Call the API to update the database
+            const response = await fetch('/api/notifications/mark-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    notificationId: id,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to mark notification as read');
+            }
+        } catch (error) {
             console.error("Error marking notification as read:", error);
+            // Don't revert the UI state, but you could show a toast notification
+        }
+    };
+
+    // Delete notification
+    const deleteNotification = async (id: string) => {
+        try {
+            // Update local state immediately for better UX
+            setNotifications(prev => prev.filter(n => n.id !== id));
+
+            // Calculate new unread count
+            const removedNotification = notifications.find(n => n.id === id);
+            if (removedNotification && !removedNotification.is_read) {
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            }
+
+            // Call server-side API to delete the notification
+            const response = await fetch('/api/notifications/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    notificationId: id,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to delete notification');
+            }
+        } catch (error) {
+            console.error("Error deleting notification:", error);
+            // Don't revert the UI state to avoid confusion, but show an error toast
             toast({
                 title: "Error",
-                description: "Failed to update notification",
+                description: "There was an issue deleting the notification. Please refresh the page.",
                 variant: "destructive",
             });
+        }
+    };
+
+    // Mark all as read
+    const markAllAsRead = async () => {
+        try {
+            // Update local state immediately
+            const unreadNotifications = notifications.filter(n => !n.is_read);
+            if (unreadNotifications.length === 0) return;
+
+            setNotifications(prev =>
+                prev.map(n => ({ ...n, is_read: true }))
+            );
+            setUnreadCount(0);
+
+            // Call the API to update the database
+            const response = await fetch('/api/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to mark all notifications as read');
+            }
+        } catch (error) {
+            console.error("Error marking all notifications as read:", error);
+            // Don't revert the UI state, but you could show a toast notification
         }
     };
 
@@ -263,36 +334,23 @@ export function NotificationDropdown() {
         }
     };
 
-    // Initial team invitation handler
+    // Handle team invitation
     const handleTeamInvitation = async (notification: Notification, accept: boolean) => {
         if (!accept) {
-            // Decline invitation - just delete the notification
+            // Decline invitation - delete the notification
             try {
-                const { error: notificationDeleteError } = await supabase
-                    .from("user_notifications")
-                    .delete()
-                    .eq("id", notification.id);
-
-                if (notificationDeleteError) {
-                    throw notificationDeleteError;
-                }
-
-                // Update local state
-                setNotifications(prev => prev.filter(n => n.id !== notification.id));
-                setUnreadCount(prev => Math.max(0, prev - 1));
+                await deleteNotification(notification.id);
 
                 toast({
                     title: "Invitation Declined",
                     description: "You have declined the team invitation",
                 });
             } catch (error) {
-                console.error("Error deleting notification:", error);
-                // Fall back to just marking as read
-                await markAsRead(notification.id);
-
+                console.error("Error declining invitation:", error);
                 toast({
-                    title: "Invitation Declined",
-                    description: "The invitation has been declined, but there was an issue updating notifications",
+                    title: "Error",
+                    description: "Failed to decline the invitation. Please try again.",
+                    variant: "destructive",
                 });
             }
             return;
@@ -365,19 +423,12 @@ export function NotificationDropdown() {
                 console.warn("Error using server API to delete invitation:", deleteError);
             }
 
-            // Force update notifications list
+            // Delete the notification using our reliable method
             try {
-                // Remove the notification locally first
-                setNotifications(prev => prev.filter(n => n.id !== pendingTeamInvitation.id));
-                setUnreadCount(prev => Math.max(0, prev - (pendingTeamInvitation.is_read ? 0 : 1)));
-
-                // Also try to delete it from the database
-                await supabase
-                    .from("user_notifications")
-                    .delete()
-                    .eq("id", pendingTeamInvitation.id);
+                await deleteNotification(pendingTeamInvitation.id);
             } catch (notifError) {
                 console.warn("Error deleting notification:", notifError);
+                // Continue with team join even if notification deletion fails
             }
 
             toast({
