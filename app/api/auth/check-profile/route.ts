@@ -26,25 +26,39 @@ export async function GET(request: NextRequest) {
             process.env.SUPABASE_SERVICE_ROLE_KEY || ''
         );
 
-        const { data: profile, error } = await supabaseAdmin
+        // Don't use .single() to avoid the error if multiple rows exist
+        const { data: profiles, error: profilesError } = await supabaseAdmin
             .from('users')
             .select('id, email, display_name, account_type')
-            .eq('id', session.user.id)
-            .single();
+            .eq('id', session.user.id);
 
-        if (error) {
-            console.log(`Database error: ${error.message}`); // Debug log
+        if (profilesError) {
+            console.log(`Database error: ${profilesError.message}`); // Debug log
             return NextResponse.json({
                 exists: false,
-                error: error.message
+                error: profilesError.message
             });
         }
 
-        console.log(`Profile ${profile ? 'found' : 'not found'}`); // Debug log
+        // No profiles found
+        if (!profiles || profiles.length === 0) {
+            console.log('No profile found'); // Debug log
+            return NextResponse.json({
+                exists: false,
+                error: 'User profile not found'
+            });
+        }
+
+        // If multiple profiles exist (unlikely but handling it), use the first one
+        if (profiles.length > 1) {
+            console.log(`Found ${profiles.length} profiles for user ID ${session.user.id}`); // Debug log
+        }
+
+        console.log('Profile found!'); // Debug log
 
         return NextResponse.json({
-            exists: !!profile,
-            profile: profile || null
+            exists: true,
+            profile: profiles[0]
         });
     } catch (error: any) {
         console.error('Unexpected error in check-profile API:', error); // Debug log
