@@ -79,26 +79,28 @@ export default async function DocPageView({ params }: DocPageViewProps) {
 
     return (
         <DashboardShell>
-            <div className="flex items-start gap-2">
-                <Link href={`/dashboard/docs/${spaceId}`}>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
-                        <ChevronLeft className="h-4 w-4" />
-                        <span className="sr-only">Back to space</span>
-                    </Button>
-                </Link>
-                <DashboardHeader
-                    heading={page.title}
-                    description={`${docSpace.name} › Documentation`}
-                >
-                    {canManageDocSpace && (
-                        <Link href={`/dashboard/docs/${spaceId}/pages/${pageId}/edit`}>
-                            <Button variant="outline" size="sm">
-                                <Edit className="mr-1 h-4 w-4" />
-                                Edit Page
-                            </Button>
-                        </Link>
-                    )}
-                </DashboardHeader>
+            <div className="flex items-center justify-between">
+                <div className="flex items-start gap-2">
+                    <Link href={`/dashboard/docs/${spaceId}`}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
+                            <ChevronLeft className="h-4 w-4" />
+                            <span className="sr-only">Back to space</span>
+                        </Button>
+                    </Link>
+                    <DashboardHeader
+                        heading={page.title}
+                        description={`${docSpace.name} › Documentation`}
+                    />
+                </div>
+
+                {canManageDocSpace && (
+                    <Link href={`/dashboard/docs/${spaceId}/pages/${pageId}/edit`}>
+                        <Button variant="outline" size="sm">
+                            <Edit className="mr-1 h-4 w-4" />
+                            Edit Page
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>
