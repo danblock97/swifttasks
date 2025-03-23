@@ -28,40 +28,15 @@ export default function SettingUpAccountPage() {
         try {
             addDebug(`Checking profile (attempt ${count + 1})...`);
 
-            // Get the authenticated user
-            const { data: { user }, error: userError } = await clientSupabase.auth.getUser();
+            const response = await fetch('/api/auth/check-profile');
+            const data = await response.json();
 
-            if (userError) {
-                addDebug(`Auth error: ${userError.message}`);
+            if (data.error) {
+                addDebug(`API error: ${data.error}`);
                 return;
             }
 
-            if (!user) {
-                addDebug('No authenticated user found');
-                router.push('/login');
-                return;
-            }
-
-            addDebug(`User found: ${user.id.substring(0, 8)}...`);
-
-            // Use service role to check profile
-            const { data: profile, error: profileError } = await serviceSupabase
-                .from('users')
-                .select('id, email, display_name, account_type')
-                .eq('id', user.id)
-                .single();
-
-            if (profileError) {
-                if (profileError.code === 'PGRST116') {
-                    addDebug('Profile not found in database');
-                } else {
-                    addDebug(`Profile query error: ${profileError.message}`);
-                }
-                return;
-            }
-
-            // Profile exists, redirect to dashboard
-            if (profile) {
+            if (data.exists) {
                 addDebug('Profile found, redirecting to dashboard...');
                 redirectToDashboard();
             }
