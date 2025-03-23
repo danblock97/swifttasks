@@ -13,8 +13,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log(`[Verify Email API] Requesting verification email for: ${email}`);
-
         // Create a Supabase admin client with service role key
         const supabaseAdmin = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -38,7 +36,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log('[Verify Email API] Verification email resent successfully');
         return NextResponse.json({ success: true, data });
 
     } catch (error) {

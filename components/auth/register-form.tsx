@@ -50,13 +50,10 @@ export function RegisterForm({
         if (!inviteCode) return;
 
         try {
-            console.log(`Checking invitation with code: ${inviteCode}`);
 
             // Use our server API to validate the invitation instead of direct DB access
             const response = await fetch(`/api/team-invite/validate?code=${inviteCode}`);
             const result = await response.json();
-
-            console.log('Invitation validation result:', result);
 
             if (!result.valid) {
                 toast({
@@ -95,10 +92,6 @@ export function RegisterForm({
             const accessToken = hashParams.get('access_token');
             const isTokenPresent = !!accessToken;
 
-            console.log(`[Register] Access token present: ${isTokenPresent}`);
-
-            // For team invitations, we'll use the invite metadata
-            // For regular signups, we'll use the form data
             const metadata = isInvitation
                 ? {
                     display_name: name,
@@ -116,7 +109,6 @@ export function RegisterForm({
             // If we have an access token from the team invite email,
             // we need to use a different flow (the user is already verified)
             if (isTokenPresent && isInvitation) {
-                console.log("[Register] Using token-based registration flow");
 
                 // Extract the session data
                 const expiresIn = hashParams.get('expires_in');
@@ -137,8 +129,6 @@ export function RegisterForm({
                     console.error("[Register] Session error:", sessionError);
                     throw sessionError;
                 }
-
-                console.log("[Register] Session established:", sessionData);
 
                 // Now create a user profile with the team info
                 if (sessionData.user) {
@@ -171,10 +161,6 @@ export function RegisterForm({
                 return;
             }
 
-            // Standard registration flow for non-token cases
-            console.log("[Register] Using standard registration flow");
-            console.log("[Register] Signup with metadata:", metadata);
-
             // Standard signup flow
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email,
@@ -190,14 +176,11 @@ export function RegisterForm({
                 throw authError;
             }
 
-            console.log("[Register] Auth result:", authData);
-
             if (!authData.user) {
                 throw new Error("User registration failed");
             }
 
             if (authData.user && !authData.session) {
-                console.log("[Register] Email confirmation required, verification email should be sent");
 
                 // Force sending a verification email through our API
                 try {

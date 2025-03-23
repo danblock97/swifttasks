@@ -13,8 +13,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log(`[Create Profile API] Creating profile for user ${userId}`);
-
         // Create a Supabase admin client with service role key
         const supabaseAdmin = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -29,7 +27,6 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (existingUser) {
-            console.log(`[Create Profile API] User ${userId} already exists`);
 
             // If this is a team invitation, update the user to join the team
             if (teamId && inviteCode) {
@@ -56,8 +53,6 @@ export async function POST(request: NextRequest) {
                         .from("team_invites")
                         .delete()
                         .eq("id", invite.id);
-
-                    console.log(`[Create Profile API] User added to team ${teamId}`);
                 }
             }
 
@@ -66,8 +61,6 @@ export async function POST(request: NextRequest) {
 
         // Create profile based on whether it's a team invite or regular signup
         if (teamId && inviteCode) {
-            // This is a team invitation flow
-            console.log(`[Create Profile API] Creating team member profile with team ID ${teamId}`);
 
             // Verify the invitation is valid
             const { data: invite } = await supabaseAdmin
@@ -109,8 +102,6 @@ export async function POST(request: NextRequest) {
                 .delete()
                 .eq("id", invite.id);
         } else {
-            // Regular user signup
-            console.log(`[Create Profile API] Creating single user profile`);
 
             const { error: userError } = await supabaseAdmin
                 .from("users")
@@ -130,8 +121,6 @@ export async function POST(request: NextRequest) {
                 );
             }
         }
-
-        console.log(`[Create Profile API] Profile created successfully`);
         return NextResponse.json({ success: true, status: "created" });
     } catch (error) {
         console.error('[Create Profile API] Error:', error);

@@ -22,7 +22,6 @@ export async function GET(request: NextRequest) {
 
             if (user) {
                 const metadata = user.user_metadata || {};
-                console.log("[Auth Callback] User metadata:", metadata);
 
                 try {
                     // Check if user already exists (to avoid duplicate inserts)
@@ -33,7 +32,6 @@ export async function GET(request: NextRequest) {
                         .single();
 
                     if (!existingUser) {
-                        console.log("[Auth Callback] Creating user profile for:", user.id, metadata.account_type);
 
                         // Create a service role client for admin operations
                         const serviceSupabase = createClient(
@@ -44,8 +42,6 @@ export async function GET(request: NextRequest) {
 
                         // Check if this is a team invitation
                         if (metadata.invite_code) {
-                            console.log(`[Auth Callback] Processing invitation with code: ${metadata.invite_code}`);
-
                             try {
                                 // Get the invitation details using service role for full access
                                 const { data: invite, error: inviteError } = await serviceSupabase
@@ -60,7 +56,6 @@ export async function GET(request: NextRequest) {
                                 }
 
                                 if (invite && invite.email.toLowerCase() === user.email?.toLowerCase()) {
-                                    console.log(`[Auth Callback] Creating team member profile for ${user.email}`);
 
                                     // Create team member profile using service role client
                                     const { error: userError } = await serviceSupabase
@@ -84,10 +79,7 @@ export async function GET(request: NextRequest) {
                                         .from("team_invites")
                                         .delete()
                                         .eq("invite_code", metadata.invite_code);
-
-                                    console.log(`[Auth Callback] Team invitation processed successfully`);
                                 } else {
-                                    console.log(`[Auth Callback] Invitation not found or email mismatch`);
                                     // Fall back to creating a regular account
                                     await serviceSupabase
                                         .from("users")
@@ -115,7 +107,6 @@ export async function GET(request: NextRequest) {
                         }
                         // Regular account creation without invitation
                         else if (metadata.account_type === "team") {
-                            console.log("[Auth Callback] Creating team account");
                             // Create team first
                             const teamId = generateUUID();
 
@@ -139,7 +130,6 @@ export async function GET(request: NextRequest) {
                                     is_team_owner: true,
                                 });
                         } else {
-                            console.log("[Auth Callback] Creating single user account");
                             // Default to single user account
                             await serviceSupabase
                                 .from("users")
@@ -151,9 +141,8 @@ export async function GET(request: NextRequest) {
                                     is_team_owner: false,
                                 });
                         }
-                        console.log("[Auth Callback] User profile created successfully");
                     } else {
-                        console.log("[Auth Callback] User already exists:", existingUser.id);
+                        console.error("[Auth Callback] User already exists:", existingUser.id);
                     }
                 } catch (error) {
                     console.error("[Auth Callback] Error creating user profile:", error);

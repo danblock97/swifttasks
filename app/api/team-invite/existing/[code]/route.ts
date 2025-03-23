@@ -15,13 +15,8 @@ export async function GET(
         const resolvedParams = await params;
         const inviteCode = resolvedParams.code;
 
-        console.log(`[Team Invite Existing] Processing invite URL: ${request.url}`);
-
         const url = new URL(request.url);
         const searchParams = Object.fromEntries(url.searchParams.entries());
-
-        console.log(`[Team Invite Existing] Path parameter code: ${inviteCode}`);
-        console.log(`[Team Invite Existing] All query parameters:`, searchParams);
 
         // Check for token in various places Supabase might use
         const queryToken = url.searchParams.get('token') ||
@@ -32,10 +27,7 @@ export async function GET(
         // Use the token from the URL if available, or fall back to the path parameter
         const codeToUse = queryToken || inviteCode;
 
-        console.log(`[Team Invite Existing] Final code to use: ${codeToUse}`);
-
         if (!codeToUse) {
-            console.log(`[Team Invite Existing] No invitation code found in request`);
             return NextResponse.json(
                 { error: 'Invitation code is required' },
                 { status: 400 }
@@ -53,9 +45,6 @@ export async function GET(
             process.env.SUPABASE_SERVICE_ROLE_KEY || ''
         );
 
-        // Try to find the invitation
-        console.log(`[Team Invite Existing] Searching for invitation with code: ${codeToUse}`);
-
         const { data: invite, error: inviteError } = await supabaseAdmin
             .from('team_invites')
             .select('*')
@@ -64,7 +53,6 @@ export async function GET(
             .single();
 
         if (inviteError || !invite) {
-            console.log(`[Team Invite Existing] Error or invitation not found:`, inviteError);
             return NextResponse.redirect(new URL('/invite-error?error=invalid', request.url));
         }
 
@@ -76,7 +64,6 @@ export async function GET(
             .single();
 
         if (teamError || !team) {
-            console.log(`[Team Invite Existing] Team not found:`, teamError);
             return NextResponse.redirect(new URL('/invite-error?error=team-not-found', request.url));
         }
 

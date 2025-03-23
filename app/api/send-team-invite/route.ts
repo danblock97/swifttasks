@@ -66,7 +66,6 @@ export async function POST(request: NextRequest) {
         );
 
         const userExists = !!existingUser;
-        console.log(`[Send Invite] User exists: ${userExists}`);
 
         // Check if an invitation already exists for this email and team
         const { data: existingInvite, error: inviteCheckError } = await supabaseAdmin
@@ -94,9 +93,6 @@ export async function POST(request: NextRequest) {
             ? `${baseUrl}/api/team-invite/existing/accept?code=${providedInviteCode}`
             : `${baseUrl}/api/team-invite/accept?code=${providedInviteCode}`;
 
-        console.log(`[Send Invite] Generated primary invite URL: ${inviteUrl}`);
-        console.log(`[Send Invite] Generated alternate invite URL: ${inviteUrlWithQuery}`);
-
         // Set expiration date (7 days from now)
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);
@@ -117,7 +113,6 @@ export async function POST(request: NextRequest) {
                 throw new Error(`Failed to update invitation: ${updateError.message}`);
             }
 
-            console.log(`[Send Invite] Updated existing invitation for ${email}`);
         } else {
             // Create a new team invitation record
             const { error: inviteRecordError } = await supabaseAdmin

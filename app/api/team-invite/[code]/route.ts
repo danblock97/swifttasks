@@ -13,14 +13,8 @@ export async function GET(
         const resolvedParams = await params;
         const inviteCode = resolvedParams.code;
 
-        // DEBUG INFO: Output all request information
-        console.log(`[Team Invite] Processing invite URL: ${request.url}`);
-
         const url = new URL(request.url);
         const searchParams = Object.fromEntries(url.searchParams.entries());
-
-        console.log(`[Team Invite] Path parameter code: ${inviteCode}`);
-        console.log(`[Team Invite] All query parameters:`, searchParams);
 
         // Check for token in various places Supabase might use
         const queryToken = url.searchParams.get('token') ||
@@ -31,10 +25,7 @@ export async function GET(
         // Use the token from the URL if available, or fall back to the path parameter
         const codeToUse = queryToken || inviteCode;
 
-        console.log(`[Team Invite] Final code to use: ${codeToUse}`);
-
         if (!codeToUse) {
-            console.log(`[Team Invite] No invitation code found in request`);
             return NextResponse.json(
                 { error: 'Invitation code is required' },
                 { status: 400 }
@@ -52,9 +43,6 @@ export async function GET(
             process.env.SUPABASE_SERVICE_ROLE_KEY || ''
         );
 
-        // Try multiple approaches to find the invitation - use admin client to bypass RLS
-        console.log(`[Team Invite] Searching for invitation with code: ${codeToUse}`);
-
         // First approach: exact match on invite_code
         let { data: invite, error: inviteError } = await supabaseAdmin
             .from('team_invites')
@@ -64,15 +52,12 @@ export async function GET(
             .single();
 
         if (inviteError) {
-            console.log(`[Team Invite] Error with exact match search:`, inviteError);
 
             // Second approach: try to compare case-insensitive
             const { data: allInvites } = await supabaseAdmin
                 .from('team_invites')
                 .select('*')
                 .gte('expires_at', new Date().toISOString());
-
-            console.log(`[Team Invite] Found ${allInvites?.length || 0} valid invites in total`);
 
             // See if any match with case-insensitive comparison
             if (allInvites && allInvites.length > 0) {
@@ -82,13 +67,9 @@ export async function GET(
                 );
 
                 if (matchingInvite) {
-                    console.log(`[Team Invite] Found invite with case-insensitive match:`, matchingInvite);
                     invite = matchingInvite;
                     inviteError = null;
                 } else {
-                    console.log(`[Team Invite] No match found with case-insensitive comparison`);
-                    // Log all invite codes for debugging
-                    console.log(`[Team Invite] All invite codes in DB:`);
                     allInvites.forEach(inv => {
                         console.log(`- ${inv.invite_code} for ${inv.email}`);
                     });
@@ -97,16 +78,11 @@ export async function GET(
         }
 
         if (!invite) {
-            // Log the issue for debugging
-            console.log(`No valid invitation found for code: ${codeToUse}`);
-
             // Let's check all invites for debugging
             const { data: allInvites } = await supabase
                 .from('team_invites')
                 .select('invite_code, email, expires_at')
                 .limit(5);
-
-            console.log('Recent invites in system:', allInvites);
 
             // Invitation not found or expired
             return NextResponse.redirect(new URL('/invite-error?error=invalid', request.url));

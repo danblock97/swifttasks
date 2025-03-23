@@ -7,8 +7,6 @@ export async function GET(request: NextRequest) {
         const url = new URL(request.url);
         const inviteCode = url.searchParams.get('code');
 
-        console.log(`[Validate Invite] Checking invitation with code: ${inviteCode}`);
-
         if (!inviteCode) {
             return NextResponse.json({
                 valid: false,
@@ -31,7 +29,6 @@ export async function GET(request: NextRequest) {
             .single();
 
         if (inviteError || !invite) {
-            console.log(`[Validate Invite] Error or no invite found:`, inviteError);
             return NextResponse.json({
                 valid: false,
                 error: inviteError?.message || 'Invitation not found or expired'

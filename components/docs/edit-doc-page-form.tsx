@@ -60,14 +60,10 @@ export function EditDocPageForm({ spaceId, page }: EditDocPageFormProps) {
             // Get bucket name from environment variable or use default
             const bucketName = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "doc-images";
 
-            console.log(`Attempting to upload to bucket: "${bucketName}"`);
-
             // Create a unique file path that we'll keep track of
             const fileExt = file.name.split('.').pop();
             const uniqueFilename = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
             const filePath = `${spaceId}/${uniqueFilename}`;
-
-            console.log(`Upload path: ${filePath}`);
 
             // Try direct upload
             const { data, error } = await supabase
@@ -82,16 +78,10 @@ export function EditDocPageForm({ spaceId, page }: EditDocPageFormProps) {
                 throw error;
             }
 
-            console.log('Upload response:', data);
-
-            // Get public URL using the path we KNOW we uploaded to
-            // This is more reliable than depending on the response format
             const { data: urlData } = supabase
                 .storage
                 .from(bucketName)
                 .getPublicUrl(filePath);
-
-            console.log('URL data:', urlData);
 
             if (!urlData?.publicUrl) {
                 throw new Error("Could not generate public URL for uploaded image");

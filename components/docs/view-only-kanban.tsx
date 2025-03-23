@@ -43,11 +43,8 @@ export function ViewOnlyKanban({ boardPath }: { boardPath: string }) {
                     }
                     boardId = pathParts[1];
                 } else {
-                    // It's just a board ID
                     boardId = boardPath;
                 }
-
-                console.log('Using board ID:', boardId);
 
                 // Get the board name first
                 const { data: boardData, error: boardError } = await supabase
@@ -63,7 +60,6 @@ export function ViewOnlyKanban({ boardPath }: { boardPath: string }) {
 
                 if (boardData) {
                     setBoardName(boardData.name);
-                    console.log('Found board:', boardData.name);
                 } else {
                     console.error('No board data returned');
                     throw new Error('Board not found');
@@ -93,13 +89,10 @@ export function ViewOnlyKanban({ boardPath }: { boardPath: string }) {
                 }
 
                 if (!data || data.length === 0) {
-                    console.log('No columns found for board', boardId);
                     setColumns([]);
                     setIsLoading(false);
                     return;
                 }
-
-                console.log(`Found ${data.length} columns`);
 
                 // Format columns and sort items
                 const formattedColumns = data.map(column => ({

@@ -320,8 +320,6 @@ export function NotificationDropdown() {
                     .delete()
                     .in("id", spaceIds);
             }
-
-            console.log("Successfully deleted personal projects and spaces");
         } catch (error) {
             console.error("Error deleting user content:", error);
             // We'll continue with team acceptance even if deletion fails

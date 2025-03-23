@@ -5,12 +5,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
     try {
-        console.log(`[Team Invite Existing Accept] Processing URL: ${request.url}`);
 
         const url = new URL(request.url);
         const code = url.searchParams.get('code');
 
-        console.log(`[Team Invite Existing Accept] Found code in query: ${code}`);
 
         if (!code) {
             return NextResponse.json(
