@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { createServiceRoleClient } from '@/lib/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
@@ -14,7 +13,6 @@ export default function SettingUpAccountPage() {
     const [debugInfo, setDebugInfo] = useState<string[]>([]);
     const router = useRouter();
     const clientSupabase = createClientComponentClient();
-    const serviceSupabase = createServiceRoleClient();
     const { toast } = useToast();
 
     // Add debug information
@@ -28,8 +26,23 @@ export default function SettingUpAccountPage() {
         try {
             addDebug(`Checking profile (attempt ${count + 1})...`);
 
-            const response = await fetch('/api/auth/check-profile');
-            const data = await response.json();
+            // Enhanced fetch error handling
+            let response;
+            try {
+                response = await fetch('/api/auth/check-profile');
+                addDebug(`Fetch response status: ${response.status}`);
+            } catch (fetchError: any) {
+                addDebug(`Fetch error: ${fetchError.message}`);
+                return;
+            }
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError: any) {
+                addDebug(`JSON parse error: ${jsonError.message}`);
+                return;
+            }
 
             if (data.error) {
                 addDebug(`API error: ${data.error}`);
@@ -39,6 +52,8 @@ export default function SettingUpAccountPage() {
             if (data.exists) {
                 addDebug('Profile found, redirecting to dashboard...');
                 redirectToDashboard();
+            } else {
+                addDebug('Profile not found yet, waiting...');
             }
         } catch (error: any) {
             addDebug(`Unexpected error: ${error.message || 'Unknown error'}`);

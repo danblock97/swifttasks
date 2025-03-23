@@ -5,6 +5,8 @@ import { cookies } from 'next/headers';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 
 export async function GET(request: NextRequest) {
+    console.log('API endpoint called!'); // Debug log
+
     try {
         // Get the authenticated user session
         const cookieStore = cookies();
@@ -12,8 +14,11 @@ export async function GET(request: NextRequest) {
         const { data: { session } } = await supabase.auth.getSession();
 
         if (!session) {
+            console.log('No session found'); // Debug log
             return NextResponse.json({ exists: false, error: 'Not authenticated' }, { status: 401 });
         }
+
+        console.log(`Session found for user: ${session.user.id.substring(0, 8)}...`); // Debug log
 
         // Use service role to check profile (secure on server)
         const supabaseAdmin = createClient(
@@ -28,17 +33,21 @@ export async function GET(request: NextRequest) {
             .single();
 
         if (error) {
+            console.log(`Database error: ${error.message}`); // Debug log
             return NextResponse.json({
                 exists: false,
                 error: error.message
             });
         }
 
+        console.log(`Profile ${profile ? 'found' : 'not found'}`); // Debug log
+
         return NextResponse.json({
             exists: !!profile,
             profile: profile || null
         });
     } catch (error: any) {
+        console.error('Unexpected error in check-profile API:', error); // Debug log
         return NextResponse.json({
             exists: false,
             error: error.message || 'Unknown error'
