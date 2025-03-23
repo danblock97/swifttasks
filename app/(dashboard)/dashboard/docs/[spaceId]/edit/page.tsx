@@ -46,6 +46,8 @@ export default async function EditDocSpacePage({ params }: EditDocSpacePageProps
     const isTeamSpace = docSpace.team_id !== null;
     const isTeamMember = profile?.team_id === docSpace.team_id;
     const isTeamOwner = profile?.account_type === "team_member" && profile?.is_team_owner;
+
+    // Only space owners and team owners can edit space details
     const canManageDocSpace = isSpaceOwner || isTeamOwner;
 
     if (!isSpaceOwner && !(isTeamSpace && isTeamMember)) {

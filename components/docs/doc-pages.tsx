@@ -57,9 +57,16 @@ interface DocPagesProps {
     spaceId: string;
     canManageDocSpace: boolean;
     isTeamSpace?: boolean;
+    canDeletePages?: boolean; // New prop to control delete permissions
 }
 
-export function DocPages({ pages, spaceId, canManageDocSpace, isTeamSpace = false }: DocPagesProps) {
+export function DocPages({
+                             pages,
+                             spaceId,
+                             canManageDocSpace,
+                             isTeamSpace = false,
+                             canDeletePages = false // Default to false for safety
+                         }: DocPagesProps) {
     const [docPages, setDocPages] = useState<DocPage[]>(pages);
     const [selectedPage, setSelectedPage] = useState<DocPage | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -76,7 +83,7 @@ export function DocPages({ pages, spaceId, canManageDocSpace, isTeamSpace = fals
     const confirmDeletePage = async () => {
         if (!selectedPage) return;
 
-        if (!canManageDocSpace) {
+        if (!canDeletePages) {
             toast({
                 title: "Permission Denied",
                 description: "You don't have permission to delete pages",
@@ -192,14 +199,20 @@ export function DocPages({ pages, spaceId, canManageDocSpace, isTeamSpace = fals
                                                         Edit Page
                                                     </Link>
                                                 </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem
-                                                    className="text-destructive focus:text-destructive"
-                                                    onClick={() => handleDeletePage(page)}
-                                                >
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Delete Page
-                                                </DropdownMenuItem>
+
+                                                {/* Only show delete option if user has delete permission */}
+                                                {canDeletePages && (
+                                                    <>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem
+                                                            className="text-destructive focus:text-destructive"
+                                                            onClick={() => handleDeletePage(page)}
+                                                        >
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            Delete Page
+                                                        </DropdownMenuItem>
+                                                    </>
+                                                )}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     )}

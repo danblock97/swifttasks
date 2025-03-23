@@ -64,7 +64,16 @@ export default async function DocSpacePage({ params }: DocSpacePageProps) {
         .order("order", { ascending: true });
 
     const isTeamOwner = profile?.account_type === "team_member" && profile?.is_team_owner;
-    const canManageDocSpace = isSpaceOwner || isTeamOwner;
+
+    // Split permissions:
+    // 1. canEditSpace: only owners can edit space details
+    const canEditSpace = isSpaceOwner || isTeamOwner;
+
+    // 2. canManageDocPages: all team members can create/edit pages
+    const canManageDocPages = isSpaceOwner || isTeamOwner || (isTeamSpace && isTeamMember);
+
+    // 3. canDeletePages: only owners can delete pages
+    const canDeletePages = isSpaceOwner || isTeamOwner;
 
     // Check if user has reached page limit
     const pageLimit = isTeamSpace ? 10 : 5; // Team = 10 pages, Solo = 5 pages
@@ -83,25 +92,25 @@ export default async function DocSpacePage({ params }: DocSpacePageProps) {
                     heading={docSpace.name}
                     description={`Created on ${formatDate(docSpace.created_at)}`}
                 >
-                    {canManageDocSpace && (
-                        <div className="flex gap-2">
+                    <div className="flex gap-2">
+                        {canEditSpace && (
                             <Link href={`/dashboard/docs/${spaceId}/edit`}>
                                 <Button variant="outline" size="sm">
                                     <Edit className="mr-1 h-4 w-4" />
                                     Edit
                                 </Button>
                             </Link>
+                        )}
 
-                            {!hasReachedPageLimit && (
-                                <Link href={`/dashboard/docs/${spaceId}/pages/create`}>
-                                    <Button size="sm">
-                                        <Plus className="mr-1 h-4 w-4" />
-                                        New Page
-                                    </Button>
-                                </Link>
-                            )}
-                        </div>
-                    )}
+                        {canManageDocPages && !hasReachedPageLimit && (
+                            <Link href={`/dashboard/docs/${spaceId}/pages/create`}>
+                                <Button size="sm">
+                                    <Plus className="mr-1 h-4 w-4" />
+                                    New Page
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
                 </DashboardHeader>
             </div>
 
@@ -137,8 +146,9 @@ export default async function DocSpacePage({ params }: DocSpacePageProps) {
                     <DocPages
                         pages={docPages || []}
                         spaceId={spaceId}
-                        canManageDocSpace={canManageDocSpace}
+                        canManageDocSpace={canManageDocPages}
                         isTeamSpace={isTeamSpace}
+                        canDeletePages={canDeletePages}
                     />
                 </div>
             </div>

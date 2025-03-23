@@ -46,7 +46,7 @@ export default async function CreateDocPage({ params }: CreateDocPageProps) {
     const isTeamSpace = docSpace.team_id !== null;
     const isTeamMember = profile?.team_id === docSpace.team_id;
     const isTeamOwner = profile?.account_type === "team_member" && profile?.is_team_owner;
-    const canManageDocSpace = isSpaceOwner || isTeamOwner;
+    const canManageDocSpace = isSpaceOwner || isTeamOwner || (isTeamSpace && isTeamMember);
 
     if (!isSpaceOwner && !(isTeamSpace && isTeamMember)) {
         // User doesn't have access to this doc space
