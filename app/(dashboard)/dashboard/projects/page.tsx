@@ -1,12 +1,9 @@
 ﻿import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { ProjectsList } from "@/components/projects/projects-list";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 
 export default async function ProjectsPage() {
     const supabase = createServerComponentClient({ cookies });
@@ -66,27 +63,25 @@ export default async function ProjectsPage() {
     );
 
     const isTeamOwner = profile?.account_type === "team_member" && profile?.is_team_owner;
-    const canCreateProject = !profile?.account_type || profile?.account_type === "single" || isTeamOwner;
+    const isTeamMember = profile?.account_type === "team_member";
+
+    // Check if the user can create more projects (based on their limits)
+    const projectLimit = isTeamMember ? 2 : 1;
+    const hasReachedProjectLimit = projects.length >= projectLimit;
+
+    // Only allow project creation if they have permission AND haven't reached their limit
+    const canCreateProject = (!profile?.account_type || profile?.account_type === "single" || isTeamOwner);
 
     return (
         <DashboardShell>
             <DashboardHeader
                 heading="Projects"
                 description="Manage your projects and kanban boards."
-            >
-                {canCreateProject && (
-                    <Link href="/dashboard/projects/create">
-                        <Button size="sm" className="ml-auto">
-                            <Plus className="mr-1 h-4 w-4" />
-                            New Project
-                        </Button>
-                    </Link>
-                )}
-            </DashboardHeader>
+            />
 
             <ProjectsList
                 projects={projects || []}
-                isTeamMember={profile?.account_type === "team_member"}
+                isTeamMember={isTeamMember}
                 isTeamOwner={isTeamOwner}
             />
         </DashboardShell>

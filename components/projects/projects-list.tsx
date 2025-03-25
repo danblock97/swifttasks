@@ -136,6 +136,54 @@ export function ProjectsList({ projects, isTeamMember, isTeamOwner }: ProjectsLi
         return isTeamOwner; // Team members can only manage if they're the owner
     };
 
+    const hasReachedProjectLimit = () => {
+        if (isTeamMember) {
+            // Team limit: 2 projects
+            return projectsList.length >= 2;
+        } else {
+            // Single user limit: 1 project
+            return projectsList.length >= 1;
+        }
+    };
+
+    // Handle the "Create Project" button click
+    const handleCreateProjectClick = (e: React.MouseEvent) => {
+        if (hasReachedProjectLimit()) {
+            e.preventDefault();
+            toast({
+                title: "Project limit reached",
+                description: isTeamMember
+                    ? "Team accounts can create up to 2 projects"
+                    : "You can create up to 1 project. Upgrade to a team account for more projects.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Create appropriate link component based on limits
+    const CreateProjectLink = ({ children }: { children: React.ReactNode }) => {
+        if (hasReachedProjectLimit()) {
+            return (
+                <Button
+                    onClick={handleCreateProjectClick}
+                    className="mt-2"
+                >
+                    <Plus className="mr-1 h-4 w-4" />
+                    {children}
+                </Button>
+            );
+        }
+
+        return (
+            <Link href="/dashboard/projects/create">
+                <Button className="mt-2">
+                    <Plus className="mr-1 h-4 w-4" />
+                    {children}
+                </Button>
+            </Link>
+        );
+    };
+
     return (
         <div className="grid gap-6">
             {projectsList.length === 0 ? (
@@ -153,12 +201,7 @@ export function ProjectsList({ projects, isTeamMember, isTeamOwner }: ProjectsLi
                                     : "Create a project to organize your tasks efficiently"}
                         </p>
                         {(!isTeamMember || isTeamOwner) && (
-                            <Link href="/dashboard/projects/create">
-                                <Button className="mt-2">
-                                    <Plus className="mr-1 h-4 w-4" />
-                                    Create Project
-                                </Button>
-                            </Link>
+                            <CreateProjectLink>Create Project</CreateProjectLink>
                         )}
                     </CardContent>
                 </Card>
@@ -252,6 +295,44 @@ export function ProjectsList({ projects, isTeamMember, isTeamOwner }: ProjectsLi
                             </CardFooter>
                         </Card>
                     ))}
+
+                    {/* Create Project Card */}
+                    {(!isTeamMember || isTeamOwner) && !hasReachedProjectLimit() && (
+                        <Card className="flex flex-col border-dashed">
+                            <CardContent className="flex h-full flex-col items-center justify-center p-6">
+                                <div className="mb-4 rounded-full bg-primary/10 p-3">
+                                    <Plus className="h-6 w-6 text-primary" />
+                                </div>
+                                <h3 className="text-center font-medium">Create a new project</h3>
+                                <p className="mt-2 text-center text-sm text-muted-foreground">
+                                    {isTeamMember ? "Add another project to organize your team's work" : "Start organizing your tasks"}
+                                </p>
+                                <Link href="/dashboard/projects/create" className="mt-4 w-full">
+                                    <Button variant="outline" className="w-full">Create Project</Button>
+                                </Link>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Upgrade Card - Show for single users who reached their limit */}
+                    {!isTeamMember && hasReachedProjectLimit() && (
+                        <Card className="flex flex-col border-dashed border-blue-200 dark:border-blue-800">
+                            <CardContent className="flex h-full flex-col items-center justify-center p-6">
+                                <div className="mb-4 rounded-full bg-blue-100 dark:bg-blue-900/40 p-3">
+                                    <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <h3 className="text-center font-medium">Upgrade to Team</h3>
+                                <p className="mt-2 text-center text-sm text-muted-foreground">
+                                    Team accounts can create up to 2 projects
+                                </p>
+                                <Link href="/dashboard/settings" className="mt-4 w-full">
+                                    <Button variant="outline" className="w-full text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800">
+                                        Upgrade Account
+                                    </Button>
+                                </Link>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             )}
 

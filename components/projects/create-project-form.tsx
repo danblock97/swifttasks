@@ -45,6 +45,30 @@ export function CreateProjectForm({ userId, isTeamMember, teamId }: CreateProjec
             return;
         }
 
+        // Check project limits
+        try {
+            const { count, error } = await supabase
+                .from("projects")
+                .select("*", { count: "exact", head: true })
+                .eq(isTeamMember ? "team_id" : "owner_id", isTeamMember ? teamId : userId);
+
+            if (error) throw error;
+
+            const projectLimit = isTeamMember ? 2 : 1;
+            if (count && count >= projectLimit) {
+                toast({
+                    title: "Project limit reached",
+                    description: isTeamMember
+                        ? "Team accounts can create up to 2 projects"
+                        : "You can create up to 1 project. Upgrade to a team account for more projects.",
+                    variant: "destructive",
+                });
+                return;
+            }
+        } catch (error: any) {
+            console.error("Error checking project limits:", error);
+        }
+
         setIsLoading(true);
 
         try {

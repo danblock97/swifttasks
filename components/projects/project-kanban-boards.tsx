@@ -242,7 +242,7 @@ export function ProjectKanbanBoards({
                                         </div>
                                         <h3 className="text-center font-medium">Create a second board</h3>
                                         <p className="mt-2 text-center text-sm text-muted-foreground">
-                                            Add another kanban board to organize different aspects of your project
+                                            Team projects can have up to 2 boards
                                         </p>
                                         <Link href={`/dashboard/projects/${projectId}/boards/create`} className="mt-4 w-full">
                                             <Button variant="outline" className="w-full">Create Board</Button>
@@ -260,7 +260,7 @@ export function ProjectKanbanBoards({
                                         </div>
                                         <h3 className="text-center font-medium">Upgrade to Team</h3>
                                         <p className="mt-2 text-center text-sm text-muted-foreground">
-                                            Team accounts can create multiple boards per project
+                                            Team accounts can create up to 2 boards per project
                                         </p>
                                         <Link href="/dashboard/settings" className="mt-4 w-full">
                                             <Button variant="outline" className="w-full text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800">

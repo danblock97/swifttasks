@@ -68,15 +68,19 @@ export default function Home() {
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>1 Project with 2 Kanban Boards</span>
+                      <span>2 Project with 2 Kanban Boards</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>1 Documentation Space with 10 Pages</span>
+                      <span>2 Documentation Space with 10 Pages</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                       <span>1 Todo List per Team Member</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>Unlimited Tasks</span>
                     </li>
                   </ul>
                   <Link href="/register?type=team" className="mt-auto w-full">

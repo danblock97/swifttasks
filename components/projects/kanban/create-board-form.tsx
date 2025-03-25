@@ -42,6 +42,42 @@ export function CreateBoardForm({ projectId, projectName }: CreateBoardFormProps
             return;
         }
 
+        // Check board limits
+        try {
+            // First check if this is a team project
+            const { data: project, error: projectError } = await supabase
+                .from("projects")
+                .select("team_id")
+                .eq("id", projectId)
+                .single();
+
+            if (projectError) throw projectError;
+
+            const isTeamProject = !!project.team_id;
+
+            // Then check board count
+            const { count, error } = await supabase
+                .from("boards")
+                .select("*", { count: "exact", head: true })
+                .eq("project_id", projectId);
+
+            if (error) throw error;
+
+            const boardLimit = isTeamProject ? 2 : 1;
+            if (count && count >= boardLimit) {
+                toast({
+                    title: "Board limit reached",
+                    description: isTeamProject
+                        ? "Team projects can have up to 2 boards"
+                        : "Single user projects can have 1 board. Upgrade to a team account for more boards.",
+                    variant: "destructive",
+                });
+                return;
+            }
+        } catch (error: any) {
+            console.error("Error checking board limits:", error);
+        }
+
         setIsLoading(true);
 
         try {

@@ -1,9 +1,13 @@
 ﻿import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { CreateDocPageForm } from "@/components/docs/create-doc-page-form";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, Users } from "lucide-react";
 
 interface CreateDocPageProps {
     params: Promise<{
@@ -62,7 +66,7 @@ export default async function CreateDocPage({ params }: CreateDocPageProps) {
     }
 
     // Get count of existing pages to determine order and check limits
-    const { count } = await supabase
+    const { count, error } = await supabase
         .from("doc_pages")
         .select("*", { count: "exact", head: true })
         .eq("space_id", spaceId);
@@ -70,9 +74,54 @@ export default async function CreateDocPage({ params }: CreateDocPageProps) {
     // Define page limits: Solo = 5 pages, Team = 10 pages
     const pageLimit = isTeamSpace ? 10 : 5;
 
-    // If space has reached page limit, redirect back to space
+    // If space has reached page limit, show limit reached page
     if ((count || 0) >= pageLimit) {
-        redirect(`/dashboard/docs/${spaceId}`);
+        return (
+            <DashboardShell>
+                <DashboardHeader
+                    heading="Page Limit Reached"
+                    description={`This documentation space has reached the maximum number of pages (${pageLimit})`}
+                />
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Page Limit</CardTitle>
+                        <CardDescription>
+                            {isTeamSpace
+                                ? "Team documentation spaces can have up to 10 pages"
+                                : "Personal documentation spaces can have up to 5 pages"}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {!isTeamSpace && (
+                            <div className="rounded-md bg-blue-50 dark:bg-blue-900/20 p-4 border border-blue-200 dark:border-blue-800/50">
+                                <div className="flex items-center">
+                                    <Users className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
+                                    <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">Upgrade to Team</h3>
+                                </div>
+                                <p className="mt-2 text-sm text-blue-700 dark:text-blue-400">
+                                    Upgrade to a team account to create up to 10 pages per documentation space.
+                                </p>
+                                <div className="mt-3">
+                                    <Link href="/dashboard/settings">
+                                        <Button size="sm" variant="outline" className="text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800">
+                                            Upgrade Account
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+
+                        <Link href={`/dashboard/docs/${spaceId}`}>
+                            <Button variant="outline" className="mt-2">
+                                <ChevronLeft className="mr-2 h-4 w-4" />
+                                Back to Documentation Space
+                            </Button>
+                        </Link>
+                    </CardContent>
+                </Card>
+            </DashboardShell>
+        );
     }
 
     return (
