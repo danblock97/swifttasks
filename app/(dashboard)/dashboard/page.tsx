@@ -1,4 +1,5 @@
-﻿import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+﻿// app/(dashboard)/dashboard/page.tsx
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -6,71 +7,36 @@ import { RecentTasks } from "@/components/dashboard/recent-tasks";
 import { ProjectsOverview } from "@/components/dashboard/projects-overview";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { redirect } from "next/navigation";
+import { getUserProfile, getUserProjects } from "@/lib/user-profile";
+import { cache } from "react";
 
-export default async function DashboardPage() {
+// Create a cached function for tasks to avoid duplicate queries
+const getRecentTasks = cache(async (userId: string) => {
     const supabase = createServerComponentClient({ cookies });
 
-    // Get user session
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-        redirect("/login");
-    }
-
-    // Get user profile
-    const { data: profile } = await supabase
-        .from("users")
-        .select("*, teams(*)")
-        .eq("id", session.user.id)
-        .single();
-
-    // Get recent tasks
-    const { data: recentTasks } = await supabase
+    const { data: tasks } = await supabase
         .from("todo_items")
         .select("*, todo_lists(*)")
-        .eq("todo_lists.owner_id", session.user.id)
+        .eq("todo_lists.owner_id", userId)
         .order("created_at", { ascending: false })
         .limit(5);
 
-    // Using the separate queries approach that worked for documentation spaces
+    return tasks || [];
+});
 
-    // First get the user's personal projects
-    const { data: personalProjects, error: personalError } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("owner_id", session.user.id);
+export default async function DashboardPage() {
+    // Get user profile using our cached function
+    const profile = await getUserProfile();
 
-    if (personalError) {
-        console.error("Error fetching personal projects:", personalError);
+    if (!profile) {
+        redirect("/login");
     }
 
-    // Then get team projects if the user is part of a team
-    let teamProjects = [];
-    if (profile?.team_id) {
-        const { data: teamProjectsData, error: teamError } = await supabase
-            .from("projects")
-            .select("*")
-            .eq("team_id", profile.team_id);
+    // Get recent tasks (with caching)
+    const recentTasks = await getRecentTasks(profile.id);
 
-        if (teamError) {
-            console.error("Error fetching team projects:", teamError);
-        } else if (teamProjectsData) {
-            teamProjects = teamProjectsData;
-        }
-    }
-
-    // Combine and deduplicate projects
-    const allProjects = [...(personalProjects || [])];
-    teamProjects.forEach(teamProject => {
-        if (!allProjects.some(project => project.id === teamProject.id)) {
-            allProjects.push(teamProject);
-        }
-    });
-
-    // Sort by creation date
-    const projects = allProjects.sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
+    // Get projects with our optimized query
+    const projects = await getUserProjects(profile.id, profile.team_id);
 
     return (
         <DashboardShell>

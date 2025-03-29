@@ -1,6 +1,5 @@
 ﻿// app/api/team/remove-member/route.ts
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if user is a team owner
+        // Check if user is a team owner - using normal client relying on RLS
         const { data: userProfile, error: profileError } = await supabase
             .from('users')
             .select('is_team_owner, team_id')
@@ -49,24 +48,32 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create a Supabase admin client with service role key
-        const supabaseAdmin = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-        );
+        // Check if attempting to remove the team owner (can't remove yourself as owner)
+        if (memberId === session.user.id) {
+            return NextResponse.json(
+                { error: 'Cannot remove yourself as team owner. Transfer ownership first.' },
+                { status: 400 }
+            );
+        }
 
-        // Check if attempting to remove the team owner using admin client
-        const { data: memberProfile, error: memberError } = await supabaseAdmin
+        // Verify the member is part of the team
+        const { data: memberProfile, error: memberError } = await supabase
             .from('users')
-            .select('is_team_owner')
+            .select('is_team_owner, team_id')
             .eq('id', memberId)
             .single();
 
         if (memberError) {
-            console.error('Error fetching member profile:', memberError);
             return NextResponse.json(
-                { error: 'Member profile could not be retrieved' },
-                { status: 500 }
+                { error: 'Member profile not found' },
+                { status: 404 }
+            );
+        }
+
+        if (memberProfile.team_id !== teamId) {
+            return NextResponse.json(
+                { error: 'Member is not part of this team' },
+                { status: 400 }
             );
         }
 
@@ -77,8 +84,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Update the member to remove them from the team
-        const { error: removeError } = await supabaseAdmin
+        // Update the member profile - this requires proper RLS policy in Supabase
+        // RLS Policy would be: (auth.uid() IN (SELECT id FROM users WHERE is_team_owner = true AND team_id = users.team_id))
+        const { error: removeError } = await supabase
             .from("users")
             .update({
                 account_type: "single",

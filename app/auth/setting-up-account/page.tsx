@@ -1,4 +1,5 @@
-﻿'use client';
+﻿// app/auth/setting-up-account/page.tsx
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,6 +15,13 @@ export default function SettingUpAccountPage() {
     const router = useRouter();
     const clientSupabase = createClientComponentClient();
     const { toast } = useToast();
+
+    // Implement exponential backoff intervals
+    const getCheckInterval = (attempt: number): number => {
+        // Start with 1 second and increase exponentially
+        // 1s, 2s, 4s, 8s, etc. but capped at 10 seconds
+        return Math.min(1000 * Math.pow(2, attempt), 10000);
+    };
 
     // Add debug information
     const addDebug = (message: string) => {
@@ -86,23 +94,21 @@ export default function SettingUpAccountPage() {
     };
 
     useEffect(() => {
-        // Clear any existing intervals when component mounts
-        const intervalIds: NodeJS.Timeout[] = [];
-
         // Check immediately
         checkProfile();
 
-        // Then check every 2 seconds
-        const interval = setInterval(() => {
+        // Set up next check with exponential backoff
+        const nextCheckInterval = getCheckInterval(count);
+        addDebug(`Scheduling next check in ${nextCheckInterval}ms`);
+
+        const timeoutId = setTimeout(() => {
             setCount(c => c + 1);
             checkProfile();
-        }, 2000);
+        }, nextCheckInterval);
 
-        intervalIds.push(interval);
-
-        // Clear interval on unmount
+        // Clear timeout on unmount
         return () => {
-            intervalIds.forEach(id => clearInterval(id));
+            clearTimeout(timeoutId);
         };
     }, [count]);
 
