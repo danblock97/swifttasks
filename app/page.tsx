@@ -1,8 +1,22 @@
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight } from "lucide-react";
 
-export default function Home() {
+export default async function HomePage() {
+  const supabase = createServerComponentClient({ cookies });
+
+  // Check if the user is authenticated
+  const { data: { session } } = await supabase.auth.getSession();
+
+  // If the user is logged in, redirect to dashboard
+  if (session) {
+    redirect("/dashboard");
+  }
+
+  // Otherwise, render the landing page for non-authenticated users
   return (
       <main className="flex-1">
         {/* Hero section */}
