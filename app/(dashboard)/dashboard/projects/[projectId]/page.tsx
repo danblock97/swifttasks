@@ -78,15 +78,16 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                         <span className="sr-only">Back to projects</span>
                     </Button>
                 </Link>
-                <DashboardHeader
-                    heading={project.name}
-                    description={
-                        project.description ||
-                        `Created on ${formatDate(project.created_at)}`
-                    }
-                >
+                <div className="flex flex-1 justify-between items-start">
+                    <DashboardHeader
+                        heading={project.name}
+                        description={
+                            project.description ||
+                            `Created on ${formatDate(project.created_at)}`
+                        }
+                    />
                     {canManageProject && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 ml-auto">
                             <Link href={`/dashboard/projects/${projectId}/edit`}>
                                 <Button variant="outline" size="sm">
                                     <Edit className="mr-1 h-4 w-4" />
@@ -104,7 +105,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                             )}
                         </div>
                     )}
-                </DashboardHeader>
+                </div>
             </div>
 
             <div className="grid gap-4">
