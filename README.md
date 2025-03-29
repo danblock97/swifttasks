@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SwiftTasks
+
+## A simpler approach to task management
+
+SwiftTasks is a web-based task management application built to solve the frustrations of overly complex productivity tools. It offers a clean, user-friendly interface with essential features for daily task and project management.
+
+## Overview
+
+SwiftTasks was created out of frustration with existing task management solutions that are either too simplistic or needlessly complex. The application focuses on providing a balance - powerful enough for managing projects while remaining intuitive and easy to use.
+
+## Core Features
+
+- **Authentication System** - User registration, login, and account management
+- **Core Todo Functionality** - Creating, editing, and completing tasks
+- **Kanban Board Interface** - Drag-and-drop task management with customizable columns
+- **Documentation Spaces** - Rich text editor for creating project documentation
+- **Team Collaboration** - Invite team members and collaborate on projects
+
+## Technology Stack
+
+SwiftTasks is built with modern technologies for a responsive, reliable experience:
+
+- **Next.js** - For a fast, optimized frontend experience with server-side rendering
+- **React** - For building a responsive, component-based user interface
+- **Supabase** - For authentication, database management, and real-time features
+- **Tailwind CSS** - For a utility-first approach to styling that enables rapid UI development
+
+## Project Philosophy
+
+SwiftTasks is guided by three core principles:
+
+1. **Simplicity** - The best tools get out of your way. SwiftTasks is designed with an intuitive interface that doesn't require a manual to use.
+
+2. **Focus** - In a world full of distractions, SwiftTasks is built to help you focus on what matters. The interface promotes clarity and purposeful work.
+
+3. **Craftsmanship** - Every feature is carefully considered and implemented with attention to detail. Quality is prioritized over quantity.
+
+## Future Roadmap
+
+The following features are planned for future releases:
+
+- Advanced Analytics
+- Expanded Storage Limits
+- Enhanced Team Tools
+- API Access
+- Mobile Applications (iOS and Android)
 
 ## Getting Started
 
-First, run the development server:
+To start using SwiftTasks, visit [our website](#) and sign up for early access.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Join the Journey
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+SwiftTasks is currently in active development. Sign up to be among the first to experience a new approach to task management and follow the development progress.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+SwiftTasks: Powerful when you need it, invisible when you don't.
