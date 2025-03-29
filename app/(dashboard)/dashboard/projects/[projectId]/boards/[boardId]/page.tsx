@@ -4,9 +4,9 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { KanbanBoard } from "@/components/projects/kanban/kanban-board";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Edit } from "lucide-react";
+import { BoardViewSwitcher } from "@/components/projects/kanban/board-view-switcher";
 
 interface BoardDetailPageProps {
     params: Promise<{
@@ -107,24 +107,14 @@ export default async function BoardDetailPage({ params }: BoardDetailPageProps) 
                 />
             </div>
 
-            {canManageBoard && (
-                <div className="flex justify-end mb-4">
-                    <Link href={`/dashboard/projects/${projectId}/boards/${boardId}/edit`}>
-                        <Button variant="outline" size="sm">
-                            <Edit className="mr-1 h-4 w-4" />
-                            Edit Board
-                        </Button>
-                    </Link>
-                </div>
-            )}
-
             <div className="w-full overflow-hidden">
-                <KanbanBoard
+                <BoardViewSwitcher
                     columns={formattedColumns}
                     boardId={boardId}
                     canManageBoard={canManageBoard}
                     teamMembers={isTeamProject ? profile?.teams?.members : []}
                     currentUserId={session.user.id}
+                    projectId={projectId}
                 />
             </div>
         </DashboardShell>

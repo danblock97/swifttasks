@@ -1,69 +1,158 @@
-﻿"use client";
+﻿import { useState, useEffect } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
-import { useState, useEffect } from 'react';
-import { setUserPreferences, getUserPreferences } from '@/lib/cookies';
-
+// Define the shape of our user preferences
 interface UserPreferences {
     defaultView: 'list' | 'kanban' | 'calendar';
     notificationsEnabled: boolean;
     tasksSortOrder: 'due_date' | 'priority' | 'created_at';
+    [key: string]: any; // Allow for additional preferences
 }
 
+// Default preferences
 const defaultPreferences: UserPreferences = {
-    defaultView: 'list',
-    notificationsEnabled: true,
-    tasksSortOrder: 'due_date',
+    defaultView: 'kanban',
+    notificationsEnabled: false,
+    tasksSortOrder: 'created_at',
 };
 
-export const useUserPreferences = () => {
+export function useUserPreferences() {
     const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
     const [isLoaded, setIsLoaded] = useState(false);
+    const supabase = createClientComponentClient();
 
-    // Load preferences from cookies on mount
+    // Load preferences from localStorage first, for immediate UI response
     useEffect(() => {
-        const savedPreferences = getUserPreferences<UserPreferences>();
-        if (savedPreferences) {
-            setPreferences({ ...defaultPreferences, ...savedPreferences });
-        }
-        setIsLoaded(true);
+        const loadLocalPreferences = () => {
+            try {
+                const storedPrefs = localStorage.getItem('user_preferences');
+                if (storedPrefs) {
+                    const parsedPrefs = JSON.parse(storedPrefs);
+                    setPreferences(parsedPrefs);
+                }
+            } catch (e) {
+                console.error('Error parsing stored preferences:', e);
+                // If there's an error, use default preferences
+                setPreferences(defaultPreferences);
+            } finally {
+                setIsLoaded(true);
+            }
+        };
+
+        loadLocalPreferences();
     }, []);
 
-    // Save preferences to cookies whenever they change
+    // Then try to load from database if user is authenticated
     useEffect(() => {
+        const loadDatabasePreferences = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+
+                if (!user) {
+                    // No authenticated user, rely on localStorage only
+                    return;
+                }
+
+                // Get user profile with preferences
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('preferences')
+                    .eq('id', user.id)
+                    .single();
+
+                if (error) {
+                    console.warn('Error fetching user preferences:', error.message);
+                    return;
+                }
+
+                if (data && data.preferences) {
+                    // Update state with database preferences
+                    setPreferences(data.preferences);
+                    // Also update localStorage for offline/fast access
+                    localStorage.setItem('user_preferences', JSON.stringify(data.preferences));
+                } else if (!data.preferences) {
+                    // User exists but has no preferences yet, initialize them
+                    try {
+                        await supabase
+                            .from('users')
+                            .update({ preferences: defaultPreferences })
+                            .eq('id', user.id);
+                    } catch (updateError) {
+                        console.warn('Could not save default preferences:', updateError);
+                    }
+                }
+            } catch (error) {
+                console.warn('Error loading database preferences:', error);
+                // Non-critical error, just continue with localStorage preferences
+            }
+        };
+
         if (isLoaded) {
-            setUserPreferences(preferences);
-
-            // Apply the preferences where needed
-            applyPreferences(preferences);
+            // Don't block the UI, load database prefs in the background
+            loadDatabasePreferences();
         }
-    }, [preferences, isLoaded]);
+    }, [isLoaded, supabase]);
 
-    // Apply specific preferences that need immediate effect
-    const applyPreferences = (prefs: UserPreferences) => {
-        // For default view and sort order, these are usually applied when viewing
-        // tasks or projects, not here in the settings
+    // Function to update a specific preference
+    const updatePreference = async (key: keyof UserPreferences, value: any) => {
+        try {
+            // Update local state
+            const updatedPreferences = { ...preferences, [key]: value };
+            setPreferences(updatedPreferences);
 
-        // For notifications, we handle this in the settings page directly
+            // Update localStorage
+            localStorage.setItem('user_preferences', JSON.stringify(updatedPreferences));
+
+            // Try to update database if user is authenticated
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (user) {
+                try {
+                    const { error } = await supabase
+                        .from('users')
+                        .update({ preferences: updatedPreferences })
+                        .eq('id', user.id);
+
+                    if (error) {
+                        console.warn('Could not save preference to database:', error.message);
+                    }
+                } catch (dbError) {
+                    console.warn('Database error saving preference:', dbError);
+                    // Non-critical error, localStorage is already updated
+                }
+            }
+        } catch (error) {
+            console.error('Error updating preference:', error);
+        }
     };
 
-    const updatePreference = <K extends keyof UserPreferences>(
-        key: K,
-        value: UserPreferences[K]
-    ) => {
-        setPreferences(prev => ({
-            ...prev,
-            [key]: value
-        }));
+    // Function to reset preferences to defaults
+    const resetPreferences = async () => {
+        try {
+            // Reset local state
+            setPreferences(defaultPreferences);
+
+            // Update localStorage
+            localStorage.setItem('user_preferences', JSON.stringify(defaultPreferences));
+
+            // Try to update database if user is authenticated
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+
+                if (user) {
+                    await supabase
+                        .from('users')
+                        .update({ preferences: defaultPreferences })
+                        .eq('id', user.id);
+                }
+            } catch (dbError) {
+                console.warn('Could not reset preferences in database:', dbError);
+                // Non-critical error, localStorage is already updated
+            }
+        } catch (error) {
+            console.error('Error resetting preferences:', error);
+        }
     };
 
-    const resetPreferences = () => {
-        setPreferences(defaultPreferences);
-    };
-
-    return {
-        preferences,
-        updatePreference,
-        resetPreferences,
-        isLoaded
-    };
-};
+    return { preferences, updatePreference, resetPreferences, isLoaded };
+}

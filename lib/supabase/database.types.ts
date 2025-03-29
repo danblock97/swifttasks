@@ -19,6 +19,7 @@ export interface Database {
                     account_type: 'single' | 'team_member'
                     team_id: string | null
                     is_team_owner: boolean
+                    preferences: Json | null  // Added preferences column
                 }
                 Insert: {
                     id: string
@@ -29,6 +30,7 @@ export interface Database {
                     account_type?: 'single' | 'team_member'
                     team_id?: string | null
                     is_team_owner?: boolean
+                    preferences?: Json | null  // Added preferences column
                 }
                 Update: {
                     id?: string
@@ -39,8 +41,10 @@ export interface Database {
                     account_type?: 'single' | 'team_member'
                     team_id?: string | null
                     is_team_owner?: boolean
+                    preferences?: Json | null  // Added preferences column
                 }
             }
+            // Rest of the database schema remains the same
             teams: {
                 Row: {
                     id: string
