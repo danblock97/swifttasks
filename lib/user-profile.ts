@@ -1,42 +1,18 @@
 ﻿// lib/user-profile.ts
-import { headers } from 'next/headers';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
+import { fetchUserProfile, fetchServerSession } from './supabase/utils';
 
-// This is a cached function for server components
-export const getUserProfile = cache(async () => {
-    const headersList = await headers();
-    const profileHeader = headersList.get('x-user-profile');
+// This is a simplified version that uses our enhanced cache
+export const getUserProfile = fetchUserProfile;
 
-    // If we have the profile from middleware, use it
-    if (profileHeader) {
-        try {
-            return JSON.parse(Buffer.from(profileHeader, 'base64').toString());
-        } catch (error) {
-            console.error('Error parsing profile from header:', error);
-        }
-    }
-
-    // Fallback to querying if not available in headers
-    const supabase = createServerComponentClient({ cookies });
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-        return null;
-    }
-
-    const { data: profile } = await supabase
-        .from('users')
-        .select('*, teams(*)')
-        .eq('id', session.user.id)
-        .single();
-
-    return profile;
-});
-
-// Helper function to get all user's projects in a single query
+// Helper function to get all user's projects in a single query - with improved caching
 export const getUserProjects = cache(async (userId: string, teamId: string | null = null) => {
+    // Get session using our cached method
+    const session = await fetchServerSession();
+    if (!session.data.session) return [];
+
     const supabase = createServerComponentClient({ cookies });
 
     let query = supabase
@@ -55,8 +31,12 @@ export const getUserProjects = cache(async (userId: string, teamId: string | nul
     return projects || [];
 });
 
-// Helper function to get all user's document spaces in a single query
+// Helper function for document spaces - with improved caching
 export const getUserDocSpaces = cache(async (userId: string, teamId: string | null = null) => {
+    // Get session using our cached method
+    const session = await fetchServerSession();
+    if (!session.data.session) return [];
+
     const supabase = createServerComponentClient({ cookies });
 
     let query = supabase

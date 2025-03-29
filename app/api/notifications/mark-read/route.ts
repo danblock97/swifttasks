@@ -1,8 +1,6 @@
 ﻿// app/api/notifications/mark-read/route.ts
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { authenticateApiRequest, getServiceClient } from '@/lib/api-auth';
 
 export async function POST(request: NextRequest) {
     try {
@@ -15,34 +13,25 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check authentication
-        const cookieStore = cookies();
-        const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+        // Use the auth helper instead of creating a new client and session check
+        const { authenticated, response, userId } = await authenticateApiRequest();
 
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
+        if (!authenticated) {
+            return response;
         }
 
-        // Create a service role client to bypass RLS
-        const supabaseAdmin = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-        );
+        // Get the service client - only one instance shared across the app
+        const serviceClient = await getServiceClient();
 
         // Verify the notification belongs to this user
-        const { data: notification, error: fetchError } = await supabaseAdmin
+        const { data: notification, error: fetchError } = await serviceClient
             .from('user_notifications')
             .select('*')
             .eq('id', notificationId)
-            .eq('user_id', session.user.id)
+            .eq('user_id', userId)
             .single();
 
-        if (fetchError || !notification) {
+        if (fetchError) {
             return NextResponse.json(
                 { error: 'Notification not found or access denied' },
                 { status: 404 }
@@ -50,7 +39,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Mark notification as read
-        const { error } = await supabaseAdmin
+        const { error } = await serviceClient
             .from('user_notifications')
             .update({ is_read: true })
             .eq('id', notificationId);
