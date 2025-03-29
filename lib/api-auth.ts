@@ -43,7 +43,8 @@ export async function authenticateApiRequest() {
 
         return {
             authenticated: true,
-            response: null,
+            // Return an empty NextResponse object instead of null
+            response: NextResponse.json({}),
             supabase,
             userId: session.user.id
         };
@@ -57,3 +58,5 @@ export async function authenticateApiRequest() {
         };
     }
 }
+
+export { getServiceClient } from "@/lib/supabase/utils";
