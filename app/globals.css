@@ -1,453 +1,711 @@
+/* Import react-big-calendar base styles */
+@import "react-big-calendar/lib/css/react-big-calendar.css";
+/* Import Tailwind v4 styles */
 @import "tailwindcss";
 
+/* Base layer for theme variables */
 @layer base {
-  :root,
-  [data-theme="light"] {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+	/* Light theme variables */
+	:root,
+	[data-theme="light"] {
+		--background: 0 0% 100%; /* Page background */
+		--foreground: 222.2 84% 4.9%; /* Default text color */
+		--card: 0 0% 100%; /* Card background */
+		--card-foreground: 222.2 84% 4.9%; /* Text color on cards */
+		--popover: 0 0% 100%; /* Popover background */
+		--popover-foreground: 222.2 84% 4.9%; /* Text color on popovers */
+		--primary: 222.2 47.4% 11.2%; /* Primary color (buttons, highlights) */
+		--primary-foreground: 210 40% 98%; /* Text color on primary elements */
+		--secondary: 210 40% 96.1%; /* Secondary color (less prominent elements) */
+		--secondary-foreground: 222.2 47.4% 11.2%; /* Text color on secondary elements */
+		--muted: 210 40% 96.1%; /* Muted background (subtle elements) */
+		--muted-foreground: 215.4 16.3% 46.9%; /* Muted text color (placeholders, descriptions) */
+		--accent: 210 40% 96.1%; /* Accent color (hover states, highlights) */
+		--accent-foreground: 222.2 47.4% 11.2%; /* Text color on accent elements */
+		--destructive: 0 84.2% 60.2%; /* Destructive color (delete buttons, errors) */
+		--destructive-foreground: 210 40% 98%; /* Text color on destructive elements */
+		--border: 214.3 31.8% 91.4%; /* Border color */
+		--input: 214.3 31.8% 91.4%; /* Input border color */
+		--ring: 222.2 84% 4.9%; /* Ring color for focus states */
+		--radius: 0.5rem; /* Base border radius */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+		/* Calendar event theme colors (Light) */
+		--event-default-bg: hsla(var(--primary) / 0.8);
+		--event-default-border: hsl(var(--primary));
+		--event-default-text: hsl(var(--primary-foreground));
+		--event-default-selected-bg: hsl(var(--primary));
+		--event-default-selected-ring: hsl(var(--ring));
+		--event-todo-bg: #a3e635cc; /* lime-400 80% */
+		--event-todo-border: #65a30d; /* lime-600 */
+		--event-todo-text: #1a2e05; /* dark lime */
+		--event-todo-selected-bg: #84cc16; /* lime-500 */
+		--event-todo-selected-ring: #a3e635; /* lime-400 */
+		--event-task-bg: #5eead4cc; /* teal-300 80% */
+		--event-task-border: #0d9488; /* teal-600 */
+		--event-task-text: #042f2e; /* dark teal */
+		--event-task-selected-bg: #2dd4bf; /* teal-400 */
+		--event-task-selected-ring: #5eead4; /* teal-300 */
+	}
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+	/* Dark theme variables */
+	.dark,
+	[data-theme="dark"] {
+		--background: 222.2 84% 4.9%;
+		--foreground: 210 40% 98%;
+		--card: 222.2 84% 4.9%;
+		--card-foreground: 210 40% 98%;
+		--popover: 222.2 84% 4.9%;
+		--popover-foreground: 210 40% 98%;
+		--primary: 210 40% 98%; /* Primary in dark mode (light color) */
+		--primary-foreground: 222.2 47.4% 11.2%; /* Text on primary */
+		--secondary: 217.2 32.6% 17.5%;
+		--secondary-foreground: 210 40% 98%;
+		--muted: 217.2 32.6% 17.5%; /* Muted background (darker grey/blue) */
+		--muted-foreground: 215 20.2% 65.1%;
+		--accent: 217.2 32.6% 17.5%; /* Accent color (often same as muted in dark) */
+		--accent-foreground: 210 40% 98%;
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 210 40% 98%;
+		--border: 217.2 32.6% 17.5%;
+		--input: 217.2 32.6% 17.5%;
+		--ring: 212.7 26.8% 83.9%; /* Ring color for focus states */
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-  }
-
-  .dark,
-  [data-theme="dark"] {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
+		/* Calendar event theme colors (Dark) */
+		--event-default-bg: hsla(var(--primary) / 0.15);
+		--event-default-border: hsl(var(--primary) / 0.4);
+		--event-default-text: hsl(var(--primary));
+		--event-default-selected-bg: hsl(var(--primary) / 0.3);
+		--event-default-selected-ring: hsl(var(--ring));
+		--event-todo-bg: #4d7c0fcc; /* lime-700 80% */
+		--event-todo-border: #365314; /* lime-900 */
+		--event-todo-text: #d9f99d; /* lime-200 */
+		--event-todo-selected-bg: #65a30d; /* lime-600 */
+		--event-todo-selected-ring: #a3e635; /* lime-400 */
+		--event-task-bg: #14534ecc; /* teal-800 80% */
+		--event-task-border: #0f766e; /* teal-700 */
+		--event-task-text: #ccfbf1; /* teal-100 */
+		--event-task-selected-bg: #0d9488; /* teal-600 */
+		--event-task-selected-ring: #5eead4; /* teal-300 */
+	}
 }
 
+/* Base styles applied globally */
 @layer base {
-  * {
-    border-color: hsl(var(--border));
-  }
-  body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-  }
-
-  /* Dark mode specific overrides for sections that aren't picking up the theme */
-  .dark section,
-  [data-theme="dark"] section {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-  }
-
-  /* This ensures all gradient sections respect the theme */
-  .dark .bg-gradient-to-b,
-  .dark .bg-gradient-to-r,
-  [data-theme="dark"] .bg-gradient-to-b,
-  [data-theme="dark"] .bg-gradient-to-r {
-    --tw-gradient-from: var(--background);
-    --tw-gradient-to: color-mix(in srgb, hsl(var(--background)) 80%, hsl(var(--primary)) 20%);
-    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-    background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
-  }
-
-  /* Fix cards in dark mode */
-  .dark .bg-white,
-  [data-theme="dark"] .bg-white {
-    background-color: hsl(var(--card));
-  }
-
-  /* Ensure bg-slate-50 respects the theme */
-  .dark .bg-slate-50,
-  [data-theme="dark"] .bg-slate-50 {
-    background-color: hsl(var(--background));
-  }
-
-  /* Fix feature cards */
-  .dark .bg-card,
-  [data-theme="dark"] .bg-card {
-    background-color: hsl(var(--card));
-    color: hsl(var(--card-foreground));
-  }
-
-  /* Fix colored text in dark mode */
-  .dark .text-blue-700,
-  [data-theme="dark"] .text-blue-700,
-  .dark .text-indigo-700,
-  [data-theme="dark"] .text-indigo-700,
-  .dark .text-teal-700,
-  [data-theme="dark"] .text-teal-700,
-  .dark .text-purple-700,
-  [data-theme="dark"] .text-purple-700 {
-    color: hsl(224 76% 65%);
-  }
-
-  /* Fix specific colored backgrounds */
-  .dark .bg-blue-50,
-  [data-theme="dark"] .bg-blue-50 {
-    background-color: rgba(59, 130, 246, 0.1);
-  }
-
-  .dark .bg-indigo-50,
-  [data-theme="dark"] .bg-indigo-50 {
-    background-color: rgba(99, 102, 241, 0.1);
-  }
-
-  .dark .bg-teal-50,
-  [data-theme="dark"] .bg-teal-50 {
-    background-color: rgba(20, 184, 166, 0.1);
-  }
-
-  /* Ensure the hero and feature sections properly respect theme */
-  .dark .py-20,
-  .dark .py-24,
-  .dark .py-28,
-  .dark .py-32,
-  [data-theme="dark"] .py-20,
-  [data-theme="dark"] .py-24,
-  [data-theme="dark"] .py-28,
-  [data-theme="dark"] .py-32 {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-  }
-
-  /* Additional fixes for "All-in-one task solution" section in light mode */
-  .bg-secondary.dark\:bg-slate-900\/50 {
-    background-color: hsl(var(--secondary));
-  }
-
-  .dark .bg-secondary.dark\:bg-slate-900\/50 {
-    background-color: rgba(15, 23, 42, 0.5); /* dark slate with opacity */
-  }
-
-  /* Improve text contrast in light mode for common slate text colors */
-  .text-slate-500 {
-    color: #64748b; /* Slightly darker than default */
-  }
-
-  .text-slate-600 {
-    color: #475569; /* Darker than default for better readability */
-  }
-
-  /* Ensure description and muted text is readable in light mode */
-  .text-muted-foreground {
-    color: hsl(215.4 16.3% 36.9%); /* Darker than the default --muted-foreground */
-  }
+	* {
+		border-color: hsl(var(--border));
+	}
+	body {
+		background-color: hsl(var(--background));
+		color: hsl(var(--foreground));
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+	/* Your existing dark mode overrides */
+	/* ... (keep all your existing overrides) ... */
+	.dark section,
+	[data-theme="dark"] section {
+		background-color: hsl(var(--background));
+		color: hsl(var(--foreground));
+	}
+	.dark .bg-gradient-to-b,
+	.dark .bg-gradient-to-r,
+	[data-theme="dark"] .bg-gradient-to-b,
+	[data-theme="dark"] .bg-gradient-to-r {
+		--tw-gradient-from: var(--background);
+		--tw-gradient-to: color-mix(
+			in srgb,
+			hsl(var(--background)) 80%,
+			hsl(var(--primary)) 20%
+		);
+		--tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+		background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
+	}
+	.dark .bg-white,
+	[data-theme="dark"] .bg-white {
+		background-color: hsl(var(--card));
+	}
+	.dark .bg-slate-50,
+	[data-theme="dark"] .bg-slate-50 {
+		background-color: hsl(var(--background));
+	}
+	.dark .bg-card,
+	[data-theme="dark"] .bg-card {
+		background-color: hsl(var(--card));
+		color: hsl(var(--card-foreground));
+	}
+	.dark .text-blue-700,
+	[data-theme="dark"] .text-blue-700,
+	.dark .text-indigo-700,
+	[data-theme="dark"] .text-indigo-700,
+	.dark .text-teal-700,
+	[data-theme="dark"] .text-teal-700,
+	.dark .text-purple-700,
+	[data-theme="dark"] .text-purple-700 {
+		color: hsl(224 76% 65%);
+	}
+	.dark .bg-blue-50,
+	[data-theme="dark"] .bg-blue-50 {
+		background-color: rgba(59, 130, 246, 0.1);
+	}
+	.dark .bg-indigo-50,
+	[data-theme="dark"] .bg-indigo-50 {
+		background-color: rgba(99, 102, 241, 0.1);
+	}
+	.dark .bg-teal-50,
+	[data-theme="dark"] .bg-teal-50 {
+		background-color: rgba(20, 184, 166, 0.1);
+	}
+	.dark .py-20,
+	.dark .py-24,
+	.dark .py-28,
+	.dark .py-32,
+	[data-theme="dark"] .py-20,
+	[data-theme="dark"] .py-24,
+	[data-theme="dark"] .py-28,
+	[data-theme="dark"] .py-32 {
+		background-color: hsl(var(--background));
+		color: hsl(var(--foreground));
+	}
+	.bg-secondary.dark\:bg-slate-900\/50 {
+		background-color: hsl(var(--secondary));
+	}
+	.dark .bg-secondary.dark\:bg-slate-900\/50 {
+		background-color: rgba(15, 23, 42, 0.5);
+	}
+	.text-slate-500 {
+		color: #64748b;
+	}
+	.text-slate-600 {
+		color: #475569;
+	}
+	.text-muted-foreground {
+		color: hsl(215.4 16.3% 36.9%);
+	}
 }
 
-/* Explicit fixes for common components */
+/* Your existing component fixes */
+/* ... (keep all your existing component fixes) ... */
 .dark .cookie-consent-banner,
 [data-theme="dark"] .cookie-consent-banner {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  border-color: hsl(var(--border));
+	background-color: hsl(var(--background));
+	color: hsl(var(--foreground));
+	border-color: hsl(var(--border));
 }
-
 .dark .site-footer,
 [data-theme="dark"] .site-footer {
-  background-color: hsl(var(--background));
-  border-color: hsl(var(--border));
+	background-color: hsl(var(--background));
+	border-color: hsl(var(--border));
 }
 
-/* ======= NEW ADDITIONS FOR SWITCH AND DROPDOWN COMPONENTS ======= */
-
+/* Your existing Radix UI / Switch / Dropdown styles */
+/* ... (keep all your existing Radix/Switch/Dropdown styles) ... */
 /* ======= SWITCH COMPONENT STYLING ======= */
-/* Base switch styling */
 [data-state="checked"].switch-root,
 [data-state="checked"].ui-switch {
-  background-color: hsl(var(--primary)) !important;
-  border-color: hsl(var(--primary)) !important;
+	background-color: hsl(var(--primary)) !important;
+	border-color: hsl(var(--primary)) !important;
 }
-
 [data-state="unchecked"].switch-root,
 [data-state="unchecked"].ui-switch {
-  background-color: transparent !important;
-  border: 2px solid hsl(var(--border)) !important;
+	background-color: transparent !important;
+	border: 2px solid hsl(var(--border)) !important;
 }
-
-/* Switch thumb (the moving circle) styling */
 [data-radix-switch-thumb] {
-  background-color: white !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
-  border: 1px solid #e2e8f0 !important;
+	background-color: white !important;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+	border: 1px solid #e2e8f0 !important;
 }
-
 .dark [data-radix-switch-thumb] {
-  background-color: #e2e8f0 !important;
-  border-color: #94a3b8 !important;
+	background-color: #e2e8f0 !important;
+	border-color: #94a3b8 !important;
 }
-
 [data-state="unchecked"] [data-radix-switch-thumb] {
-  transform: translateX(0) !important;
+	transform: translateX(0) !important;
 }
-
 [data-state="checked"] [data-radix-switch-thumb] {
-  transform: translateX(20px) !important;
+	transform: translateX(20px) !important;
 }
-
-/* Specific styling for our custom implementation */
 .switch-base {
-  height: 24px !important;
-  width: 44px !important;
-  background-color: transparent !important;
-  border: 2px solid hsl(var(--border)) !important;
-  border-radius: 999px !important;
-  position: relative !important;
-  transition: all 150ms ease !important;
+	height: 24px !important;
+	width: 44px !important;
+	background-color: transparent !important;
+	border: 2px solid hsl(var(--border)) !important;
+	border-radius: 999px !important;
+	position: relative !important;
+	transition: all 150ms ease !important;
 }
-
 .switch-base[data-state="checked"] {
-  background-color: hsl(var(--primary)) !important;
-  border-color: hsl(var(--primary)) !important;
+	background-color: hsl(var(--primary)) !important;
+	border-color: hsl(var(--primary)) !important;
 }
-
 .switch-thumb {
-  display: block !important;
-  width: 16px !important;
-  height: 16px !important;
-  background-color: white !important;
-  border-radius: 999px !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
-  transition: transform 150ms ease !important;
-  transform: translateX(0) !important;
-  will-change: transform !important;
+	display: block !important;
+	width: 16px !important;
+	height: 16px !important;
+	background-color: white !important;
+	border-radius: 999px !important;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+	transition: transform 150ms ease !important;
+	transform: translateX(0) !important;
+	will-change: transform !important;
 }
-
 .switch-base[data-state="checked"] .switch-thumb {
-  transform: translateX(20px) !important;
+	transform: translateX(20px) !important;
 }
-
-/* Direct styling for the component selector we're using in the Settings page */
 #notifications + button {
-  border: 2px solid hsl(var(--border)) !important;
+	border: 2px solid hsl(var(--border)) !important;
 }
-
 #notifications[data-state="checked"] + button {
-  background-color: hsl(var(--primary)) !important;
-  border-color: hsl(var(--primary)) !important;
+	background-color: hsl(var(--primary)) !important;
+	border-color: hsl(var(--primary)) !important;
 }
-
 #notifications + button .thumb-element {
-  background-color: white !important;
-  border: 1px solid #e2e8f0 !important;
+	background-color: white !important;
+	border: 1px solid #e2e8f0 !important;
 }
-
 .dark #notifications + button .thumb-element {
-  background-color: #e2e8f0 !important;
-  border-color: #94a3b8 !important;
+	background-color: #e2e8f0 !important;
+	border-color: #94a3b8 !important;
 }
-
 /* ======= SELECT & DROPDOWN STYLING ======= */
-/* Fix for dropdown menus */
 [data-radix-popper-content-wrapper] {
-  z-index: 999 !important;
+	z-index: 999 !important;
 }
-
-/* Ensure select content has proper background */
 .radix-select-content,
 [role="listbox"] {
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+	background-color: hsl(var(--background)) !important;
+	border: 1px solid hsl(var(--border)) !important;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06) !important;
 }
-
-/* Make SelectContent more visible */
 [data-radix-select-viewport] {
-  background-color: hsl(var(--background)) !important;
-  color: hsl(var(--foreground)) !important;
+	background-color: hsl(var(--background)) !important;
+	color: hsl(var(--foreground)) !important;
 }
-
-/* Fix for glass effect on dropdowns */
 .SelectContent {
-  overflow: hidden;
-  background-color: hsl(var(--background)) !important;
-  border-radius: var(--radius);
-  border: 1px solid hsl(var(--border));
-  box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2);
+	overflow: hidden;
+	background-color: hsl(var(--background)) !important;
+	border-radius: var(--radius);
+	border: 1px solid hsl(var(--border));
+	box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35),
+		0px 10px 20px -15px rgba(22, 23, 24, 0.2);
 }
-
-/* Improve dropdown item contrast */
 [role="option"] {
-  color: hsl(var(--foreground)) !important;
+	color: hsl(var(--foreground)) !important;
 }
-
 [role="option"]:hover,
 [role="option"]:focus,
 [role="option"][data-highlighted] {
-  background-color: hsl(var(--primary) / 0.1) !important;
-  color: hsl(var(--primary)) !important;
+	background-color: hsl(var(--primary) / 0.1) !important;
+	color: hsl(var(--primary)) !important;
 }
-
-/* Apply styles to specific select elements in our settings page */
 #theme + .SelectTrigger,
 #default-view + .SelectTrigger,
 #sort-order + .SelectTrigger {
-  border: 1px solid hsl(var(--border)) !important;
-  background-color: hsl(var(--background)) !important;
+	border: 1px solid hsl(var(--border)) !important;
+	background-color: hsl(var(--background)) !important;
 }
-
-/* Make sure the dropdown content is properly styled */
 .SelectContent {
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
+	background-color: hsl(var(--background)) !important;
+	border: 1px solid hsl(var(--border)) !important;
 }
-
-/* Specific selectors for Radix components */
 [data-radix-select-content] {
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  color: hsl(var(--foreground)) !important;
+	background-color: hsl(var(--background)) !important;
+	border: 1px solid hsl(var(--border)) !important;
+	color: hsl(var(--foreground)) !important;
 }
-
-/* Final attempt to force background on all selects */
 [role="presentation"] > [role="listbox"] {
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+	background-color: hsl(var(--background)) !important;
+	border: 1px solid hsl(var(--border)) !important;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
 }
-
-/* Make sure dialog and popover content has proper background */
 .DialogContent,
 .PopoverContent {
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
+	background-color: hsl(var(--background)) !important;
+	border: 1px solid hsl(var(--border)) !important;
 }
-
 [data-radix-dialog-content],
 [role="dialog"] {
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2) !important;
+	background-color: hsl(var(--background)) !important;
+	border: 1px solid hsl(var(--border)) !important;
+	box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35),
+		0px 10px 20px -15px rgba(22, 23, 24, 0.2) !important;
 }
-
-/* Fix dropdown menu transparency */
 [data-radix-popper-content-wrapper] [role="menu"],
 [data-radix-popper-content-wrapper] [role="listbox"],
 [data-radix-dropdown-menu-content],
 [data-radix-select-content] {
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+	background-color: hsl(var(--background)) !important;
+	border: 1px solid hsl(var(--border)) !important;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
 }
-
-/* Ensure any popover or tooltip content has solid background */
 [data-radix-popover-content],
 [data-radix-tooltip-content] {
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
+	background-color: hsl(var(--background)) !important;
+	border: 1px solid hsl(var(--border)) !important;
 }
-
-/* Add specific fix for dialog overlay to ensure it's not transparent */
 [data-radix-dialog-overlay] {
-  background-color: rgba(0, 0, 0, 0.5) !important;
+	background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
+/* Your existing scrollbar styles */
+/* ... (keep all your existing scrollbar styles) ... */
 .kanban-columns-container {
-  /* Hide default scrollbar for WebKit browsers */
-  &::-webkit-scrollbar {
-    height: 8px;
-  }
-
-  /* Track */
-  &::-webkit-scrollbar-track {
-    background: hsl(var(--background));
-    border-radius: 4px;
-  }
-
-  /* Handle */
-  &::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
-    border-radius: 4px;
-  }
-
-  /* Handle on hover */
-  &::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
-  }
-
-  /* For Firefox */
-  scrollbar-width: auto;
-  scrollbar-color: hsl(var(--muted-foreground) / 0.3) hsl(var(--background));
+	&::-webkit-scrollbar {
+		height: 8px;
+	}
+	&::-webkit-scrollbar-track {
+		background: hsl(var(--background));
+		border-radius: 4px;
+	}
+	&::-webkit-scrollbar-thumb {
+		background: hsl(var(--muted-foreground) / 0.3);
+		border-radius: 4px;
+	}
+	&::-webkit-scrollbar-thumb:hover {
+		background: hsl(var(--muted-foreground) / 0.5);
+	}
+	scrollbar-width: auto;
+	scrollbar-color: hsl(var(--muted-foreground) / 0.3) hsl(var(--background));
 }
-
-/* Styling for column vertical scrollbars */
 [class*="droppable"] {
-  /* Hide default scrollbar for WebKit browsers */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  /* Track */
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  /* Handle */
-  &::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.2);
-    border-radius: 3px;
-  }
-
-  /* Handle on hover */
-  &::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.4);
-  }
-
-  /* For Firefox */
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
+	&::-webkit-scrollbar {
+		width: 6px;
+	}
+	&::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	&::-webkit-scrollbar-thumb {
+		background: hsl(var(--muted-foreground) / 0.2);
+		border-radius: 3px;
+	}
+	&::-webkit-scrollbar-thumb:hover {
+		background: hsl(var(--muted-foreground) / 0.4);
+	}
+	scrollbar-width: thin;
+	scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
 }
 
-/* Remove any potential extra body/html scrolling */
-body, html {
-  overflow-x: hidden;
-  max-width: 100%;
+/* Your existing overflow fixes */
+/* ... (keep all your existing overflow fixes) ... */
+body,
+html {
+	overflow-x: hidden;
+	max-width: 100%;
 }
-
-/* Ensure DashboardShell doesn't overflow */
 .dashboard-shell {
-  max-width: 100%;
-  overflow-x: hidden;
+	max-width: 100%;
+	overflow-x: hidden;
 }
+
+/* ======================================================== */
+/* Refactored react-big-calendar Styles (Tailwind v4 Ready) */
+/* Place these within the 'components' layer             */
+/* ======================================================== */
+@layer components {
+	/* --- Toolbar --- */
+	.rbc-toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1rem;
+		gap: 0.5rem;
+	}
+	.rbc-toolbar .rbc-btn-group {
+		display: inline-flex;
+		align-items: center;
+	}
+	.rbc-toolbar button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius);
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		font-weight: 500;
+		transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+			border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+		cursor: pointer;
+		padding: 0.5rem 0.75rem;
+		height: 2.25rem;
+		border: 1px solid hsl(var(--input));
+		background-color: hsl(var(--background));
+		color: hsl(var(--foreground));
+	}
+	.rbc-toolbar button:hover {
+		background-color: hsl(var(--accent));
+		color: hsl(var(--accent-foreground));
+	}
+	.rbc-toolbar button:disabled {
+		pointer-events: none;
+		opacity: 0.5;
+	}
+	.rbc-toolbar button:focus-visible {
+		outline: 2px solid transparent;
+		outline-offset: 2px;
+		box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+	}
+	.rbc-toolbar button.rbc-active {
+		background-color: hsl(var(--primary));
+		color: hsl(var(--primary-foreground));
+		border-color: hsl(var(--primary));
+	}
+	.rbc-toolbar button.rbc-active:hover {
+		background-color: hsl(var(--primary) / 0.9);
+	}
+	.rbc-btn-group > button:first-child {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+	.rbc-btn-group > button:last-child {
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+	.rbc-btn-group > button:not(:first-child):not(:last-child) {
+		border-radius: 0;
+	}
+	.rbc-btn-group > button + button {
+		margin-left: -1px;
+	}
+	.rbc-toolbar-label {
+		font-size: 1.125rem;
+		font-weight: 600;
+		padding: 0 0.5rem;
+		text-align: center;
+		flex-grow: 1;
+	}
+
+	/* --- Calendar Grid --- */
+	.rbc-month-view,
+	.rbc-time-view,
+	.rbc-agenda-view {
+		border: 1px solid hsl(var(--border));
+		border-radius: var(--radius);
+		background-color: hsl(var(--card));
+		color: hsl(var(--card-foreground));
+		overflow: hidden;
+	}
+	.rbc-header {
+		padding: 0.5rem;
+		border-bottom: 1px solid hsl(var(--border));
+		text-align: center;
+		font-weight: 500;
+		color: hsl(var(--muted-foreground));
+		font-size: 0.875rem;
+	}
+	.rbc-day-bg + .rbc-day-bg {
+		border-left: 1px solid hsl(var(--border));
+	}
+	.rbc-month-row + .rbc-month-row {
+		border-top: 1px solid hsl(var(--border));
+	}
+
+	/* Background for Today (Month View) */
+	.rbc-month-view .rbc-day-bg.rbc-today {
+		background-color: hsl(var(--muted)) !important;
+	}
+	.rbc-month-view .rbc-day-bg.rbc-today .rbc-date-cell a {
+		color: hsl(var(--foreground));
+		font-weight: 600;
+	}
+
+	/* Background for Off-Range Days (Month View) */
+	.rbc-month-view .rbc-day-bg.rbc-off-range-bg {
+		background-color: hsl(var(--muted)) !important;
+	}
+	.rbc-off-range .rbc-date-cell a {
+		color: hsl(var(--muted-foreground) / 0.6) !important;
+		pointer-events: none;
+	}
+
+	/* Background for Today (Week/Day View) - NEW */
+	.rbc-time-view .rbc-day-slot.rbc-today {
+		background-color: hsl(var(--muted)) !important; /* Use muted background */
+	}
+	/* Optional: Style header for today in time view if needed */
+	.rbc-time-view .rbc-header.rbc-today {
+		/* background-color: hsl(var(--muted)); */ /* Maybe keep header standard? */
+		border-bottom: 2px solid hsl(var(--primary)); /* Add indicator */
+	}
+
+	/* --- Events --- */
+	.rbc-event {
+		padding: 0.25rem 0.5rem;
+		border-radius: calc(var(--radius) - 2px);
+		font-size: 0.75rem;
+		cursor: pointer;
+		transition: background-color 150ms ease-in-out,
+			border-color 150ms ease-in-out, color 150ms ease-in-out,
+			box-shadow 150ms ease-in-out;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		border: 1px solid transparent;
+	}
+	.rbc-event:hover {
+		filter: brightness(1.1);
+	}
+	.rbc-event:focus-visible {
+		outline: 2px solid transparent;
+		outline-offset: 2px;
+	}
+	.rbc-event-default {
+		background-color: var(--event-default-bg);
+		color: var(--event-default-text);
+		border-color: var(--event-default-border);
+	}
+	.rbc-event-default:focus-visible {
+		box-shadow: 0 0 0 2px hsl(var(--background)),
+			0 0 0 4px var(--event-default-selected-ring);
+	}
+	.rbc-event-default.rbc-selected {
+		background-color: var(--event-default-selected-bg);
+		box-shadow: 0 0 0 2px hsl(var(--background)),
+			0 0 0 4px var(--event-default-selected-ring);
+	}
+	.rbc-event-task {
+		background-color: var(--event-todo-bg);
+		border-color: var(--event-todo-border);
+		color: var(--event-todo-text);
+	}
+	.rbc-event-task:focus-visible {
+		box-shadow: 0 0 0 2px hsl(var(--background)),
+			0 0 0 4px var(--event-todo-selected-ring);
+	}
+	.rbc-event-task.rbc-selected {
+		background-color: var(--event-todo-selected-bg);
+		box-shadow: 0 0 0 2px hsl(var(--background)),
+			0 0 0 4px var(--event-todo-selected-ring);
+	}
+	.rbc-event-project-task {
+		background-color: var(--event-task-bg);
+		border-color: var(--event-task-border);
+		color: var(--event-task-text);
+	}
+	.rbc-event-project-task:focus-visible {
+		box-shadow: 0 0 0 2px hsl(var(--background)),
+			0 0 0 4px var(--event-task-selected-ring);
+	}
+	.rbc-event-project-task.rbc-selected {
+		background-color: var(--event-task-selected-bg);
+		box-shadow: 0 0 0 2px hsl(var(--background)),
+			0 0 0 4px var(--event-task-selected-ring);
+	}
+
+	/* --- Time Grid --- */
+	.rbc-time-header-gutter,
+	.rbc-time-gutter {
+		border-left: 1px solid hsl(var(--border));
+	}
+	.rbc-time-slot {
+		border-top: 1px solid hsl(var(--border));
+	}
+	.rbc-time-view .rbc-day-slot .rbc-time-slot:first-child {
+		border-top: none;
+	}
+	.rbc-day-slot .rbc-event-default {
+		border-color: hsla(var(--primary) / 0.5);
+	}
+	.rbc-day-slot .rbc-event-task {
+		border-color: hsla(var(--event-todo-border) / 0.5);
+	}
+	.rbc-day-slot .rbc-event-project-task {
+		border-color: hsla(var(--event-task-border) / 0.5);
+	}
+
+	/* --- Agenda View --- */
+	.rbc-agenda-view table {
+		border-collapse: collapse;
+		width: 100%;
+	}
+	.rbc-agenda-view table tbody tr td {
+		padding: 0.5rem;
+		border-bottom: 1px solid hsl(var(--border));
+	}
+	.rbc-agenda-view table tbody tr:last-child td {
+		border-bottom: none;
+	}
+	.rbc-agenda-date-cell,
+	.rbc-agenda-time-cell {
+		font-weight: 500;
+		color: hsl(var(--muted-foreground));
+		white-space: nowrap;
+		padding-right: 1rem;
+	}
+	.rbc-agenda-content {
+		color: hsl(var(--foreground));
+	}
+
+	/* --- Other --- */
+	.rbc-slot-selecting {
+		background-color: hsla(var(--secondary) / 0.5);
+	}
+	.rbc-show-more {
+		color: hsl(var(--primary));
+		text-decoration: underline;
+		font-size: 0.75rem;
+		margin-top: 0.25rem;
+		cursor: pointer;
+	}
+	.rbc-show-more:hover {
+		color: hsla(var(--primary) / 0.8);
+	}
+
+	/* --- Mobile Responsiveness --- */
+	@media (max-width: 768px) {
+		/* md breakpoint */
+		.rbc-month-view,
+		.rbc-time-view,
+		.rbc-agenda-view {
+			font-size: 0.8rem;
+		}
+		.rbc-toolbar {
+			gap: 0.25rem;
+			margin-bottom: 0.5rem;
+		}
+		.rbc-toolbar button {
+			padding: 0.3rem 0.5rem;
+			height: 2rem;
+			font-size: 0.75rem;
+		}
+		.rbc-toolbar-label {
+			font-size: 1rem;
+			order: -1;
+			width: 100%;
+			text-align: center;
+			margin-bottom: 0.25rem;
+		}
+		.rbc-toolbar .rbc-btn-group:nth-child(3) {
+			display: none;
+		} /* Hide view switcher */
+		.rbc-header {
+			padding: 0.25rem;
+			font-size: 0.7rem;
+		}
+		.rbc-date-cell {
+			font-size: 0.75rem;
+		}
+		.rbc-month-view .rbc-day-bg.rbc-today .rbc-date-cell a {
+			font-size: 0.8rem;
+		}
+		.rbc-event {
+			padding: 0.1rem 0.3rem;
+			font-size: 0.65rem;
+		}
+		.rbc-event p {
+			display: none;
+		} /* Hide description */
+		.rbc-agenda-view table tbody tr td {
+			padding: 0.3rem 0.4rem;
+		}
+		.rbc-agenda-date-cell,
+		.rbc-agenda-time-cell {
+			font-size: 0.75rem;
+			padding-right: 0.5rem;
+		}
+		/* .rbc-time-gutter { display: none; } */ /* Optional: hide time gutter */
+		.rbc-time-header-content .rbc-header {
+			font-size: 0.65rem;
+		}
+	}
+} /* End @layer components */
