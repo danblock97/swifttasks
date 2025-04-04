@@ -659,53 +659,177 @@ html {
 		.rbc-agenda-view {
 			font-size: 0.8rem;
 		}
+
+		/* Mobile-optimized toolbar like popular calendar apps */
 		.rbc-toolbar {
 			gap: 0.25rem;
 			margin-bottom: 0.5rem;
+			flex-direction: column;
 		}
+
+		.rbc-toolbar-label {
+			font-size: 1.1rem;
+			order: -1;
+			width: 100%;
+			text-align: center;
+			margin-bottom: 0.5rem;
+			padding: 0.25rem 0;
+			font-weight: 700;
+		}
+
+		.rbc-btn-group {
+			display: flex;
+			width: 100%;
+			justify-content: center;
+		}
+
+		.rbc-btn-group:first-of-type {
+			order: 0;
+			margin-bottom: 0.5rem;
+		}
+
+		.rbc-toolbar .rbc-btn-group:nth-child(3) {
+			order: 1;
+			display: flex;
+			overflow-x: auto;
+			padding-bottom: 0.25rem;
+			margin-top: 0.25rem;
+			justify-content: center;
+		}
+
+		/* Slimmer buttons that fit better on mobile */
 		.rbc-toolbar button {
 			padding: 0.3rem 0.5rem;
 			height: 2rem;
 			font-size: 0.75rem;
+			flex: 0 0 auto;
+			min-width: 4rem;
 		}
-		.rbc-toolbar-label {
-			font-size: 1rem;
-			order: -1;
-			width: 100%;
-			text-align: center;
-			margin-bottom: 0.25rem;
-		}
-		.rbc-toolbar .rbc-btn-group:nth-child(3) {
-			display: none;
-		} /* Hide view switcher */
+
+		/* Day headers in month view */
 		.rbc-header {
 			padding: 0.25rem;
 			font-size: 0.7rem;
+			overflow: hidden;
 		}
+
+		.rbc-header span {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		/* Date cells */
 		.rbc-date-cell {
 			font-size: 0.75rem;
+			padding: 0.15rem;
+			text-align: center;
 		}
+
 		.rbc-month-view .rbc-day-bg.rbc-today .rbc-date-cell a {
 			font-size: 0.8rem;
+			font-weight: 700;
 		}
+
+		/* Event styling */
 		.rbc-event {
-			padding: 0.1rem 0.3rem;
+			padding: 0.15rem 0.3rem;
 			font-size: 0.65rem;
+			border-radius: 3px;
+			margin-bottom: 1px;
 		}
+
 		.rbc-event p {
 			display: none;
-		} /* Hide description */
+		} /* Hide description to save space */
+
+		.rbc-event strong {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			display: block;
+		}
+
+		/* Time-specific views */
+		.rbc-time-content {
+			font-size: 0.7rem;
+		}
+
+		.rbc-time-header-content {
+			min-height: 0;
+		}
+
+		.rbc-time-gutter {
+			font-size: 0.65rem;
+		}
+
+		.rbc-time-header-content .rbc-header {
+			font-size: 0.65rem;
+		}
+
+		.rbc-label {
+			font-size: 0.65rem;
+			padding: 0.1rem 0.3rem;
+		}
+
+		/* Agenda view */
 		.rbc-agenda-view table tbody tr td {
 			padding: 0.3rem 0.4rem;
 		}
+
 		.rbc-agenda-date-cell,
 		.rbc-agenda-time-cell {
 			font-size: 0.75rem;
 			padding-right: 0.5rem;
 		}
-		/* .rbc-time-gutter { display: none; } */ /* Optional: hide time gutter */
-		.rbc-time-header-content .rbc-header {
+
+		/* Improve touch targets */
+		.rbc-day-bg,
+		.rbc-date-cell,
+		.rbc-event {
+			touch-action: manipulation;
+		}
+
+		/* Prevent text selection on taps */
+		.rbc-calendar {
+			user-select: none;
+		}
+	}
+
+	/* Specific adjustments for extra small screens */
+	@media (max-width: 480px) {
+		.rbc-toolbar button {
+			min-width: 2.5rem;
+			padding: 0.3rem;
+		}
+
+		.rbc-toolbar-label {
+			font-size: 1rem;
+		}
+
+		.rbc-header {
 			font-size: 0.65rem;
+			padding: 0.15rem 0;
+		}
+
+		/* Use abbreviated days in smallest screens */
+		.rbc-header span {
+			max-width: 3ch;
+			overflow: hidden;
+			display: block;
+			text-align: center;
+		}
+
+		/* Make events even more compact */
+		.rbc-event {
+			padding: 0.1rem 0.2rem;
+			font-size: 0.6rem;
+		}
+
+		/* Stack navigation buttons vertically on smallest screens */
+		.rbc-btn-group:first-of-type {
+			flex-wrap: wrap;
+			justify-content: center;
 		}
 	}
 } /* End @layer components */

@@ -44,6 +44,24 @@ const localizer = dateFnsLocalizer({
 	locales,
 });
 
+// Define responsive format options for different screens
+const formats = {
+	dayFormat: (date: Date, culture: string = "en-US") => {
+		// For mobile screens, use shorter formats
+		if (typeof window !== "undefined" && window.innerWidth < 480) {
+			return format(date, "ccc", { locale: locales[culture as keyof typeof locales] });
+		}
+		return format(date, "EEE", { locale: locales[culture as keyof typeof locales] });
+	},
+	timeGutterFormat: (date: Date) => {
+		// For mobile screens, use shorter time formats
+		if (typeof window !== "undefined" && window.innerWidth < 480) {
+			return format(date, "h a");
+		}
+		return format(date, "h:mm a");
+	},
+};
+
 // Define the structure for selected slot info
 interface SelectedSlotInfo {
 	start: Date;
@@ -57,7 +75,15 @@ export function CalendarView() {
 	const [events, setEvents] = useState<CalendarItem[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [currentDate, setCurrentDate] = useState<Date>(new Date());
-	const [currentView, setCurrentView] = useState<View>(Views.MONTH);
+	
+	// Set default view based on screen size
+	const [currentView, setCurrentView] = useState<View>(() => {
+		// Use agenda view on mobile by default (better for small screens)
+		if (typeof window !== 'undefined' && window.innerWidth < 768) {
+			return Views.AGENDA;
+		}
+		return Views.MONTH;
+	});
 
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	const [selectedEvent, setSelectedEvent] = useState<CalendarItem | null>(null);
@@ -238,7 +264,7 @@ export function CalendarView() {
 	};
 
 	return (
-		<div className="relative h-[70vh] md:h-[80vh] p-4 bg-card rounded-lg shadow border border-border">
+		<div className="relative h-[60vh] sm:h-[65vh] md:h-[75vh] lg:h-[80vh] p-2 sm:p-4 bg-card rounded-lg shadow border border-border">
 			{loading && (
 				<div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
 					<Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -277,10 +303,7 @@ export function CalendarView() {
 					};
 				}}
 				// Consider adding formats if needed
-				// formats={{
-				//     dayFormat: (date, culture, localizer) => localizer.format(date, 'ddd M/d', culture),
-				//     timeGutterFormat: (date, culture, localizer) => localizer.format(date, 'h a', culture),
-				// }}
+				formats={formats}
 			/>
 
 			{/* Event Form Modal (using non-shadcn version) */}

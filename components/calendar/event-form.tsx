@@ -248,9 +248,9 @@ export function EventForm({
 				onClick={showDeleteConfirm ? undefined : handleClose}
 			></div>
 			{/* Modal Content Wrapper */}
-			<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+			<div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
 				{/* Modal Panel */}
-				<div className="relative w-full max-w-md bg-card text-card-foreground rounded-lg shadow-xl border border-border">
+				<div className="relative w-full max-w-md bg-card text-card-foreground rounded-lg shadow-xl border border-border max-h-[90vh] overflow-y-auto">
 					{/* Close Button */}
 					<button
 						onClick={handleClose}

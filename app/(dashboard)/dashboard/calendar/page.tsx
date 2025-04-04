@@ -22,8 +22,9 @@ export default async function CalendarPage() {
 	// but CalendarView currently fetches its own data based on range.
 
 	return (
-		<div className="container mx-auto px-4 py-6">
-			<div className="mt-6">
+		<div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+			<h1 className="text-2xl font-bold mb-4 sm:mb-6">Calendar</h1>
+			<div className="mt-2 sm:mt-4">
 				{/* Render the client component responsible for the calendar logic */}
 				<CalendarView />
 			</div>
