@@ -71,14 +71,14 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
     return (
         <DashboardShell>
-            <div className="flex items-start gap-2">
-                <Link href="/dashboard/projects">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-2">
+                <Link href="/dashboard/projects" className="mb-2 sm:mb-0">
                     <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
                         <ChevronLeft className="h-4 w-4" />
                         <span className="sr-only">Back to projects</span>
                     </Button>
                 </Link>
-                <div className="flex flex-1 justify-between items-start">
+                <div className="flex flex-1 flex-col space-y-4 sm:space-y-0 sm:flex-row sm:justify-between sm:items-start">
                     <DashboardHeader
                         heading={project.name}
                         description={
@@ -87,7 +87,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                         }
                     />
                     {canManageProject && (
-                        <div className="flex gap-2 ml-auto">
+                        <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-auto">
                             <Link href={`/dashboard/projects/${projectId}/edit`}>
                                 <Button variant="outline" size="sm">
                                     <Edit className="mr-1 h-4 w-4" />
@@ -108,7 +108,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                 </div>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-4 mt-4 sm:mt-0">
                 <div className="flex items-center gap-2">
                     {project.team_id && (
                         <Badge variant="outline" className="flex items-center gap-1">
