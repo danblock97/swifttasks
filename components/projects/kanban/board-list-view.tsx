@@ -270,130 +270,131 @@ export function BoardListView({
 
     return (
         <div className="board-list-view w-full space-y-4">
-            {/* Remove the header with buttons since they're now in BoardViewSwitcher */}
-            <div className="border rounded-md">
-                <Table className="w-full table-fixed">
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[25%]">Title</TableHead>
-                            <TableHead className="w-[15%]">Status</TableHead>
-                            <TableHead className="w-[10%]">Priority</TableHead>
-                            <TableHead className="w-[12%]">Due Date</TableHead>
-                            <TableHead className="w-[15%]">Assigned To</TableHead>
-                            <TableHead className="w-[15%]">Labels</TableHead>
-                            <TableHead className="w-[8%] text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sortedItems.length === 0 ? (
+            <div className="border rounded-md overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table className="w-full table-fixed min-w-[800px]">
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                                    No tasks found. Create your first task using the "Add Task" button.
-                                </TableCell>
+                                <TableHead className="w-[25%]">Title</TableHead>
+                                <TableHead className="w-[15%]">Status</TableHead>
+                                <TableHead className="w-[15%]">Priority</TableHead>
+                                <TableHead className="w-[12%]">Due Date</TableHead>
+                                <TableHead className="w-[10%]">Assignee</TableHead>
+                                <TableHead className="w-[15%]">Labels</TableHead>
+                                <TableHead className="w-[8%] text-right">Actions</TableHead>
                             </TableRow>
-                        ) : (
-                            sortedItems.map((item: any) => (
-                                <TableRow key={item.id}>
-                                    <TableCell className="max-w-[25%]">
-                                        <div className="font-medium line-clamp-1">{item.title}</div>
-                                        {item.description && (
-                                            <div className="text-xs text-muted-foreground line-clamp-1">
-                                                {item.description}
-                                            </div>
-                                        )}
+                        </TableHeader>
+                        <TableBody>
+                            {sortedItems.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                                        No tasks found. Create your first task using the "Add Task" button.
                                     </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className={cn("text-xs whitespace-nowrap", getStatusColor(item.columnName))}>
-                                            {item.columnName}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        {item.priority ? (
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Badge variant="outline" className={cn("text-xs", getPriorityDetails(item.priority)?.color)}>
-                                                            {getPriorityDetails(item.priority)?.icon}
-                                                            <span className="ml-1">{getPriorityDetails(item.priority)?.label}</span>
-                                                        </Badge>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>Priority: {getPriorityDetails(item.priority)?.label}</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        ) : (
-                                            <span className="text-xs text-muted-foreground">-</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {item.due_date ? (
-                                            <div className="flex items-center gap-1 text-xs">
-                                                <Calendar className="h-3 w-3" />
-                                                <span>{formatDate(item.due_date)}</span>
-                                            </div>
-                                        ) : (
-                                            <span className="text-xs text-muted-foreground">-</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {item.assigned_to ? (
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs">{getAssigneeName(item.assigned_to)}</span>
-                                            </div>
-                                        ) : (
-                                            <span className="text-xs text-muted-foreground">Unassigned</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-wrap gap-1">
-                                            {item.labels && item.labels.length > 0 ? (
-                                                item.labels.slice(0, 2).map((label: string, index: number) => (
-                                                    <Badge key={index} variant="secondary" className="text-xs py-0 px-1.5 bg-primary/10 text-primary">
-                                                        <Tag className="h-2.5 w-2.5 mr-1" />
-                                                        {label}
-                                                    </Badge>
-                                                ))
+                                </TableRow>
+                            ) : (
+                                sortedItems.map((item: any) => (
+                                    <TableRow key={item.id}>
+                                        <TableCell className="max-w-[25%]">
+                                            <div className="font-medium line-clamp-1">{item.title}</div>
+                                            {item.description && (
+                                                <div className="text-xs text-muted-foreground line-clamp-1">
+                                                    {item.description}
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={cn("text-xs whitespace-nowrap", getStatusColor(item.columnName))}>
+                                                {item.columnName}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {item.priority ? (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Badge variant="outline" className={cn("text-xs", getPriorityDetails(item.priority)?.color)}>
+                                                                {getPriorityDetails(item.priority)?.icon}
+                                                                <span className="ml-1">{getPriorityDetails(item.priority)?.label}</span>
+                                                            </Badge>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Priority: {getPriorityDetails(item.priority)?.label}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
                                             ) : (
                                                 <span className="text-xs text-muted-foreground">-</span>
                                             )}
-                                            {item.labels && item.labels.length > 2 && (
-                                                <Badge variant="secondary" className="text-xs py-0 px-1.5 bg-primary/10 text-primary">
-                                                    +{item.labels.length - 2}
-                                                </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {item.due_date ? (
+                                                <div className="flex items-center gap-1 text-xs">
+                                                    <Calendar className="h-3 w-3" />
+                                                    <span>{formatDate(item.due_date)}</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">-</span>
                                             )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                    <span className="sr-only">Actions</span>
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => handleEditItem(item)}>
-                                                    <Edit className="mr-2 h-4 w-4" />
-                                                    Edit
-                                                </DropdownMenuItem>
-                                                {canManageBoard && (
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleDeleteItem(item.id)}
-                                                        className="text-destructive focus:text-destructive"
-                                                    >
-                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                        Delete
-                                                    </DropdownMenuItem>
+                                        </TableCell>
+                                        <TableCell>
+                                            {item.assigned_to ? (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs">{getAssigneeName(item.assigned_to)}</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">Unassigned</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-wrap gap-1">
+                                                {item.labels && item.labels.length > 0 ? (
+                                                    item.labels.slice(0, 2).map((label: string, index: number) => (
+                                                        <Badge key={index} variant="secondary" className="text-xs py-0 px-1.5 bg-primary/10 text-primary">
+                                                            <Tag className="h-2.5 w-2.5 mr-1" />
+                                                            {label}
+                                                        </Badge>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground">-</span>
                                                 )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                                                {item.labels && item.labels.length > 2 && (
+                                                    <Badge variant="secondary" className="text-xs py-0 px-1.5 bg-primary/10 text-primary">
+                                                        +{item.labels.length - 2}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                        <span className="sr-only">Actions</span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => handleEditItem(item)}>
+                                                        <Edit className="mr-2 h-4 w-4" />
+                                                        Edit
+                                                    </DropdownMenuItem>
+                                                    {canManageBoard && (
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleDeleteItem(item.id)}
+                                                            className="text-destructive focus:text-destructive"
+                                                        >
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             {selectedColumnId && (

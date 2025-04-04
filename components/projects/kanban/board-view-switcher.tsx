@@ -101,13 +101,13 @@ export function BoardViewSwitcher({
 
     return (
         <div className="space-y-4 w-full">
-            <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                <div className="flex flex-wrap items-center gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="sm">
                                 <ArrowDownUp className="mr-1 h-4 w-4" />
-                                Sort: {getSortOrderName(sortOrder)}
+                                <span className="hidden sm:inline">Sort: </span>{getSortOrderName(sortOrder)}
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
@@ -158,12 +158,12 @@ export function BoardViewSwitcher({
                     )}
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                     {canManageBoard && (
-                        <Link href={`/dashboard/projects/${projectId}/boards/${boardId}/edit`}>
-                            <Button variant="outline" size="sm">
+                        <Link href={`/dashboard/projects/${projectId}/boards/${boardId}/edit`} className="w-full sm:w-auto">
+                            <Button variant="outline" size="sm" className="w-full sm:w-auto">
                                 <Edit className="mr-1 h-4 w-4" />
-                                Edit Board
+                                <span className="hidden sm:inline">Edit </span>Board
                             </Button>
                         </Link>
                     )}
@@ -172,16 +172,17 @@ export function BoardViewSwitcher({
                         variant="outline"
                         size="sm"
                         onClick={toggleViewMode}
+                        className="w-full sm:w-auto"
                     >
                         {viewMode === "kanban" ? (
                             <>
                                 <List className="mr-1 h-4 w-4" />
-                                List View
+                                <span className="hidden sm:inline">List </span>View
                             </>
                         ) : (
                             <>
                                 <Kanban className="mr-1 h-4 w-4" />
-                                Kanban View
+                                <span className="hidden sm:inline">Kanban </span>View
                             </>
                         )}
                     </Button>
