@@ -16,10 +16,17 @@ import {
 	PlusSquare,
 	ChevronLeft,
 	ChevronRight,
+	MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { setSidebarCollapsed, getSidebarCollapsed } from "@/lib/cookies";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 	user?: any; // Consider defining a more specific user type if possible
@@ -109,82 +116,141 @@ export function Sidebar({ className, user, ...props }: SidebarProps) {
 		}
 	};
 
+	// Select main nav items for mobile (limit to 4 important ones)
+	const mobileNavItems = [
+		sidebarItems[0], // Dashboard
+		sidebarItems[1], // Todo
+		sidebarItems[2], // Projects
+		sidebarItems[3], // Calendar
+	];
+	
+	// Items to show in the More dropdown
+	const moreNavItems = [...sidebarItems.slice(4)];
+	
+	// Add Settings to the more menu
+	moreNavItems.push({
+		title: "Settings",
+		href: "/dashboard/settings",
+		icon: Settings,
+		active: pathname.startsWith("/dashboard/settings"),
+	});
+
 	return (
-		<div
-			className={cn(
-				"relative pb-12 transition-width duration-300 ease-in-out",
-				collapsed ? "w-16" : "w-[240px]",
-				className
-			)}
-			{...props}
-		>
-			{/* Toggle Button */}
-			<Button
-				variant="ghost"
-				size="icon"
-				className="absolute -right-3 top-20 z-10 h-6 w-6 rounded-full border shadow-md bg-background hover:bg-accent"
-				onClick={toggleSidebar}
-			>
-				{collapsed ? (
-					<ChevronRight className="h-3 w-3" />
-				) : (
-					<ChevronLeft className="h-3 w-3" />
+		<>
+			{/* Desktop Sidebar */}
+			<div
+				className={cn(
+					"relative pb-12 transition-width duration-300 ease-in-out hidden md:block",
+					collapsed ? "w-16" : "w-[240px]",
+					className
 				)}
-			</Button>
-
-			<div className="space-y-4 py-4">
-				{/* New Project Button */}
-				<div className="px-3 py-2">
-					{!collapsed && (
-						<Button
-							variant="outline"
-							className="w-full justify-start gap-2"
-							onClick={createNewProject}
-						>
-							<PlusSquare className="h-4 w-4" />
-							<span>New Project</span>
-						</Button>
+				{...props}
+			>
+				{/* Toggle Button */}
+				<Button
+					variant="ghost"
+					size="icon"
+					className="absolute -right-3 top-20 z-10 h-6 w-6 rounded-full border shadow-md bg-background hover:bg-accent"
+					onClick={toggleSidebar}
+				>
+					{collapsed ? (
+						<ChevronRight className="h-3 w-3" />
+					) : (
+						<ChevronLeft className="h-3 w-3" />
 					)}
-					{collapsed && (
-						<Button
-							variant="outline"
-							size="icon"
-							className="w-10 h-10 mx-auto flex items-center justify-center" // Ensure icon is centered
-							onClick={createNewProject}
-							aria-label="New Project" // Add accessibility label
-						>
-							<PlusSquare className="h-4 w-4" />
-						</Button>
-					)}
+				</Button>
 
-					{/* Team Workspace Name (if applicable) */}
-					<div className="mt-3">
-						{isTeam && !collapsed && (
-							<div className="mb-2">
-								<div className="px-4 py-1.5 text-xs font-semibold truncate text-muted-foreground">
-									{user?.teams?.name || "Team Workspace"}
-								</div>
-							</div>
+				<div className="space-y-4 py-4">
+					{/* New Project Button */}
+					<div className="px-3 py-2">
+						{!collapsed && (
+							<Button
+								variant="outline"
+								className="w-full justify-start gap-2"
+								onClick={createNewProject}
+							>
+								<PlusSquare className="h-4 w-4" />
+								<span>New Project</span>
+							</Button>
 						)}
-					</div>
-				</div>
+						{collapsed && (
+							<Button
+								variant="outline"
+								size="icon"
+								className="w-10 h-10 mx-auto flex items-center justify-center" // Ensure icon is centered
+								onClick={createNewProject}
+								aria-label="New Project" // Add accessibility label
+							>
+								<PlusSquare className="h-4 w-4" />
+							</Button>
+						)}
 
-				{/* Main Navigation Links */}
-				<div className="px-3 py-2">
-					{!collapsed && (
-						<h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-muted-foreground">
-							Main
-						</h2>
-					)}
-					<div className="space-y-1">
-						{sidebarItems.map((item) => (
+						{/* Team Workspace Name (if applicable) */}
+						<div className="mt-3">
+							{isTeam && !collapsed && (
+								<div className="mb-2">
+									<div className="px-4 py-1.5 text-xs font-semibold truncate text-muted-foreground">
+										{user?.teams?.name || "Team Workspace"}
+									</div>
+								</div>
+							)}
+						</div>
+					</div>
+
+					{/* Main Navigation Links */}
+					<div className="px-3 py-2">
+						{!collapsed && (
+							<h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-muted-foreground">
+								Main
+							</h2>
+						)}
+						<div className="space-y-1">
+							{sidebarItems.map((item) => (
+								<Link
+									key={item.href}
+									href={item.href}
+									title={collapsed ? item.title : undefined} // Show title on hover when collapsed
+								>
+									<Button
+										variant={item.active ? "secondary" : "ghost"}
+										className={cn(
+											"w-full justify-start",
+											collapsed
+												? "h-10 w-10 p-0 flex items-center justify-center"
+												: "gap-2" // Center icon when collapsed
+										)}
+									>
+										<item.icon
+											className={cn("h-4 w-4", collapsed ? "mx-auto" : "")}
+										/>{" "}
+										{/* Center icon */}
+										{!collapsed && <span>{item.title}</span>}
+									</Button>
+								</Link>
+							))}
+						</div>
+					</div>
+
+					{/* Settings Link */}
+					<div className="px-3 py-2 absolute bottom-4 left-0 right-0">
+						{" "}
+						{/* Position settings at bottom */}
+						{!collapsed && (
+							<h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-muted-foreground">
+								Settings
+							</h2>
+						)}
+						<div className="space-y-1">
 							<Link
-								key={item.href}
-								href={item.href}
-								title={collapsed ? item.title : undefined} // Show title on hover when collapsed
+								href="/dashboard/settings"
+								title={collapsed ? "Settings" : undefined}
 							>
 								<Button
-									variant={item.active ? "secondary" : "ghost"}
+									variant={
+										pathname.startsWith("/dashboard/settings")
+											? "secondary"
+											: "ghost" // Use startsWith for settings subpages
+									}
 									className={cn(
 										"w-full justify-start",
 										collapsed
@@ -192,54 +258,70 @@ export function Sidebar({ className, user, ...props }: SidebarProps) {
 											: "gap-2" // Center icon when collapsed
 									)}
 								>
-									<item.icon
+									<Settings
 										className={cn("h-4 w-4", collapsed ? "mx-auto" : "")}
 									/>{" "}
 									{/* Center icon */}
-									{!collapsed && <span>{item.title}</span>}
+									{!collapsed && <span>Settings</span>}
 								</Button>
 							</Link>
-						))}
-					</div>
-				</div>
-
-				{/* Settings Link */}
-				<div className="px-3 py-2 absolute bottom-4 left-0 right-0">
-					{" "}
-					{/* Position settings at bottom */}
-					{!collapsed && (
-						<h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-muted-foreground">
-							Settings
-						</h2>
-					)}
-					<div className="space-y-1">
-						<Link
-							href="/dashboard/settings"
-							title={collapsed ? "Settings" : undefined}
-						>
-							<Button
-								variant={
-									pathname.startsWith("/dashboard/settings")
-										? "secondary"
-										: "ghost" // Use startsWith for settings subpages
-								}
-								className={cn(
-									"w-full justify-start",
-									collapsed
-										? "h-10 w-10 p-0 flex items-center justify-center"
-										: "gap-2" // Center icon when collapsed
-								)}
-							>
-								<Settings
-									className={cn("h-4 w-4", collapsed ? "mx-auto" : "")}
-								/>{" "}
-								{/* Center icon */}
-								{!collapsed && <span>Settings</span>}
-							</Button>
-						</Link>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+
+			{/* Mobile Bottom Navigation */}
+			<div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t z-50 h-16">
+				<div className="grid grid-cols-5 h-full">
+					{mobileNavItems.map((item) => (
+						<Link
+							key={item.href}
+							href={item.href}
+							className={cn(
+								"flex flex-col items-center justify-center h-full",
+								item.active ? "text-primary" : "text-muted-foreground"
+							)}
+						>
+							<item.icon className="h-5 w-5 mb-1" />
+							<span className="text-xs">{item.title}</span>
+						</Link>
+					))}
+					
+					{/* More dropdown button */}
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<button 
+								className="flex flex-col items-center justify-center h-full w-full bg-transparent text-muted-foreground focus:outline-none"
+							>
+								<MoreHorizontal className="h-5 w-5 mb-1" />
+								<span className="text-xs">More</span>
+							</button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="w-56 mb-16">
+							{moreNavItems.map((item) => (
+								<DropdownMenuItem key={item.href} asChild>
+									<Link
+										href={item.href}
+										className={cn(
+											"flex items-center gap-2 w-full",
+											item.active ? "font-medium" : ""
+										)}
+									>
+										<item.icon className="h-4 w-4" />
+										<span>{item.title}</span>
+									</Link>
+								</DropdownMenuItem>
+							))}
+							
+							{/* New Project Option */}
+							<DropdownMenuItem onClick={createNewProject}>
+								<PlusSquare className="h-4 w-4 mr-2" />
+								<span>New Project</span>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+			</div>
+		</>
 	);
 }
