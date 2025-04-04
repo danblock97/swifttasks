@@ -1,7 +1,4 @@
-﻿// FILE: components/auth/login-form.tsx
-// MODIFIED to handle login with team invitations
-
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -88,9 +85,8 @@ export function LoginForm() {
                     title: "Logged in successfully",
                     description: "Redirecting to your dashboard...",
                 });
-
-                router.refresh();
-                router.push("/dashboard");
+                // Redirect to the dashboard
+                window.location.href = "/dashboard";
             }
         } catch (error: any) {
             toast({

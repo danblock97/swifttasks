@@ -31,8 +31,10 @@ export function UserNav({ user }: UserNavProps) {
             toast({
                 title: "Signed out successfully",
             });
-            router.refresh();
-            router.push("/login");
+            
+            // Use window.location.href for full page refresh
+            // This ensures the server components re-render with the new auth state
+            window.location.href = "/login";
         } catch (error) {
             console.error("Error signing out:", error);
             toast({
@@ -58,6 +60,7 @@ export function UserNav({ user }: UserNavProps) {
         <div className="flex items-center gap-2">
             {/* Add NotificationDropdown here */}
             <NotificationDropdown />
+        
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
