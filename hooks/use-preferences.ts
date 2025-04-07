@@ -32,6 +32,39 @@ const PREFS_STORAGE_KEY = "user_preferences";
 const PREFS_TIMESTAMP_KEY = "user_preferences_timestamp";
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
+// Function to safely use localStorage
+const safeLocalStorage = {
+	getItem: (key: string): string | null => {
+		if (typeof window === "undefined") return null;
+		try {
+			return localStorage.getItem(key);
+		} catch (error) {
+			console.warn(`Error reading ${key} from localStorage:`, error);
+			return null;
+		}
+	},
+	setItem: (key: string, value: string): boolean => {
+		if (typeof window === "undefined") return false;
+		try {
+			localStorage.setItem(key, value);
+			return true;
+		} catch (error) {
+			console.warn(`Error writing ${key} to localStorage:`, error);
+			return false;
+		}
+	},
+	removeItem: (key: string): boolean => {
+		if (typeof window === "undefined") return false;
+		try {
+			localStorage.removeItem(key);
+			return true;
+		} catch (error) {
+			console.warn(`Error removing ${key} from localStorage:`, error);
+			return false;
+		}
+	},
+};
+
 // Client instance (singleton pattern)
 let clientInstance: ReturnType<
 	typeof createClientComponentClient<Database>
@@ -114,8 +147,11 @@ export function useUserPreferences() {
 			setSaveQueue({});
 
 			try {
-				localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(updatedPrefs));
-				localStorage.setItem(PREFS_TIMESTAMP_KEY, Date.now().toString());
+				safeLocalStorage.setItem(
+					PREFS_STORAGE_KEY,
+					JSON.stringify(updatedPrefs)
+				);
+				safeLocalStorage.setItem(PREFS_TIMESTAMP_KEY, Date.now().toString());
 			} catch (storageError) {
 				console.warn("Error saving preferences to localStorage:", storageError);
 			}
@@ -131,8 +167,8 @@ export function useUserPreferences() {
 			let loadedFromCache = false;
 			try {
 				// Try localStorage first
-				const storedPrefs = localStorage.getItem(PREFS_STORAGE_KEY);
-				const timestamp = localStorage.getItem(PREFS_TIMESTAMP_KEY);
+				const storedPrefs = safeLocalStorage.getItem(PREFS_STORAGE_KEY);
+				const timestamp = safeLocalStorage.getItem(PREFS_TIMESTAMP_KEY);
 				if (
 					storedPrefs &&
 					timestamp &&
@@ -142,8 +178,8 @@ export function useUserPreferences() {
 					loadedFromCache = true;
 				} else {
 					// Clear expired cache
-					localStorage.removeItem(PREFS_STORAGE_KEY);
-					localStorage.removeItem(PREFS_TIMESTAMP_KEY);
+					safeLocalStorage.removeItem(PREFS_STORAGE_KEY);
+					safeLocalStorage.removeItem(PREFS_TIMESTAMP_KEY);
 				}
 			} catch (error) {
 				console.warn("Error loading preferences from cache:", error);
@@ -164,18 +200,24 @@ export function useUserPreferences() {
 					if (dbPrefs) {
 						const mergedPrefs = { ...defaultPreferences, ...dbPrefs };
 						setPreferences(mergedPrefs);
-						localStorage.setItem(
+						safeLocalStorage.setItem(
 							PREFS_STORAGE_KEY,
 							JSON.stringify(mergedPrefs)
 						);
-						localStorage.setItem(PREFS_TIMESTAMP_KEY, Date.now().toString());
+						safeLocalStorage.setItem(
+							PREFS_TIMESTAMP_KEY,
+							Date.now().toString()
+						);
 					} else if (!loadedFromCache) {
 						setPreferences(defaultPreferences);
-						localStorage.setItem(
+						safeLocalStorage.setItem(
 							PREFS_STORAGE_KEY,
 							JSON.stringify(defaultPreferences)
 						);
-						localStorage.setItem(PREFS_TIMESTAMP_KEY, Date.now().toString());
+						safeLocalStorage.setItem(
+							PREFS_TIMESTAMP_KEY,
+							Date.now().toString()
+						);
 						await supabase
 							.from("users")
 							.update({ preferences: defaultPreferences as unknown as Json })
@@ -205,8 +247,8 @@ export function useUserPreferences() {
 
 			// Update localStorage immediately
 			try {
-				localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(newPrefs));
-				localStorage.setItem(PREFS_TIMESTAMP_KEY, Date.now().toString());
+				safeLocalStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(newPrefs));
+				safeLocalStorage.setItem(PREFS_TIMESTAMP_KEY, Date.now().toString());
 			} catch (storageError) {
 				console.warn(
 					"Error saving preferences to localStorage during update:",
@@ -234,11 +276,11 @@ export function useUserPreferences() {
 		try {
 			setPreferences(defaultPreferences);
 
-			localStorage.setItem(
+			safeLocalStorage.setItem(
 				PREFS_STORAGE_KEY,
 				JSON.stringify(defaultPreferences)
 			);
-			localStorage.setItem(PREFS_TIMESTAMP_KEY, Date.now().toString());
+			safeLocalStorage.setItem(PREFS_TIMESTAMP_KEY, Date.now().toString());
 
 			if (saveTimeoutRef.current) {
 				clearTimeout(saveTimeoutRef.current);
