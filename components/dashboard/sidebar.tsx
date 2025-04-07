@@ -123,10 +123,10 @@ export function Sidebar({ className, user, ...props }: SidebarProps) {
 		sidebarItems[2], // Projects
 		sidebarItems[3], // Calendar
 	];
-	
+
 	// Items to show in the More dropdown
 	const moreNavItems = [...sidebarItems.slice(4)];
-	
+
 	// Add Settings to the more menu
 	moreNavItems.push({
 		title: "Settings",
@@ -150,7 +150,7 @@ export function Sidebar({ className, user, ...props }: SidebarProps) {
 				<Button
 					variant="ghost"
 					size="icon"
-					className="absolute -right-3 top-20 z-10 h-6 w-6 rounded-full border shadow-md bg-background hover:bg-accent"
+					className="absolute -right-3 top-20 z-10 h-6 w-6 rounded-full border shadow-md bg-card hover:bg-accent"
 					onClick={toggleSidebar}
 				>
 					{collapsed ? (
@@ -271,7 +271,7 @@ export function Sidebar({ className, user, ...props }: SidebarProps) {
 			</div>
 
 			{/* Mobile Bottom Navigation */}
-			<div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t z-50 h-16">
+			<div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t z-50 h-16">
 				<div className="grid grid-cols-5 h-full">
 					{mobileNavItems.map((item) => (
 						<Link
@@ -286,13 +286,11 @@ export function Sidebar({ className, user, ...props }: SidebarProps) {
 							<span className="text-xs">{item.title}</span>
 						</Link>
 					))}
-					
+
 					{/* More dropdown button */}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<button 
-								className="flex flex-col items-center justify-center h-full w-full bg-transparent text-muted-foreground focus:outline-none"
-							>
+							<button className="flex flex-col items-center justify-center h-full w-full text-muted-foreground focus:outline-none">
 								<MoreHorizontal className="h-5 w-5 mb-1" />
 								<span className="text-xs">More</span>
 							</button>
@@ -312,7 +310,7 @@ export function Sidebar({ className, user, ...props }: SidebarProps) {
 									</Link>
 								</DropdownMenuItem>
 							))}
-							
+
 							{/* New Project Option */}
 							<DropdownMenuItem onClick={createNewProject}>
 								<PlusSquare className="h-4 w-4 mr-2" />
