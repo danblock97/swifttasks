@@ -373,38 +373,6 @@
 	scrollbar-color: hsl(var(--muted-foreground) / 0.3) hsl(var(--background));
 }
 
-/* Navigation loading indicator animation */
-@keyframes progress-indeterminate {
-	0% {
-		transform: translateX(-100%);
-		width: 50%;
-	}
-	50% {
-		width: 70%;
-	}
-	100% {
-		transform: translateX(100%);
-		width: 50%;
-	}
-}
-
-.animate-progress-indeterminate {
-	animation: progress-indeterminate 1.5s ease-in-out infinite;
-}
-
-/* Animation delay classes for loading dots */
-.animation-delay-0 {
-	animation-delay: 0ms;
-}
-
-.animation-delay-150 {
-	animation-delay: 150ms;
-}
-
-.animation-delay-300 {
-	animation-delay: 300ms;
-}
-
 [class*="droppable"] {
 	&::-webkit-scrollbar {
 		width: 6px;
